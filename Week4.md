@@ -157,3 +157,274 @@ To control access, configure the system, and monitor all projects and issues.
 The System Administrator successfully manages and monitors the entire IssueHub system.
 
 
+
+--------------------------------------------------------------------------------------------------------------------
+# Project Management Platform — User Stories
+
+## Role: Project Manager --Xhoana Thano
+
+   
+---
+
+# 1. Project Setup & Organization
+
+## US-01 | Create Project
+**User Story:**  
+As a Project Manager, I want to create a new project with a name, description, start date, end date, and project type, so that I can establish a structured workspace for my team to collaborate within.
+
+**Acceptance Criteria:**
+- PM can define project name, description, goals, and timeline  
+- PM can set project visibility (private / team / organization)  
+- PM can select a project template (Scrum, Kanban, Waterfall)  
+- A unique project ID is auto-generated upon creation  
+
+---
+
+## US-02 | Add Team Members
+**User Story:**  
+As a Project Manager, I want to add team members to a project and assign them roles, so that each person has the appropriate access and responsibilities defined from the start.
+
+**Acceptance Criteria:**
+- PM can search and invite members by name or email  
+- PM can assign roles: Developer, Designer, QA, Viewer, Co-Manager  
+- PM can remove or change member roles at any time  
+- Invited members receive a notification  
+
+---
+
+## US-03 | Manage Team Availability & Capacity
+**User Story:**  
+As a Project Manager, I want to see each team member's availability, declared work hours, and current task load, so that I can make informed decisions when assigning work.
+
+**Acceptance Criteria:**
+- Each member has a visible weekly hour capacity  
+- The system shows hours allocated vs. remaining  
+- PM is warned when a member is at or above 100% capacity  
+- Capacity view is accessible from dashboard and task assignment panel  
+
+---
+
+# 2. Task Management
+
+## US-04 | Create Tasks
+**User Story:**  
+As a Project Manager, I want to create tasks with a title, description, type, and acceptance criteria, so that each unit of work is clearly defined and trackable.
+
+**Acceptance Criteria:**
+- Task types: Feature, Bug, Improvement, Research, Meeting Action  
+- PM can add subtasks, checklists, and attachments  
+- Tasks linked to project, sprint, or milestone  
+- Unique task ID auto-generated (e.g., PROJ-042)  
+
+---
+
+## US-05 | Assign Tasks
+**User Story:**  
+As a Project Manager, I want to assign tasks to one or more team members, so that responsibilities are clearly defined.
+
+**Acceptance Criteria:**
+- Single or multiple assignees per task  
+- Notifications sent (in-app & email)  
+- Tasks can be reassigned anytime  
+- Warning if assignment exceeds capacity  
+
+---
+
+## US-06 | Set Task Priority
+**User Story:**  
+As a Project Manager, I want to set priority levels on tasks, so that the team knows what to work on first.
+
+**Acceptance Criteria:**
+- Priority levels: Critical, High, Medium, Low  
+- Color-coded priorities  
+- Bulk update supported  
+- Sort and filter by priority  
+
+---
+
+## US-07 | Set Deadlines & Milestones
+**User Story:**  
+As a Project Manager, I want to define due dates and milestones, so that the project stays on schedule.
+
+**Acceptance Criteria:**
+- Start and due dates per task  
+- Milestones group multiple tasks  
+- Tasks near deadline (48h) highlighted  
+- Overdue tasks flagged in red  
+
+---
+
+## US-08 | Link & Depend Tasks
+**User Story:**  
+As a Project Manager, I want to define dependencies between tasks, so that the correct execution order is clear.
+
+**Acceptance Criteria:**
+- Dependency types: Blocks, Blocked By, Relates To, Duplicates  
+- Blocked tasks cannot move to "In Progress" without override  
+- Dependency chains visible in timeline/Gantt  
+
+---
+
+# 3. AI-Powered Meeting & Audio Features
+
+## US-09 | Generate Tasks from Meeting Audio
+**User Story:**  
+As a Project Manager, I want to upload or record meeting audio and extract action items automatically.
+
+**Acceptance Criteria:**
+- Upload (MP3, WAV, M4A) or record audio  
+- Speech-to-text transcription  
+- AI extracts action items, owners, priorities  
+- PM reviews and confirms tasks  
+- Audio and transcript stored  
+
+---
+
+## US-10 | Generate Tasks from Meeting Transcript
+**User Story:**  
+As a Project Manager, I want to upload or paste transcripts to generate tasks.
+
+**Acceptance Criteria:**
+- Upload .txt / .docx or paste text  
+- AI detects action items, owners, deadlines  
+- PM can approve/edit suggestions  
+- Transcript stored in project  
+
+---
+
+## US-11 | Summarize Meeting & Log Decisions
+**User Story:**  
+As a Project Manager, I want automatic meeting summaries.
+
+**Acceptance Criteria:**
+- Summary includes:
+  - Decisions Made  
+  - Risks Identified  
+  - Tasks Created  
+  - Next Meeting Points  
+- Editable and shareable  
+- Stored in meeting log  
+
+---
+
+# 4. Progress Tracking & Monitoring
+
+## US-12 | Kanban Board
+**User Story:**  
+As a Project Manager, I want a Kanban board view to track progress.
+
+**Acceptance Criteria:**
+- Columns: Backlog, To Do, In Progress, In Review, Done  
+- Drag-and-drop tasks  
+- Customizable columns  
+- Task cards show assignee, priority, due date, ID  
+
+---
+
+## US-13 | Timeline / Gantt View
+**User Story:**  
+As a Project Manager, I want a timeline view of tasks.
+
+**Acceptance Criteria:**
+- Tasks shown as horizontal bars  
+- Dependencies visualized  
+- Drag to adjust dates  
+- Critical path highlighted  
+
+---
+
+## US-14 | Identify Delayed & At-Risk Tasks
+**User Story:**  
+As a Project Manager, I want to identify overdue and at-risk tasks.
+
+**Acceptance Criteria:**
+- Overdue tasks flagged red  
+- No-progress tasks flagged "At Risk"  
+- Daily digest sent to PM  
+- Suggested corrective actions  
+
+---
+
+## US-15 | Monitor Team Workload
+**User Story:**  
+As a Project Manager, I want a workload view for team members.
+
+**Acceptance Criteria:**
+- Workload as percentage/bar  
+- Colors:
+  - Green (healthy)  
+  - Yellow (approaching limit)  
+  - Red (overloaded)  
+- Drag tasks between members  
+- Filter by sprint/date range  
+
+---
+
+# 5. Time, Budget & Billing
+
+## US-16 | Log Billable Hours
+**User Story:**  
+As a Project Manager, I want to track billable hours.
+
+**Acceptance Criteria:**
+- Manual or timer-based logging  
+- Mark billable/non-billable  
+- Aggregation by task/member/project  
+- Export CSV/PDF  
+
+---
+
+## US-17 | Monitor Budget & Limits
+**User Story:**  
+As a Project Manager, I want to track project budget usage.
+
+**Acceptance Criteria:**
+- Set total hours/cost budget  
+- Alerts at 75% and 90%  
+- Block task assignment when exceeded (override allowed)  
+- Dashboard shows budget vs actual  
+
+---
+
+# 6. Communication & Collaboration
+
+## US-18 | Comment on Tasks
+**User Story:**  
+As a Project Manager, I want to comment and tag members.
+
+**Acceptance Criteria:**
+- Rich text comments with attachments  
+- @mentions trigger notifications  
+- Threaded and timestamped comments  
+- Mark comments as resolution/decision  
+
+---
+
+## US-19 | Announcements
+**User Story:**  
+As a Project Manager, I want to send project-wide announcements.
+
+**Acceptance Criteria:**
+- Compose announcements  
+- Notify via app/email/push  
+- Stored in notice board  
+
+---
+
+## US-20 | Notification Preferences
+**User Story:**  
+As a Project Manager, I want to control notifications.
+
+**Acceptance Criteria:**
+- Notification types:
+  - Task assigned  
+  - Comment added  
+  - Deadline approaching  
+  - Status changed  
+  - Budget alert  
+- Users control preferences  
+- PM sets minimum project rules  
+
+---
+
+
