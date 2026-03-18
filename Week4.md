@@ -425,6 +425,139 @@ As a Project Manager, I want to control notifications.
 - Users control preferences  
 - PM sets minimum project rules  
 
+---------------------------------------------------------------------------------------------
+# Edvin Mehaj
+# 7. Reporting & Dashboard
+
+## US-21 | Project Health Dashboard
+**User Story:**  
+As a Project Manager, I want a single dashboard that shows the overall health of my project, so that I can make fast, informed decisions without navigating multiple screens.
+
+**Dashboard Indicators:**
+
+| Indicator               | Status   |
+|------------------------|----------|
+| Deadline Risk          | ⚠ High   |
+| Team Workload          | ⚠ Medium |
+| Task Completion Rate   | ✓ Good   |
+| Budget Consumption     | 68%      |
+| Overall Project Health | 65%      |
+
+**Acceptance Criteria:**
+- Health score is calculated using:
+  - Completion rate  
+  - Overdue tasks  
+  - Workload  
+  - Budget status  
+- Dashboard updates in real time  
+- PM can drill down into each indicator  
+- Suggested actions displayed:
+  - "Reassign tasks to reduce overload"
+  - "Extend deadline by 2 days"
+  - "Add additional developer to task #54"
+
 ---
+
+## US-22 | Generate Progress Reports
+**User Story:**  
+As a Project Manager, I want to generate weekly or on-demand progress reports, so that I can share project status with stakeholders without manual effort.
+
+**Acceptance Criteria:**
+- Reports include:
+  - Tasks completed  
+  - Tasks remaining  
+  - Hours logged  
+  - Budget used  
+  - Risks  
+- Exportable as PDF or shareable link  
+- PM can schedule automatic weekly reports via email  
+
+---
+
+## US-23 | Sprint & Velocity Tracking
+**User Story:**  
+As a Project Manager, I want to plan sprints and track team velocity, so that I can improve estimation accuracy.
+
+**Acceptance Criteria:**
+- Create sprints with:
+  - Start date  
+  - End date  
+  - Story point goal  
+- Velocity chart shows completed points per sprint  
+- Burndown chart shows remaining work vs. time  
+- Unfinished tasks can be moved to next sprint with one click  
+
+---
+
+# 8. Integrations & Settings
+
+## US-24 | Integrate with External Tools
+**User Story:**  
+As a Project Manager, I want to connect the platform with external tools, so that workflows are seamless.
+
+**Acceptance Criteria:**
+- Integrations include:
+  - Slack  
+  - Microsoft Teams  
+  - Google Calendar  
+  - GitHub  
+  - GitLab  
+  - Figma  
+  - Google Drive  
+- PM configures notification triggers  
+- Two-way sync supported (e.g., GitHub commits linked to tasks)  
+
+---
+
+## US-25 | Project Settings & Permissions
+**User Story:**  
+As a Project Manager, I want full control over project settings and permissions, so that access is secure and appropriate.
+
+**Acceptance Criteria:**
+- Custom roles with permissions:
+  - View  
+  - Edit  
+  - Comment  
+  - Admin  
+- PM can archive or delete projects  
+- Export all project data anytime  
+- Audit log tracks all changes  
+
+---
+
+# 🔄 Main Flow
+
+## UC-07 — Generate Tasks from Meeting Audio
+*(Related: US-09, US-10, US-11)*
+
+**Flow:**
+1. PM navigates to *Meetings* and selects **New Meeting Record**  
+2. PM uploads audio and enters:
+   - Title  
+   - Date  
+   - Attendees  
+3. System transcribes audio  
+4. PM reviews and edits transcript  
+5. AI suggests tasks (assignee, priority, deadline)  
+6. PM approves / edits / rejects suggestions  
+7. Approved tasks created in backlog as *Meeting Action*  
+8. System generates summary:
+   - Decisions  
+   - Risks  
+   - Tasks  
+   - Next Steps  
+9. PM shares summary → team notified  
+
+---
+
+# 🔀 Alternative Flows
+
+- **Record directly:** PM records audio in-browser → continues from transcription  
+- **Approve all:** PM accepts all suggestions instantly  
+- **Quick Extract:** Shortcut modal for fast task extraction without full meeting record  
+
+---
+<img width="591" height="380" alt="image" src="https://github.com/user-attachments/assets/e3f2b990-091f-41f9-a51e-62ca5a8c8b21" />
+<img width="789" height="518" alt="image" src="https://github.com/user-attachments/assets/b1bc2842-6664-48f7-b2dc-4822edea5352" />
 
 
