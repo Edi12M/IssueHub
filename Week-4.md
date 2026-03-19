@@ -190,6 +190,23 @@ I've successfully implemented a complete Issues management view for your IssueHu
 - Emergency response - Quickly identify and address Critical/High-priority system failures that affect multiple projects
 - This separation ensures system admins focus on infrastructure stability and user management while project managers maintain full control over their team assignments and feature development work.
 
+## Users Tab - Vasil
+
+I've implemented a Users management view for the IssueHub admin dashboard.
+This section allows system administrators to monitor and manage all registered users across the platform.
+
+### Use Case: Users Feature for System Admins
+
+- Administrative Scope: The Users view acts as a centralized control panel for system administrators.
+Admins are responsible for managing user accounts, roles, and access levels without directly participating in project development.
+
+### Key Responsibilities:
+
+- Monitor user activity - Keep track of active and inactive users across the system
+- Manage roles and permissions - Assign roles such as Admin, Developer, Manager, and Viewer
+- Maintain system integrity - Deactivate or manage inactive or suspicious accounts
+- Support system growth - Oversee new user registrations and ensure proper role assignment
+- Enforce access control - Ensure users only have access to features and data relevant to their roles
 
 --------------------------------------------------------------------------------------------------------------------
 # Project Management Platform — User Stories
