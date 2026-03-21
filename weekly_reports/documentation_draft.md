@@ -1,7 +1,7 @@
 # IssueHub System Requirements Specification
 
 ---
-![EPOKA University](Images\epokaLogo.png)
+![EPOKA University](..\Images\epokaLogo.png)
 **Faculty of Engineering and Architecture**
 **Department of Computer Engineering**
 **CEN 302-Software Engineering**
