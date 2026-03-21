@@ -1,7 +1,8 @@
 # IssueHub System Requirements Specification
 
 ---
-![EPOKA University](..\Images\epokaLogo.png)
+
+![EPOKA University](../Images/epokaLogo.png)
 **Faculty of Engineering and Architecture**
 **Department of Computer Engineering**
 **CEN 302-Software Engineering**
@@ -17,14 +18,14 @@
 ---
 
 **Prepared by:**
-Edvin Mehaj
-Xhoana Thano
-Nea Metohu
-Arber Zeneli
-Gledis Xhaja
-Vasil Nano
-Klevi Vezi
 
+- Edvin Mehaj
+- Xhoana Thano
+- Nea Metohu
+- Arber Zeneli
+- Gledis Xhaja
+- Vasil Nano
+- Klevi Vezi
 
 ---
 
