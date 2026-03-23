@@ -41,3 +41,34 @@
    - c) Assumptions
    - d) Constraints
    - e) Dependencies
+
+---
+# 1. Executive Summary 
+
+### a) Project Overview
+
+---
+
+### b) Purpose and Scope of this Specification
+
+---
+
+# 2. Product/Service Description
+
+### a) Product Context
+
+---
+
+### b) User Characteristics
+
+---
+
+### c) Assumptions
+
+---
+
+### d) Constraints
+
+---
+
+### e) Dependencies
