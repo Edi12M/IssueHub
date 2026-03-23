@@ -67,9 +67,13 @@ By consolidating project information into a single accessible platform, IssueHub
 
 # 2. Product/Service Description
 
-### a) Product Context
+### a) Product Context - Gledis Xhaja
+IssueHub is a web-based platform built to give organizations a structured and self-contained way to manage projects, track issues, and coordinate team work. It is designed for internal use within a single organization, meaning all data, workflows, and user access remain fully under the organization's control — without relying on external subscription services or adapting to the constraints of general-purpose tools.
+The platform brings together three types of users — System Administrators, Project Managers, and Developers — each with a clearly defined role that shapes how they interact with the system. This separation is intentional. Rather than giving everyone access to everything, IssueHub ensures that each user works within the boundaries of their actual responsibilities, which reduces confusion, protects sensitive project data, and keeps the system organized as teams grow.
+In terms of where IssueHub fits within an organization's day-to-day operations, it acts as the central point of reference for all ongoing work. Project Managers plan and structure work by creating sprints, defining milestones, setting deadlines, and monitoring team capacity. Developers receive their assignments through the platform, update task progress, attach relevant files, and communicate directly within the context of each issue. System Administrators operate in the background, managing user accounts, maintaining access control, and ensuring the platform runs consistently across the organization.
+The system runs entirely in a web browser with no local installation required, making it accessible from any device with an internet connection. All actions go through the application layer, which means security policies, role permissions, and audit logs are enforced consistently regardless of who is using the system or from where.
+IssueHub is currently in the concept and planning phase. The foundation being established prioritizes internal governance, clear role boundaries, and a workflow structure that reflects how real development teams operate — ensuring that when the system is built and deployed, it serves as a reliable and accountable tool for the entire organization.
 
----
 
 ### b) User Characteristics
 
