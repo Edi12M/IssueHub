@@ -104,10 +104,10 @@ Based on the IssueHub context provided, here are the key assumptions underlying 
 
 | # | Assumption |
 |---|------------|
-| 4 | The three defined user roles (System Admin, Project Manager, Developer) accurately reflect the actual roles and responsibilities within target organizations |
-| 5 | Developers will actively update their task progress without requiring excessive manual enforcement or reminders |
-| 6 | System Administrators exist within target organizations with the capacity to manage users, access control, and platform stability |
-| 7 | Users will access the platform from any device with an internet connection rather than defaulting to a single work computer |
+| 1 | The three defined user roles (System Admin, Project Manager, Developer) accurately reflect the actual roles and responsibilities within target organizations |
+| 2 | Developers will actively update their task progress without requiring excessive manual enforcement or reminders |
+| 3 | System Administrators exist within target organizations with the capacity to manage users, access control, and platform stability |
+| 4 | Users will access the platform from any device with an internet connection rather than defaulting to a single work computer |
 
 ---
 
@@ -115,10 +115,10 @@ Based on the IssueHub context provided, here are the key assumptions underlying 
 
 | # | Assumption |
 |---|------------|
-| 8 | The feature set (task creation, assignments, priorities, deadlines, status tracking, comments, attachments, search, notifications) is sufficient to replace existing fragmented workflows |
-| 9 | Role-based access control reduces confusion and protects sensitive data rather than creating friction for users needing cross-role visibility |
-| 10 | A web-based platform with no local installation is a benefit, not a barrier, for target organizations |
-| 11 | Structured workflows (sprints, milestones, capacity planning) match how target teams actually work, rather than forcing a methodology onto them |
+| 1 | The feature set (task creation, assignments, priorities, deadlines, status tracking, comments, attachments, search, notifications) is sufficient to replace existing fragmented workflows |
+| 2 | Role-based access control reduces confusion and protects sensitive data rather than creating friction for users needing cross-role visibility |
+| 3 | A web-based platform with no local installation is a benefit, not a barrier, for target organizations |
+| 4 | Structured workflows (sprints, milestones, capacity planning) match how target teams actually work, rather than forcing a methodology onto them |
 
 ---
 
@@ -126,10 +126,10 @@ Based on the IssueHub context provided, here are the key assumptions underlying 
 
 | # | Assumption |
 |---|------------|
-| 12 | Teams will perceive enough value in IssueHub to fully adopt it rather than defaulting back to existing tools |
-| 13 | Improved visibility into team performance will lead to measurable reductions in operational bottlenecks |
-| 14 | The platform enhances collaboration across departments, meaning teams will actually use it for cross-functional work |
-| 15 | Organizations want internal governance and control over their data rather than relying on external subscription services |
+| 1 | Teams will perceive enough value in IssueHub to fully adopt it rather than defaulting back to existing tools |
+| 2 | Improved visibility into team performance will lead to measurable reductions in operational bottlenecks |
+| 3 | The platform enhances collaboration across departments, meaning teams will actually use it for cross-functional work |
+| 4 | Organizations want internal governance and control over their data rather than relying on external subscription services |
 
 ---
 
@@ -137,10 +137,10 @@ Based on the IssueHub context provided, here are the key assumptions underlying 
 
 | # | Assumption |
 |---|------------|
-| 16 | There is demand for an internally-hosted, self-contained issue tracking solution rather than general-purpose tools like Jira, Asana, or Trello |
-| 17 | Organizations have the infrastructure and willingness to host and maintain an internal platform |
-| 18 | The "single organization" constraint (no multi-tenancy) is acceptable to target customers |
-| 19 | The separation of roles into three distinct types fits the structure of organizations that would adopt this platform |
+| 1 | There is demand for an internally-hosted, self-contained issue tracking solution rather than general-purpose tools like Jira, Asana, or Trello |
+| 2 | Organizations have the infrastructure and willingness to host and maintain an internal platform |
+| 3 | The "single organization" constraint (no multi-tenancy) is acceptable to target customers |
+| 4 | The separation of roles into three distinct types fits the structure of organizations that would adopt this platform |
 
 ---
 
@@ -148,11 +148,11 @@ Based on the IssueHub context provided, here are the key assumptions underlying 
 
 | # | Assumption |
 |---|------------|
-| 20 | A modern web-based architecture can deliver sufficient performance and responsiveness for real-time collaboration features |
-| 21 | Security policies, role permissions, and audit logs can be implemented consistently across all user interactions |
-| 22 | The platform can scale to accommodate growing teams and projects without significant architectural changes |
-| 23 | Browser-based access across any device is technically feasible without compromising functionality or user experience |
-| 24 | Real-time notifications can be implemented reliably across different network conditions and devices |
+| 1 | A modern web-based architecture can deliver sufficient performance and responsiveness for real-time collaboration features |
+| 2 | Security policies, role permissions, and audit logs can be implemented consistently across all user interactions |
+| 3 | The platform can scale to accommodate growing teams and projects without significant architectural changes |
+| 4 | Browser-based access across any device is technically feasible without compromising functionality or user experience |
+| 5 | Real-time notifications can be implemented reliably across different network conditions and devices |
 
 ---
 
