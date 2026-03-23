@@ -82,6 +82,41 @@ IssueHub is currently in the concept and planning phase. The foundation being es
 
 ### b) User Characteristics
 
+IssueHub is designed for internal use within a single organization, serving three distinct user types. Each profile below describes the general characteristics, experience level, and technical expertise relevant to their interaction with the platform.
+
+---
+
+**1. System Administrator**
+
+System Administrators are typically full-time IT or technical operations staff within the organization. They are responsible for maintaining the platform's stability, managing user accounts, enforcing access control policies, and configuring system-wide settings.
+
+- **Role type:** Staff (IT / Operations)
+- **Experience:** Experienced professionals with prior exposure to system administration, user management tools, and internal IT governance. Familiar with concepts such as role-based access control, audit logs, and software lifecycle management.
+- **Technical expertise:** High. Comfortable working with web-based administrative dashboards, managing credentials and authentication policies (including MFA), interpreting audit logs, and configuring platform-level settings. Expected to understand security principles and compliance requirements.
+- **General characteristics:** Detail-oriented, process-driven, and security-conscious. Typically work behind the scenes and interact with the platform less frequently than other user types, but their actions carry the highest level of system impact. Require a reliable, unambiguous interface that surfaces critical information clearly and supports audit accountability.
+
+---
+
+**2. Project Manager**
+
+Project Managers are mid-to-senior level staff responsible for planning, organizing, and overseeing the execution of projects within the organization. They serve as the bridge between high-level organizational goals and the day-to-day work of development teams.
+
+- **Role type:** Staff (Management / Team Lead)
+- **Experience:** Experienced in project coordination, sprint planning, and team supervision. Likely have prior experience using project management tools such as Jira, Trello, Asana, or equivalent platforms. Familiar with agile or hybrid development methodologies.
+- **Technical expertise:** Moderate. Comfortable navigating web-based tools, creating and structuring project workflows, managing task boards, and generating reports. Not expected to have deep software development knowledge, but must understand task lifecycle, priority systems, and milestone tracking.
+- **General characteristics:** Organized, deadline-conscious, and collaborative. Frequently interact with the platform throughout the workday to monitor progress, reassign tasks, update sprint plans, and communicate with developers. Value clear visual overviews of team capacity and project health. May manage multiple concurrent projects and require efficient filtering and search capabilities to stay on top of responsibilities.
+
+---
+
+**3. Developer**
+
+Developers are the primary task executors within the organization — software engineers, testers, or technical contributors who are assigned issues and are responsible for completing them within the defined workflow.
+
+- **Role type:** Staff (Technical / Engineering)
+- **Experience:** Varies from junior to senior level. Likely have prior experience working within ticketing or issue-tracking environments, even if informally. Familiar with development workflows including task statuses, code reviews, and sprint cycles.
+- **Technical expertise:** Moderate to high. Comfortable using web-based tools, uploading files, writing structured comments, and navigating task boards. Accustomed to working within defined workflows and understand version-controlled or milestone-based delivery processes.
+- **General characteristics:** Task-focused and execution-oriented. Interact with the platform regularly to check assignments, update task statuses, log work, and communicate progress through comments. Prefer a clean, low-friction interface that minimizes time spent on administrative overhead and maximizes clarity about what needs to be done and in what order. Access patterns tend to be frequent but narrowly scoped — primarily limited to their own assigned tasks and projects.
+
 ---
 
 ### c) Assumptions - Arbër Zeneli
