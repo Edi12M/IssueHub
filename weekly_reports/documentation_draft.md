@@ -61,7 +61,21 @@ The system supports essential project management features such as task and issue
 
 By consolidating project information into a single accessible platform, IssueHub improves visibility into team performance, reduces operational bottlenecks, and enhances collaboration across departments. Its intuitive web interface allows users to access the system from any device with an internet connection, enabling seamless teamwork in both remote and on-site working environments.  
 
-### b) Purpose and Scope of this Specification
+### b) Purpose and Scope of this Specification - Vasil Nano
+
+**Purpose**
+
+This specification aims to deliver a clear and detailed description of the **IssueHub** system, highlighting its features, functionality, and overall goals. This document acts as a guide for stakeholders, developers, and project managers by outlining how the system is meant to function and the issues it seeks to address. It creates a common comprehension of system needs, user responsibilities, and anticipated actions, guaranteeing consistency during the development and execution phases.
+
+Moreover, this specification directs the design, development, testing, and implementation of IssueHub. Documenting the system's fundamental abilities and limitations lessens uncertainty, facilitates sound decision-making, and guarantees that all participants are aligned with a unified vision of the platform.
+
+**Scope**
+
+This document outlines the design and features of IssueHub as an online internal issue tracking and project management tool. It outlines the definition of user roles—System Administrator, Project Manager, and Employee—and explains how each role engages with the platform. The scope includes essential system functionalities like project creation and oversight, issue tracking, task delegation, workflow management, status updates, commenting, file uploads, and notification features.
+
+The document also covers system behavior concerning user authentication, role-based access control, and the arrangement of data within projects and issues. It describes how users will engage with the system via a web interface and how data will be stored, accessed, and organized.
+
+Nonetheless, this specification excludes external integrations, advanced analytics, or dependencies on third-party systems unless specifically outlined in future project expansions. It centers mainly on providing a dependable and functional internal tool that enhances team collaboration, task clarity, and project management within a company
 
 ---
 
