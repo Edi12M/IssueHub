@@ -337,4 +337,87 @@ Based on the IssueHub context provided, here are the key assumptions underlying 
 - The accuracy of audit logs and security reports is contingent on all user actions being
   performed through the application layer, without direct database access.
 
-### e) Dependencies
+### e) Dependencies    ( Xhoana Thano )
+## 1. System Administrator    
+ 
+- The ability to manage user accounts depends on the Administrator having full system access and users not yet being registered in the platform.
+ 
+- The creation and deactivation of user accounts must happen before any other role can access the system, as Developers and Project Managers depend on the Administrator to provision their accounts.
+ 
+- Assigning organization-wide roles depends on user accounts already existing in the system and the Administrator correctly defining role permissions beforehand.
+ 
+- Monitoring all projects and issues depends on Project Managers having created active projects and Developers having logged activity within them.
+ 
+- Configuring system-wide security settings such as SSO and 2FA depends on the organization's authentication infrastructure being in place and connected to the platform.
+ 
+- Managing billing and subscriptions depends on the organization having an active payment method and the platform plan supporting the required number of users and projects.
+ 
+- Viewing the system-wide audit log depends on all other roles actively performing actions that are recorded by the system.
+ 
+- Managing platform-wide integrations depends on third-party services being authorized and the Administrator having the necessary credentials to connect them.
+ 
+---
+ 
+## 2. Project Manager
+ 
+- The creation of new projects depends on the Project Manager having an active account provisioned by the System Administrator (US-01).
+ 
+- The addition of team members and capacity management depends on those users already having active accounts created by the System Administrator before they can be invited to a project (US-02, US-03).
+ 
+- The creation and assignment of tasks depends on a project being already established and at least one team member being added to it (US-04, US-05).
+ 
+- Setting task priorities and deadlines depends on tasks being created first and the Project Manager having edit permissions over them (US-06, US-07).
+ 
+- Defining task dependencies relies on at least two tasks existing within the same project and the Project Manager identifying their execution relationship (US-08).
+ 
+- The generation of tasks from meeting audio or transcripts depends on the AI processing feature being enabled for the workspace and the Project Manager providing valid audio or text input (US-09, US-10, US-11).
+ 
+- Progress tracking through the Kanban board and timeline views depends on tasks being created, assigned, and actively updated by team members (US-12, US-13).
+ 
+- The identification of delayed and at-risk tasks depends on deadlines being set and team members logging progress updates on their assigned tasks (US-14, US-15).
+ 
+- Logging billable hours and monitoring the budget depends on the Project Manager setting a budget at project creation and team members recording their time on tasks (US-16, US-17).
+ 
+- Communication through comments and announcements depends on team members being added to the project and notification preferences being configured (US-18, US-19, US-20).
+ 
+- The Project Health Dashboard and progress reports depend on ongoing task activity, logged hours, and budget data being continuously updated throughout the project lifecycle (US-21, US-22).
+ 
+- Sprint planning and velocity tracking depend on tasks being created with story points and organized into defined sprint cycles by the Project Manager (US-23).
+ 
+- External tool integrations depend on the Project Manager configuring the connections and the System Administrator having authorized the platform-wide integration settings (US-24, US-25).
+ 
+---
+ 
+## 3. Developer
+ 
+- The ability to log in and access the system depends on the System Administrator having created and activated the Developer's account before their first session (UC-01).
+ 
+- Viewing assigned issues depends on the Project Manager having already created tasks and explicitly assigned them to the Developer. A Developer with no assigned issues will see an empty state (UC-02).
+ 
+- Updating issue status depends on the Developer being the assigned owner of the issue and the issue not being archived or locked by the Project Manager (UC-03).
+ 
+- Adding comments to an issue depends on the Developer having at least read access to the issue and being a member of the project it belongs to (UC-04).
+ 
+- Uploading attachments depends on the issue existing and being in an active, non-archived state. It also depends on the file meeting the system's size and format restrictions enforced by the Administrator (UC-05).
+ 
+- Tracking personal tasks depends on the Project Manager having assigned tasks with defined deadlines and priorities, as tasks without these values cannot be meaningfully sorted or flagged (UC-06).
+ 
+- Searching and filtering issues depends on the Developer being an active member of at least one project. Results are scoped only to projects they belong to, meaning access is controlled by the Project Manager's invitation (UC-07).
+ 
+- Receiving in-app notifications for new assignments depends on the Developer having configured their notification preferences and the platform's notification service being operational.
+ 
+- The ability to mention teammates in comments depends on those teammates being registered users with active accounts in the system.
+ 
+---
+ 
+## 4. Cross-Role Dependencies
+ 
+| Dependency | From | To |
+|---|---|---|
+| Account must exist before login | System Administrator | Developer / Project Manager |
+| Project must exist before tasks | Project Manager | Developer |
+| Tasks must be assigned before Developer can act | Project Manager | Developer |
+| Budget must be set before tracking | Project Manager | Billing System |
+| Integrations must be authorized | System Administrator | Project Manager |
+| Issues must be reported before Admin monitors | Developer / PM | System Administrator |
+| Roles must be assigned before access is granted | System Administrator | All Roles |
