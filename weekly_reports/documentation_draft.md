@@ -94,7 +94,7 @@ The system runs entirely in a web browser with no local installation required, m
 IssueHub is currently in the concept and planning phase. The foundation being established prioritizes internal governance, clear role boundaries, and a workflow structure that reflects how real development teams operate — ensuring that when the system is built and deployed, it serves as a reliable and accountable tool for the entire organization.
 
 
-### b) User Characteristics
+### b) User Characteristics - Nea Metohu
 
 IssueHub is designed for internal use within a single organization, serving three distinct user types. Each profile below describes the general characteristics, experience level, and technical expertise relevant to their interaction with the platform.
 
