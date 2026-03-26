@@ -1,0 +1,31 @@
+Extended Use Case: UC-03 – Update Issue Status
+Developer navigates to dashboard or issue list
+Selects an assigned issue
+System displays issue details page
+Developer clicks the status badge
+System displays available status options
+Developer selects a new status (e.g., In Progress, Blocked, Done)
+System optionally prompts for a transition note
+Developer enters a note (optional but encouraged)
+Developer clicks Confirm
+
+
+
+Sub goal:Update Issue Status *Use Case ID: UC-03 
+
+*Use Case Name: Update Issue Status 
+*Actor: Developer 
+*Description: The developer changes the status of an assigned issue to reflect current progress. 
+*Preconditions: Developer is logged in. The issue is assigned to them and is not archived. 
+*Main Flow 
+1. Developer opens the issue detail page. 
+2. Clicks the current status badge to open the status dropdown. 
+3. Selects the new status (e.g. In Progress, Blocked, Done). 
+4. Optionally types a transition note explaining the change. 
+5. Clicks 'Confirm'. System saves the change and logs it in the issue history. 
+*Alternative Flows 
+3a. Developer selects 'Done' but sub-tasks are still open → system warns and requires confirmation. 
+5a. Network error occurs → system shows an error and the status remains unchanged. 
+*Postconditions Issue status is updated; the change appears in the history log; the project manager is notified. 
+*Restrictions Developers may only update statuses on issues assigned to them. Archived issues are read-only.
+
