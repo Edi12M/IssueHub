@@ -1,4 +1,6 @@
-Extended Use Case: UC-03 – Update Issue Status
+Extended User Scenario
+Update Issue Status
+
 Developer navigates to dashboard or issue list
 Selects an assigned issue
 System displays issue details page
@@ -11,7 +13,7 @@ Developer clicks Confirm
 
 
 
-Sub goal:Update Issue Status *Use Case ID: UC-03 
+Sub goal:Update Issue Status
 
 *Use Case Name: Update Issue Status 
 *Actor: Developer 
