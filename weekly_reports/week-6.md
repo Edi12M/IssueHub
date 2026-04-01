@@ -1334,7 +1334,294 @@
 
 
 
-
+# Functional Requirements - Arbër Zeneli, Klevi Vezi, Vasil Nano
+ 
+## FR Section 1 — Authentication & Access Control
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-AUTH-01 | User Login | The system shall allow users to authenticate using a registered email and password. On successful validation, users are redirected to their role-specific dashboard. |
+| FR-AUTH-02 | Role-Based Access Control | The system shall enforce access permissions based on the user's assigned role (Developer, Project Manager, System Administrator, Viewer). Each role shall have a distinct set of permitted actions. |
+| FR-AUTH-03 | Account Lockout | The system shall lock a standard user account for 15 minutes after 5 consecutive failed login attempts, and an admin account for 30 minutes after 5 failed attempts. |
+| FR-AUTH-04 | Account Deactivation | The system shall allow an administrator to deactivate a user account, immediately revoking access without deleting associated data. |
+| FR-AUTH-05 | Multi-Factor Authentication | The system shall support MFA (e.g. TOTP or email OTP) as a configurable requirement, mandatory for System Administrator accounts. |
+| FR-AUTH-06 | Session Timeout | The system shall automatically terminate inactive sessions after a configurable period (default 30 minutes for admin accounts). |
+| FR-AUTH-07 | Single Sign-On (SSO) | The system shall support SSO authentication as a configurable option, managed through the System Configuration panel. |
+ 
+---
+ 
+## FR Section 2 — User Management
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-USER-01 | Create User Account | The system shall allow an administrator to create new user accounts by providing full name, email, and an initial role. A temporary password and activation email shall be generated automatically. |
+| FR-USER-02 | Update User Information | The system shall allow administrators to edit user profile fields (name, email, department). Changes shall be reflected immediately across the platform. |
+| FR-USER-03 | Assign and Change Roles | The system shall allow administrators to change a user's system role at any time. The user's access permissions shall update immediately upon role change. |
+| FR-USER-04 | Remove User Account | The system shall allow administrators to permanently delete a user account following a confirmation prompt. All associated data shall be handled per the data retention policy. |
+| FR-USER-05 | User Search | The system shall allow administrators and PMs to search for users by name or email address within the User Management panel and the project member search. |
+| FR-USER-06 | Notification Preferences | The system shall allow each user to configure notification preferences per event type (task assigned, comment added, deadline approaching, status changed, budget alert) and per delivery channel (in-app, email, push). |
+ 
+---
+ 
+## FR Section 3 — Project Management
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-PROJ-01 | Create Project | The system shall allow a Project Manager to create a project by specifying name, description, goals, start and end dates, visibility level (Private / Team / Organisation), and a methodology template (Scrum, Kanban, Waterfall). A unique Project ID shall be auto-generated on creation. |
+| FR-PROJ-02 | Add Team Members | The system shall allow the PM to search for registered users and add them to a project with an assigned role (Developer, Designer, QA, Viewer, Co-Manager). Invited members shall receive an in-app and email notification. |
+| FR-PROJ-03 | Manage Member Roles | The system shall allow the PM to change a member's project role or remove them from the project at any time. |
+| FR-PROJ-04 | Project Settings & Permissions | The system shall provide a Project Settings panel where the PM can configure visibility, methodology, member roles, notification rules, and integration preferences, and can archive the project or transfer ownership. |
+| FR-PROJ-05 | Archive or Delete Project | The system shall allow administrators to archive a project (read-only, data retained) or permanently delete it after a confirmation step. Affected users shall be notified in both cases. |
+| FR-PROJ-06 | Platform-Wide Project Overview | The system shall provide an administrator view that lists all projects on the platform, showing name, PM, status (Active / Inactive / Archived), member count, and creation date. |
+| FR-PROJ-07 | Project Visibility Control | The system shall enforce project visibility settings so that members outside the project's scope cannot access its workspace, tasks, or data. |
+ 
+---
+ 
+## FR Section 4 — Task & Issue Management
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-TASK-01 | Create Task | The system shall allow the PM to create tasks by specifying title, description, type (Feature, Bug, Improvement, Research, Meeting Action), and acceptance criteria. Optional fields include subtasks, checklists, attachments, and links to a sprint or milestone. A unique Task ID shall be auto-generated. |
+| FR-TASK-02 | Assign Task | The system shall allow the PM to assign a task to one or more team members. The system shall warn the PM if the assignment would exceed a member's capacity. Assignees shall receive in-app and email notifications. |
+| FR-TASK-03 | Set Task Priority | The system shall allow tasks to be assigned a priority level (Critical, High, Medium, Low) displayed with colour coding. Bulk priority updates shall be supported via a multi-select toolbar. |
+| FR-TASK-04 | Set Deadlines & Milestones | The system shall allow the PM to set start and due dates on tasks using a date picker, and to create milestones that group related tasks under a shared target date. |
+| FR-TASK-05 | Task Dependencies | The system shall allow tasks to be linked with a relationship type (Blocks, Blocked By, Relates To, Duplicates). Blocked tasks shall not transition to "In Progress" without a manual override. |
+| FR-TASK-06 | Update Issue Status | The system shall allow assigned developers to change the status of an issue (e.g. To Do → In Progress → In Review → Done). An optional transition note shall be recorded with each change. |
+| FR-TASK-07 | View Issue History | The system shall maintain a read-only, chronological activity log for every issue, recording status changes, assignment changes, comments, attachments, and field edits — each with actor name and timestamp. |
+| FR-TASK-08 | Filter and Sort Tasks | The system shall allow tasks to be filtered by status, priority, label, assignee, and date range, and sorted by due date or priority level. Filter results shall update without a full page reload. |
+| FR-TASK-09 | Subtasks and Checklists | The system shall support nested subtasks and checklist items within a task, and shall warn the user if a parent task is closed while subtasks remain open. |
+| FR-TASK-10 | Task Labels | The system shall allow tasks to be tagged with one or more labels (e.g. "bug", "frontend", "urgent") that can be used for filtering and categorisation. |
+ 
+---
+ 
+## FR Section 5 — Kanban, Timeline & Views
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-VIEW-01 | Kanban Board | The system shall provide a Kanban view with customisable columns (default: Backlog, To Do, In Progress, In Review, Done). Tasks shall be movable between columns via drag-and-drop. Each task card shall display assignee, priority, due date, and task ID. |
+| FR-VIEW-02 | Gantt / Timeline View | The system shall provide a Timeline view rendering tasks as horizontal bars on a calendar axis. Dependency links shall be shown as connecting lines. The PM shall be able to adjust task dates by dragging bar edges. The critical path shall be highlighted. |
+| FR-VIEW-03 | Personal Task Dashboard | The system shall provide each developer with a personal task view grouping their tasks by Overdue, Due Today, Upcoming, and Completed, with sort and filter controls. |
+| FR-VIEW-04 | Workload View | The system shall provide a Workload view showing each team member's task load as a colour-coded percentage bar (green / yellow / red). The PM shall be able to drag tasks between members to rebalance workload in this view. |
+| FR-VIEW-05 | Capacity View | The system shall display each member's weekly available hours, allocated hours, and remaining hours. A warning shall appear when a member is at or above 100% capacity. |
+| FR-VIEW-06 | Risk Panel | The system shall automatically flag overdue tasks in red and label tasks with no recent progress as "At Risk" on the board and in the Risk Panel. |
+| FR-VIEW-07 | Sprint Board | The system shall provide a sprint-scoped board view for Scrum projects, displaying only the tasks committed to the active sprint. |
+ 
+---
+ 
+## FR Section 6 — Comments & Collaboration
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-COLLAB-01 | Add Comments | The system shall allow all project members to add rich-text comments to any task or issue, including file attachments. Comments shall be stored with a timestamp and displayed in threaded format. |
+| FR-COLLAB-02 | Edit and Delete Own Comments | The system shall allow users to edit or delete their own comments. Deletion shall require a confirmation dialog. Edit history shall be preserved internally for audit purposes. |
+| FR-COLLAB-03 | @Mentions | The system shall allow users to @mention team members in comments. Mentioned users shall receive an in-app and email notification with a direct link to the comment. |
+| FR-COLLAB-04 | Mark Comment as Resolution/Decision | The system shall allow comments to be flagged as a Resolution or Decision, making key outcomes easily retrievable within the task's comment thread. |
+| FR-COLLAB-05 | Announcements | The system shall allow the PM to compose and publish project-wide announcements via selected delivery channels (in-app, email, push notification). All announcements shall be stored on the project's notice board. |
+ 
+---
+ 
+## FR Section 7 — Attachments & File Management
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-FILE-01 | Upload Attachments | The system shall allow users to upload files to an issue via a button or drag-and-drop. Uploaded files shall be stored and listed in the Attachments section with name and upload timestamp. |
+| FR-FILE-02 | Download Attachments | The system shall allow any project member to download attachments from an issue's Attachments section. |
+| FR-FILE-03 | Inline Image Preview | The system shall automatically render thumbnail previews for image attachments (PNG, JPG, GIF). Clicking a thumbnail shall expand it to full size in a modal view. |
+| FR-FILE-04 | File Type and Size Validation | The system shall reject file uploads that exceed the 10 MB size limit or are of a disallowed type (e.g. .exe). An appropriate error message shall be displayed. |
+ 
+---
+ 
+## FR Section 8 — AI-Powered Meeting Features
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-AI-01 | Generate Tasks from Audio | The system shall allow the PM to upload a meeting audio file (MP3, WAV, M4A) or record directly in-browser. The system shall transcribe the audio via speech-to-text and use AI to extract action items, owners, and priorities, presenting them for PM review and approval before task creation. |
+| FR-AI-02 | Generate Tasks from Transcript | The system shall allow the PM to upload a .txt or .docx transcript, or paste text directly. AI shall analyse the content to detect action items, owners, and deadlines, presenting suggestions for PM review and approval. |
+| FR-AI-03 | Meeting Summary & Decision Log | The system shall automatically generate a structured meeting summary after audio/transcript processing, covering Decisions Made, Risks Identified, Tasks Created, and Next Meeting Points. The PM shall be able to edit and share the summary. |
+| FR-AI-04 | Meeting Archive | The system shall store meeting audio files, transcripts, and generated summaries within the project for future reference, accessible from the Meetings section. |
+ 
+---
+ 
+## FR Section 9 — Notifications
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-NOTIF-01 | In-App Notifications | The system shall deliver real-time in-app notifications for key events (task assigned, @mention, status change, deadline approaching, budget alert). The notification bell shall display a badge count of unread notifications. |
+| FR-NOTIF-02 | Email Notifications | The system shall send email notifications for the same triggering events as in-app notifications, respecting each user's notification preferences. |
+| FR-NOTIF-03 | Push Notifications | The system shall support push notifications as an optional delivery channel, configurable per user and event type. |
+| FR-NOTIF-04 | Daily Digest | The system shall send the PM a daily digest email summarising overdue and at-risk tasks alongside suggested corrective actions. |
+| FR-NOTIF-05 | Announcement Notifications | The system shall deliver project-wide announcements via all channels selected by the PM at the time of publishing. |
+ 
+---
+ 
+## FR Section 10 — Time Tracking & Budget
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-TIME-01 | Log Hours | The system shall allow users to log time on a task manually (hours and minutes) or using a built-in timer. Each entry shall be marked as billable or non-billable. |
+| FR-TIME-02 | Aggregate Hours | The system shall aggregate logged hours and display totals by task, team member, and project. |
+| FR-TIME-03 | Set Project Budget | The system shall allow the PM to set a total hours or cost budget for a project from the Settings panel. |
+| FR-TIME-04 | Budget Tracking & Alerts | The system shall track budget vs. actual spend in real time and send automated alerts to the PM at 75% and 90% budget consumption. Task assignment shall be blocked when the budget is fully exceeded, with a manual override option. |
+| FR-TIME-05 | Export Hours Data | The system shall allow hours data to be exported in CSV and PDF formats. |
+ 
+---
+ 
+## FR Section 11 — Reporting & Analytics
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-REP-01 | Progress Report Generation | The system shall allow the PM to generate a project progress report (weekly summary or custom date range) covering task completion, team activity, budget usage, and milestone status. Reports shall be exportable as PDF or shareable via a link. |
+| FR-REP-02 | Scheduled Reports | The system shall allow the PM to schedule automatic weekly report delivery to specified email addresses. |
+| FR-REP-03 | Project Health Dashboard | The system shall provide a consolidated health dashboard showing task completion rate, team workload, budget usage, overdue items, upcoming deadlines, and an overall health score. Each metric shall be drillable. |
+| FR-REP-04 | Usage Analytics (Admin) | The system shall provide administrators with a Usage Analytics dashboard showing active users, storage consumption, API usage, and login frequency, with automatic flagging of anomalies or policy violations. |
+| FR-REP-05 | Audit Log (Admin) | The system shall maintain an immutable, chronological audit log of all significant system actions (user creations, role changes, login attempts, setting changes, project deletions), each entry including timestamp, actor, action type, affected entity, and IP address. |
+ 
+---
+ 
+## FR Section 12 — Sprint Planning
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-SPRINT-01 | Create Sprint | The system shall allow the PM to create a sprint with defined start and end dates and drag tasks from the backlog into the sprint. |
+| FR-SPRINT-02 | Velocity Tracking | The system shall calculate team velocity (story points completed) at the end of each sprint and display historical velocity trends to inform future sprint estimations. |
+| FR-SPRINT-03 | Backlog Management | The system shall maintain a project backlog from which tasks can be moved into sprints. Tasks not in a sprint shall remain in the backlog. |
+ 
+---
+ 
+## FR Section 13 — Integrations & System Configuration
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| FR-INT-01 | External Tool Integration | The system shall support OAuth-based integration with external tools (e.g. Slack, GitHub, Google Drive). Connected integrations shall allow automatic syncing of events (e.g. code commits, messages) with project tasks. |
+| FR-INT-02 | System Configuration Panel | The system shall provide an administrator-only System Configuration panel for modifying platform-wide settings including authentication methods, session timeouts, default notification rules, and storage limits. |
+| FR-INT-03 | Organisational Policies | The system shall allow administrators to define and enforce platform-wide policies including password complexity, data retention periods, and permitted file types. Policies shall apply automatically across all users and projects. |
+| FR-INT-04 | Custom Workflows | The system shall provide a visual workflow editor allowing administrators to create custom issue statuses, define allowed transitions between statuses, and optionally add automation rules. Custom workflows shall be assignable to one or more projects. |
+ 
+---
+ 
+---
+ 
+# Non-Functional Requirements
+ 
+## NFR Section 1 — Performance
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| NFR-PERF-01 | Login Response Time | User authentication (login) shall complete and redirect the user within 2 seconds under normal load conditions. |
+| NFR-PERF-02 | Issue List Load Time | The assigned issues list shall load and render within 1.5 seconds for up to 500 issues. |
+| NFR-PERF-03 | Status Update Persistence | A task or issue status change shall be persisted to the database and reflected in the UI within 1 second of confirmation. |
+| NFR-PERF-04 | Filter Response Time | Applying any filter or sort on task or issue lists shall update the displayed results without a full page reload and within 500 ms. |
+| NFR-PERF-05 | Search Response Time | Keyword search across all projects shall return results within 1 second. Results shall be paginated at 50 items per page. |
+| NFR-PERF-06 | Report Generation Time | Progress report generation (for any date range) shall complete within 5 seconds. |
+| NFR-PERF-07 | Project Creation Time | A new project shall be created and the PM redirected to its workspace within 2 seconds of submission. |
+| NFR-PERF-08 | Dashboard Real-Time Refresh | The Project Health Dashboard and Workload View shall reflect the latest data in real time, with a maximum lag of 5 seconds under normal conditions. |
+| NFR-PERF-09 | Audio Transcription Start Time | Speech-to-text transcription shall begin processing within 10 seconds of audio upload completion. |
+| NFR-PERF-10 | Workflow Assignment Effect | Changes to an assigned workflow shall take effect for all project members within 5 seconds of the administrator saving the configuration. |
+ 
+---
+ 
+## NFR Section 2 — Security
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| NFR-SEC-01 | Password Encryption | All user passwords shall be stored using a strong one-way hashing algorithm (e.g. bcrypt with an appropriate cost factor). Plaintext passwords shall never be stored or logged. |
+| NFR-SEC-02 | Transport Security | All communication between client and server shall be encrypted using HTTPS (TLS 1.2 or higher). HTTP connections shall be automatically redirected to HTTPS. |
+| NFR-SEC-03 | Role Enforcement | The system shall enforce role-based access control on every API endpoint and UI action. Users shall not be able to access or modify resources outside their permitted scope, regardless of direct URL manipulation. |
+| NFR-SEC-04 | Admin MFA | Multi-factor authentication shall be required for all System Administrator accounts. |
+| NFR-SEC-05 | Admin Action Logging | All actions performed by System Administrator accounts shall be recorded in the audit log, including timestamp, action type, affected entity, and originating IP address. |
+| NFR-SEC-06 | Audit Log Immutability | The audit log shall be read-only. No user, including administrators, shall be able to modify or delete audit log entries. Log data shall be retained for a minimum of 12 months. |
+| NFR-SEC-07 | Data Isolation | Users shall only be able to view or interact with data from projects they are members of. Cross-project data leakage shall not be possible through any interface. |
+| NFR-SEC-08 | Sensitive Data Masking | Sensitive fields (passwords, API keys, tokens) shall never be exposed in API responses, UI, or system logs. |
+| NFR-SEC-09 | File Upload Security | Uploaded files shall be validated for type and size server-side before storage. Executable and scripting file types (e.g. .exe, .sh, .php) shall be rejected. Stored files shall be scanned for malware. |
+| NFR-SEC-10 | Session Security | User sessions shall use secure, HTTP-only, SameSite cookies. Sessions shall expire after a configurable inactivity timeout (default 30 minutes for admin, configurable for standard users). |
+ 
+---
+ 
+## NFR Section 3 — Reliability & Availability
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| NFR-REL-01 | System Uptime | The platform shall maintain a minimum uptime of 99.5% (excluding scheduled maintenance windows), measured on a monthly basis. |
+| NFR-REL-02 | Data Durability | All project, task, and user data shall be persisted durably. Database backups shall be performed at least daily, with a recovery point objective (RPO) of no more than 24 hours. |
+| NFR-REL-03 | Graceful Error Handling | In the event of a transient error (e.g. network failure during a status update), the system shall display a meaningful error message and preserve the prior state. The user shall be offered a retry option where applicable. |
+| NFR-REL-04 | Budget Exceeded Blocking | When a project budget is fully exceeded, the task assignment function shall be reliably blocked for all users except those with PM-level manual override permission. |
+| NFR-REL-05 | Notification Delivery | In-app notifications shall be delivered within 5 seconds of the triggering event. Email and push notifications shall be delivered within 30 seconds under normal load. |
+| NFR-REL-06 | Report Scheduling Accuracy | Scheduled progress reports shall be delivered within 5 minutes of the configured delivery time. |
+ 
+---
+ 
+## NFR Section 4 — Usability
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| NFR-USE-01 | Responsive Design | The platform shall be usable on modern desktop browsers (Chrome, Firefox, Edge, Safari) at standard screen resolutions. Core task management features shall remain accessible on tablet-sized screens. |
+| NFR-USE-02 | Drag-and-Drop Interaction | Drag-and-drop interactions on the Kanban board, Gantt timeline, and Workload view shall be smooth and provide immediate visual feedback without requiring a page reload. |
+| NFR-USE-03 | Colour-Coded Status Indicators | All priority levels, capacity states, and risk flags shall use a consistent colour-coding scheme (e.g. red = critical/overdue/overloaded, yellow = warning/approaching limit, green = healthy) applied uniformly across all views. |
+| NFR-USE-04 | Empty State Messaging | When a list, board, or dashboard section has no data to display, the system shall present a descriptive empty-state message explaining the condition and, where appropriate, a prompt for the next action. |
+| NFR-USE-05 | Confirmation Dialogs | All destructive or irreversible actions (account deletion, project deletion, comment deletion) shall require a confirmation dialog before execution. |
+| NFR-USE-06 | Inline Editing | Where supported (e.g. editing comments, adjusting Gantt bar dates), editing shall occur inline without navigating to a separate page. |
+| NFR-USE-07 | Upload Progress Feedback | File upload operations shall display a progress bar. Errors (size exceeded, disallowed type) shall be communicated immediately with a clear message. |
+| NFR-USE-08 | Accessibility | The platform shall comply with WCAG 2.1 Level AA accessibility guidelines, including keyboard navigability, screen-reader-compatible markup, and sufficient colour contrast ratios. |
+ 
+---
+ 
+## NFR Section 5 — Scalability & Capacity
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| NFR-SCAL-01 | Concurrent Users | The system shall support a minimum of 500 concurrent active users without degradation of response times defined in the performance requirements. |
+| NFR-SCAL-02 | File Storage Capacity | Per-project file storage shall be configurable by the administrator. The default allowance shall be sufficient to support typical project volumes; storage limits shall be enforceable per organisation. |
+| NFR-SCAL-03 | Audio File Size | The AI meeting transcription feature shall support audio files of up to 2 hours in duration and shall handle files of corresponding size without timeout. |
+| NFR-SCAL-04 | Workflow Complexity | The custom workflow editor shall support up to 20 custom statuses per workflow without performance degradation in the workflow editor or on the issue board. |
+| NFR-SCAL-05 | Search Scalability | The global search function shall return results within 1 second across datasets of up to 100,000 issues per organisation. |
+ 
+---
+ 
+## NFR Section 6 — Maintainability & Extensibility
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| NFR-MAIN-01 | Integration Architecture | External tool integrations (Slack, GitHub, Google Drive, etc.) shall be implemented through a standardised OAuth-based adapter layer, enabling new integrations to be added without changes to core platform logic. |
+| NFR-MAIN-02 | Workflow Changes Without Disruption | Modifications to a workflow that is actively in use shall not corrupt or invalidate issues currently assigned to statuses within that workflow. Active issues shall remain in their current status; new transitions shall apply going forward. |
+| NFR-MAIN-03 | Configuration Auditability | All system configuration changes made by administrators shall be logged in the audit log, enabling rollback analysis and compliance review. |
+| NFR-MAIN-04 | Policy Enforcement Consistency | Organisational policies (password rules, file types, retention periods) shall be enforced automatically at every relevant point in the system without requiring manual intervention per user or project. |
+ 
+---
+ 
+## NFR Section 7 — Data Integrity & Compliance
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| NFR-DATA-01 | Unique Identifier Generation | All auto-generated IDs (Project ID, Task ID, User ID) shall be globally unique within the platform and shall never be reused after deletion. |
+| NFR-DATA-02 | Immutable History | Issue activity logs and audit logs shall be append-only. No user action shall be able to modify or remove historical entries. |
+| NFR-DATA-03 | Data Retention | Audit log data shall be retained for a minimum of 12 months. Completed task data shall be retained for at least the duration of the project plus a configurable archival period. |
+| NFR-DATA-04 | Deletion Irreversibility | Permanent deletion of projects, user accounts, or issues shall be irreversible. The system shall present clear warnings to this effect prior to confirmation. |
+| NFR-DATA-05 | Timestamp Accuracy | All timestamps recorded in activity logs, audit logs, comments, and notifications shall reflect the correct UTC time and shall be displayed to users in their configured local timezone. |
+| NFR-DATA-06 | Comment Character Limit Enforcement | The system shall enforce a maximum of 5,000 characters per comment at both the client and server level to ensure data consistency. |
+ 
+---
+ 
+## NFR Section 8 — Notification Timeliness
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| NFR-NOTIF-01 | Assignment Notification Latency | Notifications triggered by task assignments shall be delivered to the assignee's in-app notification panel within 5 seconds of the assignment being saved. |
+| NFR-NOTIF-02 | Member Invitation Notification | When a user is added to a project, the invitation notification shall be delivered within 10 seconds. |
+| NFR-NOTIF-03 | Announcement Delivery | Project-wide announcements shall be delivered to all selected channels within 10 seconds of publication. |
+| NFR-NOTIF-04 | Budget Alert Timeliness | Budget threshold alerts (75%, 90%) shall fire in real time at the moment the threshold is crossed, with no more than 5 seconds of lag. |
+ 
+---
+ 
+## NFR Section 9 — Interoperability
+ 
+| ID | Requirement Name | Description |
+|----|-----------------|-------------|
+| NFR-INTER-01 | Export Format Support | Progress reports and hours data shall be exportable in both PDF and CSV formats, compatible with standard spreadsheet and document viewers. |
+| NFR-INTER-02 | Audio Format Support | The meeting transcription feature shall accept MP3, WAV, and M4A audio formats. Unsupported formats shall result in a clear format error message. |
+| NFR-INTER-03 | Transcript Document Support | The meeting transcript upload feature shall accept .txt and .docx formats, in addition to plain-text paste input. |
+| NFR-INTER-04 | Attachment Format Support | The permitted attachment types for issues and tasks shall include at minimum: .jpg, .png, .gif, .pdf, .doc, .docx, .xls, .xlsx, .zip, and .txt. |
+ 
+---
 
 
 
