@@ -75,7 +75,709 @@
 | SA_11 | Monitor user activity and usage | System Administrator: The admin reviews the Activity Logs panel, which records all user actions (logins, task updates, file uploads, role changes) with timestamps and user IDs. The admin can filter logs by user, date, or event type to investigate unusual or unauthorised behaviour. |
 | SA_12 | Ensure proper system usage | System Administrator: The admin uses the Usage Analytics dashboard to review metrics such as active users, storage consumption, API usage, and login frequency. Anomalies or policy violations are flagged automatically, and the admin can take corrective action directly from the dashboard. |
 
-markdown
+# Extended User Scenarios - Edvin Mehaj
+
+### PM_01 - Create Project
+
+**Main Flow**
+
+1. PM navigates to the main dashboard and clicks **"New Project"**.
+2. PM fills in the project name, description, and goals.
+3. PM sets the project start and end dates using the date picker.
+4. PM selects the visibility level: **Private**, **Team**, or **Organisation**.
+5. PM selects a methodology template: **Scrum**, **Kanban**, or **Waterfall**.
+6. PM clicks **"Create Project"**.
+7. System auto-generates a unique Project ID and creates the project workspace.
+8. PM is redirected to the newly created project dashboard.
+
+---
+
+### PM_02 - Add Team Members
+
+**Main Flow**
+
+1. PM opens the project and navigates to the **Members** panel.
+2. PM uses the search field to find users by name or email.
+3. PM selects one or more users from the search results.
+4. PM assigns a role to each selected user: **Developer**, **Designer**, **QA**, **Viewer**, or **Co-Manager**.
+5. PM clicks **"Add Members"**.
+6. System sends an in-app and email notification to each invited user.
+7. New members appear in the Members panel with their assigned roles.
+
+---
+
+### PM_03 - Manage Team Availability & Capacity
+
+**Main Flow**
+
+1. PM navigates to the **Capacity View** from the dashboard or task assignment panel.
+2. System displays each member's: weekly available hours, currently allocated hours, and remaining hours.
+3. PM reviews the capacity data for all team members.
+4. PM identifies any members approaching or exceeding their capacity.
+5. If needed, the PM reassigns tasks to balance the workload.
+
+---
+
+### PM_04 - Create Tasks
+
+**Main Flow**
+
+1. PM clicks **"New Task"** from the project board or task list.
+2. PM fills in the task title and description.
+3. PM selects a task type: **Feature**, **Bug**, **Improvement**, **Research**, or **Meeting Action**.
+4. PM writes the acceptance criteria.
+5. PM optionally adds subtasks, checklist items, and file attachments.
+6. PM links the task to a project, sprint, or milestone.
+7. PM clicks **"Save Task"**.
+8. System auto-generates a unique Task ID and adds the task to the backlog.
+
+---
+
+### PM_05 - Assign Tasks
+
+**Main Flow**
+
+1. PM opens the task detail view.
+2. PM clicks the **Assignee** selector.
+3. PM searches for and selects one or more team members.
+4. PM saves the assignment.
+5. System sends in-app and email notifications to the assigned members.
+
+---
+
+### PM_06 - Set Task Priority
+
+**Main Flow**
+
+1. PM opens a task.
+2. PM clicks the **Priority** dropdown.
+3. PM selects a priority level: **Critical**, **High**, **Medium**, or **Low** (displayed with colour coding).
+4. System saves the priority and updates the task card immediately.
+
+---
+
+### PM_07 - Set Deadlines & Milestones
+
+**Main Flow**
+
+1. PM opens a task and clicks the **Start Date** and **Due Date** fields.
+2. PM selects dates using the date picker.
+3. PM saves the task.
+4. To create a milestone, PM navigates to the **Milestones** section and clicks **"New Milestone"**.
+5. PM fills in the milestone name, target date, and links relevant tasks.
+6. System saves the milestone and links the tasks.
+
+---
+
+### PM_08 - Link & Depend Tasks
+
+**Main Flow**
+
+1. PM opens a task and navigates to the **Dependencies** panel.
+2. PM clicks **"Add Dependency"** and searches for the related task.
+3. PM selects a relationship type: **Blocks**, **Blocked By**, **Relates To**, or **Duplicates**.
+4. PM saves the dependency.
+5. System updates the Gantt view to show the dependency as a connecting line between tasks.
+
+---
+
+### PM_09 - Generate Tasks from Meeting Audio
+
+**Main Flow**
+
+1. PM navigates to the **Meetings** section and clicks **"Upload Audio"** or **"Record"**.
+2. PM uploads an audio file or records directly in the platform.
+3. System transcribes the audio using speech-to-text processing.
+4. AI analyses the transcript to extract action items, responsible owners, and priorities.
+5. System presents the suggested tasks in a review panel.
+6. PM reviews each suggestion, edits if necessary, and approves or rejects individual items.
+7. PM clicks **"Confirm & Create Tasks"**.
+8. System creates the approved tasks in the project and stores the audio file and transcript.
+
+---
+
+### PM_10 - Generate Tasks from Meeting Transcript
+
+**Main Flow**
+
+1. PM navigates to the **Meetings** section and selects **"Upload Transcript"** or **"Paste Text"**.
+2. PM provides the transcript content.
+3. AI analyses the text to detect action items, responsible owners, and deadlines.
+4. System presents the suggested tasks in a review panel.
+5. PM reviews, edits if necessary, and approves each task.
+6. PM clicks **"Confirm & Create Tasks"**.
+7. System creates the approved tasks and stores the transcript in the project.
+
+---
+
+### PM_11 - Summarize Meeting & Log Decisions
+
+**Main Flow**
+
+1. After processing, the system automatically generates a structured summary containing:
+   - Decisions Made
+   - Risks Identified
+   - Tasks Created
+   - Next Meeting Points
+2. PM reviews the generated summary.
+3. PM edits any section if needed.
+4. PM clicks **"Save & Share"**.
+5. System stores the summary in the project's meeting log.
+6. PM optionally shares the summary directly with selected stakeholders.
+
+---
+
+### PM_12 - Kanban Board
+
+**Main Flow**
+
+1. PM opens the **Kanban View** from the project navigation.
+2. System displays tasks organised across columns: **Backlog**, **To Do**, **In Progress**, **In Review**, **Done**.
+3. Each task card shows: assignee, priority, due date, and task ID.
+4. PM drags a task card from one column to another to update its status.
+5. System saves the status change and notifies relevant team members.
+
+---
+
+### PM_13 - Timeline / Gantt View
+
+**Main Flow**
+
+1. PM switches to the **Timeline View** from the project navigation.
+2. System renders all tasks as horizontal bars across a calendar axis.
+3. Dependency lines connect related tasks.
+4. PM drags the edges of a task bar to adjust its start or end date.
+5. System highlights the **critical path** - the chain of tasks that directly impacts the project end date.
+
+---
+
+### PM_14 - Identify Delayed & At-Risk Tasks
+
+**Main Flow**
+
+1. PM opens the **Risk Panel** or project board.
+2. System automatically flags overdue tasks in **red**.
+3. Tasks with no recent progress updates are labelled **"At Risk"**.
+4. PM reviews the flagged tasks and determines corrective action.
+5. A **daily digest email** is sent to the PM summarising delayed items and suggested corrective actions.
+
+---
+
+### PM_15 - Monitor Team Workload
+
+**Main Flow**
+
+1. PM opens the **Workload View** from the project dashboard.
+2. System shows each member's task load as a percentage bar:
+   - **Green** = healthy load
+   - **Yellow** = approaching limit
+   - **Red** = overloaded
+3. PM identifies overloaded or underutilised members.
+4. PM drags tasks between team members to rebalance workload directly in this view.
+5. PM filters the workload view by sprint or date range.
+
+---
+
+### PM_16 - Log Billable Hours
+
+**Main Flow**
+
+1. User opens a task and navigates to the **Time Tracking** section.
+2. User logs hours by either:
+   - Entering a duration manually (hours and minutes), or
+   - Starting and stopping the built-in timer.
+3. User marks the entry as **Billable** or **Non-Billable**.
+4. System saves the entry linked to the task and the user.
+5. Hours are aggregated and visible by task, member, or project.
+
+---
+
+### PM_17 - Monitor Budget & Limits
+
+**Main Flow**
+
+1. PM navigates to **Project Settings** and sets the total hours or cost budget.
+2. System tracks budget vs. actual spend in real time on the dashboard.
+3. When spend reaches **75%** of the budget, the system sends an automated alert to the PM.
+4. When spend reaches **90%**, a second alert is sent.
+5. When the budget is fully exceeded, task assignment is blocked.
+6. PM can apply a **manual override** to allow further assignment beyond the limit.
+
+---
+
+### PM_18 - Comment on Tasks
+
+**Main Flow**
+
+1. PM opens a task and scrolls to the **Comments** section.
+2. PM types a rich-text comment, optionally attaching files.
+3. PM uses **@mentions** to notify specific team members.
+4. PM clicks **"Submit"** to post the comment.
+5. Mentioned team members receive in-app and email notifications.
+6. PM can mark a comment as a **Resolution** or **Decision** for easy retrieval later.
+
+---
+
+### PM_19 - Announcements
+
+**Main Flow**
+
+1. PM navigates to the **Announcements** panel.
+2. PM clicks **"New Announcement"** and composes the message.
+3. PM selects delivery channels: **In-App**, **Email**, and/or **Push Notification**.
+4. PM clicks **"Publish"**.
+5. System delivers the announcement via all selected channels.
+6. Announcement is stored on the project's **notice board** for future reference.
+
+---
+
+### PM_20 - Notification Preferences
+
+**Main Flow**
+
+1. User navigates to **Notification Settings** in their profile.
+2. User toggles preferences for each event type:
+   - Task Assigned
+   - Comment Added
+   - Deadline Approaching
+   - Status Changed
+   - Budget Alert
+3. User selects delivery channels per event: **In-App**, **Email**, **Push**.
+4. User saves preferences.
+5. PM can additionally set **minimum notification rules** at the project level that apply to all project members regardless of their personal settings.
+
+---
+
+### PM_21 - Project Health Dashboard
+
+**Main Flow**
+
+1. PM opens the **Health Dashboard** from the project navigation.
+2. System displays the following consolidated metrics:
+   - **Task Completion Rate** (% completed vs total)
+   - **Team Workload** (capacity overview per member)
+   - **Budget Usage** (actual vs allocated)
+   - **Overdue Items** (count and list)
+   - **Upcoming Deadlines** (tasks due in the next 7 days)
+3. PM reviews each metric and identifies areas requiring attention.
+4. PM clicks through any metric to drill into its detailed view.
+
+---
+
+### PM_22 - Generate Progress Reports
+
+**Main Flow**
+
+1. PM clicks **"Generate Report"** on the project dashboard.
+2. PM selects a report type: **Weekly Summary** or **Custom Date Range**.
+3. System compiles:
+   - Task completion statistics
+   - Team activity summary
+   - Budget usage
+   - Milestone status
+4. System produces a formatted report.
+5. PM downloads the report or shares it directly with stakeholders.
+
+---
+
+### PM_23 - Sprint Planning & Velocity Tracking
+
+**Main Flow**
+
+1. PM navigates to the **Sprints** section and clicks **"New Sprint"**.
+2. PM sets the sprint's start and end dates.
+3. PM drags tasks from the backlog into the sprint.
+4. PM reviews the total story points committed to the sprint.
+5. PM starts the sprint.
+6. After the sprint ends, the system automatically calculates **velocity** (story points completed).
+7. System displays **historical velocity trends** to inform future sprint estimations.
+
+---
+
+### PM_24 - Integrate with External Tools
+
+**Main Flow**
+
+1. PM navigates to the **Integrations** settings panel.
+2. PM selects an external tool to connect (e.g. Slack, GitHub, Google Drive).
+3. System initiates an **OAuth** authorisation flow.
+4. PM authorises the connection in the external tool's login/permission screen.
+5. System confirms the connection and lists available sync options.
+6. PM configures which events to sync (e.g. code commits linked to tasks, Slack messages as task comments).
+7. Integration is active and events begin syncing automatically.
+
+---
+
+### PM_25 - Project Settings & Permissions
+
+**Main Flow**
+
+1. PM navigates to the **Project Settings** panel.
+2. PM configures: visibility, methodology, member roles, notification rules, and integration preferences.
+3. PM restricts or grants access per role as needed.
+4. PM saves the settings.
+
+---
+
+### DEV_01 - View Assigned Issues
+
+**Main Flow**
+
+1. Developer navigates to their **personal dashboard**.
+2. System displays a list of all issues assigned to the developer.
+3. Each item shows: title, status, priority, and project name.
+4. Developer clicks any issue to open its full detail view.
+
+---
+
+### DEV_02 - Open Issue Details
+
+**Main Flow**
+
+1. Developer clicks on an issue from their assigned list or search results.
+2. System opens the **issue detail page** showing:
+   - Full description
+   - Acceptance criteria
+   - Linked tasks and dependencies
+   - Comments (threaded)
+   - Attachments
+   - Status history / activity log
+3. Developer reads all relevant information.
+
+---
+
+### DEV_03 - Filter Assigned Issues
+
+**Main Flow**
+
+1. Developer opens their **Issues List**.
+2. Developer opens the **Filter Panel**.
+3. Developer selects one or more filter options:
+   - Status: **To Do**, **In Progress**, **In Review**, **Done**
+   - Priority: **Critical**, **High**, **Medium**, **Low**
+4. System instantly updates the list to show only matching issues.
+
+---
+
+### DEV_04 - Update Issue Status
+
+**Main Flow**
+
+1. Developer opens an issue.
+2. Developer clicks the **Status** dropdown and selects the new status, or drags the task card to a new column on the Kanban board.
+3. System saves the change instantly.
+4. System notifies all project members watching the issue.
+
+---
+
+### DEV_05 - View Status Change History
+
+**Main Flow**
+
+1. Developer opens the issue detail page.
+2. Developer scrolls to the **Activity Log** section.
+3. System displays a chronological list of all status changes, each showing:
+   - Timestamp
+   - Previous status
+   - New status
+   - Name of the person who made the change
+
+---
+
+### DEV_06 - Add Note on Status Change
+
+**Main Flow**
+
+1. Developer changes the status of an issue (as per DEV_04).
+2. System displays a **text input field** prompting for a reason for the change.
+3. Developer enters a short note.
+4. Developer confirms the status change.
+5. System saves the note alongside the status change entry in the activity log.
+
+---
+
+### DEV_07 - Add Comments to an Issue
+
+**Main Flow**
+
+1. Developer opens an issue.
+2. Developer clicks the **comment box** at the bottom of the detail page.
+3. Developer types a comment, optionally formatting text or attaching files.
+4. Developer clicks **"Submit"**.
+5. The comment is posted and visible to all project members.
+
+---
+
+### DEV_08 - Edit or Delete Own Comments
+
+**Main Flow**
+
+1. Developer hovers over their comment to reveal **Edit** and **Delete** icons.
+2. _To edit:_ Developer clicks **Edit**, modifies the text in the inline editor, and saves.
+3. _To delete:_ Developer clicks **Delete**, confirms the action in the dialog, and the comment is permanently removed.
+
+---
+
+### DEV_09 - Mention Teammate in Comment
+
+**Main Flow**
+
+1. Developer types **@** in the comment box.
+2. Developer types the start of a teammate's username.
+3. System displays a dropdown of matching users.
+4. Developer selects the correct person.
+5. Developer completes and submits the comment.
+6. System sends the mentioned teammate an **in-app and email notification** with a link to the comment.
+
+---
+
+### DEV_10 - Upload Attachments to an Issue
+
+**Main Flow**
+
+1. Developer opens an issue.
+2. Developer clicks **"Attach File"** or drags files into the attachment zone.
+3. System uploads and stores the files.
+4. Files appear in the **Attachments** section of the issue with their names and upload timestamps.
+
+---
+
+### DEV_11 - View and Download Attachments
+
+**Main Flow**
+
+1. Developer opens an issue.
+2. Developer navigates to the **Attachments** section.
+3. System lists all files with: name, file type, and upload date.
+4. Developer clicks a file to download it to their device.
+
+---
+
+### DEV_12 - Preview Image Attachments Inline
+
+**Main Flow**
+
+1. Developer opens an issue with image attachments.
+2. System automatically renders **thumbnail previews** for all image files in the Attachments section.
+3. Developer clicks a thumbnail.
+4. System expands the image to full size in a modal or lightbox view.
+5. Developer closes the modal to return to the issue.
+
+---
+
+### DEV_13 - View Tasks by Deadline or Priority
+
+**Main Flow**
+
+1. Developer opens their **personal task view**.
+2. Developer uses the **sort controls** to select:
+   - **Sort by Due Date (Ascending)** - earliest deadlines first, or
+   - **Sort by Priority Level** - Critical -> High -> Medium -> Low.
+3. System re-orders the task list accordingly.
+4. Developer plans their work based on the sorted list.
+
+---
+
+### DEV_14 - Track Overdue and Completed Tasks
+
+**Main Flow**
+
+1. Developer opens their **task dashboard**.
+2. System visually distinguishes task states:
+   - **Overdue tasks**: highlighted in red with a warning label.
+   - **Completed tasks**: shown in a separate "Done" section or greyed out with a checkmark.
+3. Developer reviews overdue tasks and takes appropriate action.
+
+---
+
+### DEV_15 - Receive In-App Notifications
+
+**Main Flow**
+
+1. A project manager or teammate assigns a new issue to the developer.
+2. An **in-app notification** appears in the notification bell in the top navigation bar.
+3. Developer clicks the notification.
+4. System navigates the developer directly to the newly assigned issue.
+
+---
+
+### DEV_16 - Search Issues by Keyword
+
+**Main Flow**
+
+1. Developer clicks the **global search bar**.
+2. Developer types one or more keywords.
+3. System searches all projects the developer is a member of.
+4. System returns matching issues showing: title, project name, status, and a **highlighted excerpt** with the matching keyword in context.
+5. Developer clicks a result to open the issue.
+
+---
+
+### DEV_17 - Filter Issues by Label or Date Range
+
+**Main Flow**
+
+1. Developer opens the **Issues List** and clicks **Filter**.
+2. Developer selects one or more **labels** (e.g. "bug", "frontend", "urgent").
+3. Developer optionally sets a **date range** for creation date or due date.
+4. System instantly updates the list to show only issues matching all selected criteria.
+
+---
+
+### SA_01 - Create New Users
+
+**Main Flow**
+
+1. Admin navigates to the **User Management** panel and clicks **"Add User"**.
+2. Admin fills in: full name, email address.
+3. Admin assigns an initial system role: **Developer**, **Project Manager**, **System Administrator**, or **Viewer**.
+4. Admin clicks **"Create User"**.
+5. System automatically sends an **activation email** to the new user.
+6. The new user appears in the User Management list with a "Pending Activation" status.
+
+---
+
+### SA_02 - Update User Information
+
+**Main Flow**
+
+1. Admin opens the **User Management** panel and searches for the user by name or email.
+2. Admin opens the user's profile.
+3. Admin edits the required fields: name, email, or department.
+4. Admin saves the changes.
+5. System applies the changes immediately across the platform.
+
+---
+
+### SA_03 - Assign and Change User Roles
+
+**Main Flow**
+
+1. Admin selects a user from the **User Management** list.
+2. Admin opens the user's **Role Settings**.
+3. Admin selects a new role from the dropdown of available system roles.
+4. Admin confirms the change.
+5. System immediately updates the user's access permissions.
+
+---
+
+### SA_04 - Deactivate or Remove Users
+
+**Main Flow**
+
+1. Admin locates the user in the **User Management** panel.
+2. Admin selects either:
+   - **Deactivate** - suspends access without deleting data.
+   - **Remove** - permanently deletes the account and associated data.
+3. System shows a **confirmation prompt** before either action.
+4. Admin confirms.
+5. System applies the action immediately.
+
+---
+
+### SA_05 - View All Active and Inactive Projects
+
+**Main Flow**
+
+1. Admin opens the **Projects Overview** panel.
+2. System displays a full list of all platform projects, each showing:
+   - Project name
+   - Project Manager
+   - Current status: **Active**, **Inactive**, or **Archived**
+   - Member count
+   - Creation date
+3. Admin filters or sorts the list as needed.
+
+---
+
+### SA_06 - Access Projects via Granted Permissions
+
+**Main Flow**
+
+1. Admin receives an **in-app notification** that access has been granted.
+2. Admin opens the notification and navigates to the project's workspace.
+3. Admin can view: task boards, activity logs, member activity, and issues.
+4. Admin does not modify tasks or data unless addressing a specific issue.
+
+---
+
+### SA_07 - Intervene to Resolve Bug-Related Issues
+
+**Main Flow**
+
+1. Admin identifies the bug through the **System Monitor** or a PM report.
+2. Admin enters the project's workspace.
+3. Admin reviews relevant logs and task data to understand the issue.
+4. Admin applies a fix or escalates to the development team if a code change is required.
+5. Admin logs a **resolution note** visible to the project team.
+
+---
+
+### SA_08 - Configure System-Level Settings
+
+**Main Flow**
+
+1. Admin navigates to the **System Configuration** panel.
+2. Admin modifies one or more settings:
+   - Authentication methods: **SSO**, **2FA**
+   - Session timeouts
+   - Default notification rules
+   - Storage limits
+3. Admin saves the changes.
+4. System applies the settings globally and immediately.
+
+---
+
+### SA_09 - Set Organisational Policies
+
+**Main Flow**
+
+1. Admin opens the **Policy Settings** section.
+2. Admin defines or updates policies:
+   - Password complexity requirements
+   - Data retention periods
+   - Permitted file types for uploads
+3. Admin saves the policies.
+4. System enforces policies automatically across all users and projects.
+
+---
+
+### SA_10 - View All Issues Across Projects
+
+**Main Flow**
+
+1. Admin opens the **System Monitor** dashboard.
+2. System aggregates all issues from every project into a single view.
+3. Admin filters issues by: project, assignee, status, or date range.
+4. Admin reviews issues requiring attention or investigation.
+
+---
+
+### SA_11 - Monitor User Activity and Usage
+
+**Main Flow**
+
+1. Admin opens the **Activity Logs** panel.
+2. System displays all logged user actions including: logins, task updates, file uploads, and role changes - each with a timestamp and user ID.
+3. Admin filters logs by: user, date, or event type.
+4. Admin reviews flagged or suspicious entries.
+
+---
+
+### SA_12 - Ensure Proper System Usage
+
+**Main Flow**
+
+1. Admin opens the **Usage Analytics** dashboard.
+2. System displays metrics including:
+   - Active users count
+   - Storage consumption
+   - API usage
+   - Login frequency
+3. System automatically flags anomalies or policy violations.
+4. Admin reviews flagged items.
+5. Admin takes corrective action directly from the dashboard (e.g. deactivating a user, adjusting storage limits).
+
 
 #  Use Cases -Xhoana Thano
 ### Project Issue Tracking & Management Platform
