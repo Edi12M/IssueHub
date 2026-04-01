@@ -75,6 +75,12 @@
 | SA_11 | Monitor user activity and usage | System Administrator: The admin reviews the Activity Logs panel, which records all user actions (logins, task updates, file uploads, role changes) with timestamps and user IDs. The admin can filter logs by user, date, or event type to investigate unusual or unauthorised behaviour. |
 | SA_12 | Ensure proper system usage | System Administrator: The admin uses the Usage Analytics dashboard to review metrics such as active users, storage consumption, API usage, and login frequency. Anomalies or policy violations are flagged automatically, and the admin can take corrective action directly from the dashboard. |
 
+# Use Case Diagrams-Gledis Xhaja
+![Week 6 Diagram](../Images/week6drawio.svg)
+
+
+
+markdown
 # Extended User Scenarios - Edvin Mehaj
 
 ### PM_01 - Create Project
