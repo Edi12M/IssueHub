@@ -76,8 +76,10 @@
 | SA_12 | Ensure proper system usage | System Administrator: The admin uses the Usage Analytics dashboard to review metrics such as active users, storage consumption, API usage, and login frequency. Anomalies or policy violations are flagged automatically, and the admin can take corrective action directly from the dashboard. |
 
 # Use Case Diagrams-Gledis Xhaja
-![Week 6 Diagram](../Images/week6drawio.svg)
 
+![Week 6 Diagram](../Images/UC-DEV_DIAGRAM.drawio.svg)
+![Week 6 Diagram](../Images/UC-PM_DIAGRAM.drawio.svg)
+![Week 6 Diagram](../Images/UC-ADM_DIAGRAM.drawio.svg)
 
 
 markdown
