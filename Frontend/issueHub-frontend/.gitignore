@@ -1,0 +1,80 @@
+# =========================
+# GENERAL
+# =========================
+*.log
+logs/
+.DS_Store
+Thumbs.db
+*.sw?
+*.tmp
+*.temp
+.cache/
+tmp/
+temp/
+
+# =========================
+# FRONTEND 
+# =========================
+node_modules/
+dist/
+dist-ssr/
+build/
+coverage/
+
+# Environment variables
+.env
+.env.*
+*.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# BACKEND 
+# =========================
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+
+# Rider
+.vscode/
+.idea/
+*.sln.iml
+
+# =========================
+# VISUAL STUDIO
+# =========================
+.vs/
+*.njsproj
+*.sln.docstates
+
+# =========================
+# DATABASE
+# =========================
+appsettings.Development.json
+appsettings.*.json
+
+
+!appsettings.json
+
+# =========================
+# TESTS
+# =========================
+TestResults/
+coverage/
+
+# =========================
+# PACKAGE LOCKS
+# =========================
+# DO NOT ignore these unless you know why
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
