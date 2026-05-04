@@ -1,25 +1,13 @@
-import heroImg from "./assets/hero.png";
-import "./App.css";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Hero from "./Pages/Hero.jsx";
+import { AdminDashboardPage } from "./Pages/Dashboard.jsx";
 
-function App() {
+export default function App() {
   return (
-    <div id="center">
-      <section className="hero">
-        <div className="hero-content">
-          <h1>IssueHub</h1>
-          <p>
-            Welcome to IssueHub, your one-stop solution for efficient issue
-            tracking and project management. Streamline your workflow,
-            collaborate seamlessly, and stay organized with our intuitive
-            platform designed to empower teams of all sizes.
-          </p>
-        </div>
-        <img src={heroImg} alt="Hero Image" className="hero-image" />
-      </section>
-
-      <div id="spacer" />
-    </div>
+    <Routes>
+      <Route path="/" element={<Hero />} />
+      <Route path="/admin" element={<AdminDashboardPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
-
-export default App;
