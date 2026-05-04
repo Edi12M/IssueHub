@@ -89,6 +89,11 @@
   max-width: 920px;
 }
 
+.users-title {
+  margin-top: 10px;
+  margin-bottom: 14px;
+}
+
 .eyebrow {
   display: inline-flex;
   align-items: center;

@@ -1,21 +1,29 @@
 import styles from "./sideBar.module.css";
+import { useNavigate } from "react-router-dom";
+import { LayoutDashboard, Users, FolderKanban, CircleDot, Settings } from "lucide-react";
 
-// Default nav items — override via `navItems` prop
 const DEFAULT_NAV_ITEMS = [
-  { key: "dashboard", label: "Dashboard", icon: "▦" },
-  { key: "users", label: "Users", icon: "◌" },
-  { key: "projects", label: "Projects", icon: "▣" },
-  { key: "issues", label: "Issues", icon: "●" },
-  { key: "settings", label: "Settings", icon: "⚙" },
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
+  { key: "users",     label: "Users",     icon: Users,           to: "/users" },
+  { key: "projects",  label: "Projects",  icon: FolderKanban,    to: "/projects" },
+  { key: "issues",    label: "Issues",    icon: CircleDot,       to: "/issues" },
+  { key: "settings",  label: "Settings",  icon: Settings,        to: "/settings" },
 ];
 
 export default function Sidebar({
   brandName = "IssueHub",
-  brandSub = "Admin Dashboard",
-  navItems = DEFAULT_NAV_ITEMS,
+  brandSub  = "Admin Dashboard",
+  navItems  = DEFAULT_NAV_ITEMS,
   activeKey,
   onSelect,
 }) {
+  const navigate = useNavigate();
+
+  function handleItemClick(key, to) {
+    onSelect?.(key);
+    if (to) navigate(to);
+  }
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles["sidebar-brand"]}>
@@ -26,15 +34,15 @@ export default function Sidebar({
       <hr className={styles["sidebar-divider"]} />
 
       <nav className={styles["sidebar-nav"]} aria-label="Sidebar navigation">
-        {navItems.map(({ key, label, icon: Icon }) => (
+        {navItems.map(({ key, label, icon: Icon, to }) => (
           <button
             key={key}
             type="button"
-            onClick={() => onSelect?.(key)}
+            onClick={() => handleItemClick(key, to)}
             className={`${styles["sidebar-link"]} ${activeKey === key ? styles.active : ""}`}
           >
             <span className={styles["sidebar-icon"]} aria-hidden="true">
-              {typeof Icon === "string" ? Icon : "•"}
+              <Icon size={16} />
             </span>
             {label}
           </button>
