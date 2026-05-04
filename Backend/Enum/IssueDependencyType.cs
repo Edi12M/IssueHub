@@ -2,5 +2,9 @@
 {
     public enum IssueDependencyType
     {
+        Blocks,
+        IsBlockedBy,
+        RelatesTo,
+        Duplicates
     }
 }
