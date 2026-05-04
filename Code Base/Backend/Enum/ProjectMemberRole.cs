@@ -2,5 +2,9 @@
 {
     public enum ProjectMemberRole
     {
+        Owner,
+        Admin,
+        Developer,
+        Viewer
     }
 }

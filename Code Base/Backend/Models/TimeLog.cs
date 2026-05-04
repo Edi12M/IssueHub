@@ -10,5 +10,9 @@
         public DateTime LogDate { get; set; }
         public string Note { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        //Navigation
+        public Issue Issue { get; set; }
+        public User User { get; set; }
     }
 }

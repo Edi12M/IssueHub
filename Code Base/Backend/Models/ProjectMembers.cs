@@ -10,5 +10,9 @@ namespace Backend.Models
         public ProjectMemberRole Role { get; set; }
         public DateTime JoinedAt { get; set; }
 
+        //Navigation
+        public User User { get; set; }
+        public Project Project { get; set; }
+
     }
 }

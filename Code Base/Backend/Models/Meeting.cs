@@ -16,6 +16,7 @@ namespace Backend.Models
         public DateTime RecordedAt { get; set; }
         public DateTime CreatedAt { get; set; }
 
+        //Navigation
         public Project Project { get; set; }
         public User CreatedBy { get; set; }
 

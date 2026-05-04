@@ -2,5 +2,10 @@
 {
     public enum IssueStatus
     {
+        Open,
+        InProgress,
+        InReview,
+        Resolved,
+        Closed
     }
 }

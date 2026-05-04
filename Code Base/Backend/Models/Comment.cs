@@ -13,5 +13,11 @@
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        //Navigation
+        public Issue Issue { get; set; }
+        public User Author { get; set; }
+        public Comment Parent { get; set; }                        // self-referencing (replies)
+        public ICollection<Comment> Replies { get; set; }         // self-referencing
     }
 }

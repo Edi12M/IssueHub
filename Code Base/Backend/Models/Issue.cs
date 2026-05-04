@@ -23,5 +23,17 @@ namespace Backend.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
+        //Navigation
+        public Project Project { get; set; }
+        public User Reporter { get; set; }
+        public Issue Parent { get; set; }                          // self-referencing
+        public ICollection<Issue> SubIssues { get; set; }         // self-referencing
+        public ICollection<Comment> Comments { get; set; }
+        public ICollection<IssueAssignment> Assignments { get; set; }
+        public ICollection<IssueDependency> Dependencies { get; set; }
+        public ICollection<IssueHistory> History { get; set; }
+        public ICollection<TimeLog> TimeLogs { get; set; }
+        public ICollection<Attachment> Attachments { get; set; }
+
     }
 }
