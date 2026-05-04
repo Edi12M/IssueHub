@@ -10,5 +10,9 @@ namespace Backend.Models
         public int DependOnId { get; set; }
         public IssueDependencyType Type { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        //Navigation
+        public Issue Issue { get; set; }
+        public Issue DependsOn { get; set; }
     }
 }

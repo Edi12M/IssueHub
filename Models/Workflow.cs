@@ -11,6 +11,7 @@
         public int CreatedById { get; set; }
         public DateTime CreatedAt { get; set; }
 
+        //Navigation
         public User CreatedBy { get; set; }
     }
 }

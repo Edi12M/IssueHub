@@ -7,7 +7,9 @@
         public int UserId { get; set; }
         public DateTime AssignedAt { get; set; }
 
+        //Navigation
         public Issue Issue { get; set; }
         public User User { get; set; }
+
     }
 }

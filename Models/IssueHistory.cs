@@ -11,5 +11,8 @@
         public string NewValue { get; set; }
         public string TransitionNote { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        //Navigation
+        public Issue Issue { get; set; }
     }
 }

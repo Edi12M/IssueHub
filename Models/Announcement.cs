@@ -9,5 +9,9 @@
         public string Body { get; set; }
         public DateTime CreatedAt { get; set; }
         public string Comment { get; set; }
+
+        //Navigation
+        public Project Project { get; set; }
+        public User Author { get; set; }
     }
 }

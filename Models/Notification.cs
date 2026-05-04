@@ -11,5 +11,8 @@ namespace Backend.Models
         public int EntityId { get; set; }
         public bool IsRead { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        //Navigation
+        public User User { get; set; }
     }
 }

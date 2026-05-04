@@ -2,5 +2,9 @@
 {
     public enum UserRole
     {
+        Admin,
+        Manager,
+        Developer,
+        Guest
     }
 }
