@@ -105,3 +105,120 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* ── Form ── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border 0.16s ease;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #ff7aa2;
+}
+
+.form-input option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+/* ── User list ── */
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 0.16s ease;
+}
+
+.user-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff7aa2, #ffb86b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #0f172a;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.user-email {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.user-role {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.user-status {
+  font-size: 0.78rem;
+  color: #f59e0b;
+}
+
+/* ── Misc ── */
+.status-sending {
+  color: #cbd5e1;
+  font-size: 0.875rem;
+  align-self: center;
+}

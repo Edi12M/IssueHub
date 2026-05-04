@@ -1,4 +1,11 @@
 import { useMemo, useState } from "react";
+import {
+  LayoutDashboard,
+  Users as UsersIcon,
+  FolderKanban,
+  CircleDot,
+  Settings,
+} from "lucide-react";
 import Button from "../Components/Button/button.jsx";
 import Sidebar from "../Components/SideBar/sideBar.jsx";
 import "../App.css";
@@ -16,6 +23,14 @@ const PREVIEW_ITEMS = [
     title: "Status",
     body: "This route now shows the sidebar in context instead of as a disconnected component demo.",
   },
+];
+
+const ADMIN_NAV_ITEMS = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, to: "/admin" },
+  { key: "users", label: "Users", icon: UsersIcon, to: "/admin/users" },
+  { key: "projects", label: "Projects", icon: FolderKanban },
+  { key: "issues", label: "Issues", icon: CircleDot },
+  { key: "settings", label: "Settings", icon: Settings },
 ];
 
 // HeroPage was moved to src/Pages/Hero.jsx
@@ -37,7 +52,12 @@ function AdminDashboardPage() {
 
   return (
     <div className="preview-shell">
-      <Sidebar activeKey={activeKey} onSelect={setActiveKey} />
+      <Sidebar
+        navItems={ADMIN_NAV_ITEMS}
+        enableNavigation={true}
+        activeKey={activeKey}
+        onSelect={setActiveKey}
+      />
 
       <main className="preview-main">
         <section className="preview-hero card">
@@ -50,6 +70,9 @@ function AdminDashboardPage() {
           <div className="preview-actions">
             <Button to="/" variant="secondary" size="sm">
               Back to hero
+            </Button>
+            <Button to="/admin/users" variant="primary" size="sm">
+              User Management
             </Button>
           </div>
           <div className="preview-status">
