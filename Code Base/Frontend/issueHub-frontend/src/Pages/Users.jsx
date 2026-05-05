@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import Button from "../Components/Button/button.jsx";
 import Sidebar from "../Components/SideBar/sideBar.jsx";
-import { addUser, getUsers } from "../data/users.js";
+import { addUser, getUsers, updateUser } from "../data/users.js";
+import UserForm from "./UserForm.jsx";
 import "../App.css";
 
 const ROLE_OPTIONS = [
@@ -29,44 +30,14 @@ const ADMIN_NAV_ITEMS = [
 export default function Users() {
   const [users, setUsers] = useState(() => getUsers());
   const [showForm, setShowForm] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState(ROLE_OPTIONS[0]);
+  const [search, setSearch] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
   const [sending, setSending] = useState(false);
   const [activeKey, setActiveKey] = useState("users");
 
-  function resetForm() {
-    setName("");
-    setEmail("");
-    setPassword("");
-    setRole(ROLE_OPTIONS[0]);
-  }
-
-  function handleCreate(e) {
-    e.preventDefault();
-    if (!name.trim() || !email.trim() || !password.trim()) return;
-
-    const newUser = {
-      id: Date.now().toString(),
-      name: name.trim(),
-      email: email.trim(),
-      password: password.trim(),
-      role,
-      status: "Pending Activation",
-      createdAt: new Date().toISOString(),
-    };
-
-    addUser(newUser);
-    setUsers(getUsers());
-    resetForm();
+  function openEditor(user) {
+    setSelectedUser(user);
     setShowForm(false);
-
-    setSending(true);
-    setTimeout(() => {
-      console.log(`Activation email sent to ${newUser.email}`);
-      setSending(false);
-    }, 800);
   }
 
   return (
@@ -85,7 +56,13 @@ export default function Users() {
           <h1 className="users-title">Users</h1>
           <p className="lead">Manage system users and their initial roles.</p>
 
-          <div className="preview-actions">
+          <div className="preview-actions users-actions">
+            <input
+              className="form-input search-input"
+              placeholder="Search by name or email"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
             <Button
               variant="primary"
               size="md"
@@ -98,82 +75,58 @@ export default function Users() {
             )}
           </div>
 
-          {/* Form */}
+          {/* New user form (reusable component) */}
           {showForm && (
-            <form
-              className="user-form card"
-              style={{ marginTop: 24 }}
-              onSubmit={handleCreate}
-            >
-              <h2 style={{ marginBottom: 16 }}>New User</h2>
+            <UserForm
+              initial={{}}
+              showPassword={true}
+              submitLabel="Create"
+              onSubmit={(payload) => {
+                const newUser = {
+                  ...payload,
+                  id: Date.now().toString(),
+                  status: "Pending Activation",
+                  createdAt: new Date().toISOString(),
+                };
+                addUser(newUser);
+                setUsers(getUsers());
+                setShowForm(false);
+                resetForm();
+                setSending(true);
+                setTimeout(() => setSending(false), 800);
+              }}
+              onCancel={() => {
+                setShowForm(false);
+                resetForm();
+              }}
+            />
+          )}
 
-              <div className="form-group">
-                <label className="form-label">Full name</label>
-                <input
-                  className="form-input"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Full name"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Email address</label>
-                <input
-                  className="form-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  type="email"
-                  placeholder="name@example.com"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">System role</label>
-                <select
-                  className="form-input"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                >
-                  {ROLE_OPTIONS.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Temporary password</label>
-                <input
-                  className="form-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  type="password"
-                  placeholder="Set initial password"
-                  minLength={6}
-                  required
-                />
-              </div>
-
-              <div className="preview-actions" style={{ marginTop: 8 }}>
-                <Button type="submit" variant="primary">
-                  Create User
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    setShowForm(false);
-                    resetForm();
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
+          {/* Edit selected user */}
+          {selectedUser && (
+            <>
+              <div
+                className="overlay-backdrop"
+                onClick={() => {
+                  setSelectedUser(null);
+                }}
+              />
+              <UserForm
+                initial={selectedUser}
+                submitLabel="Save"
+                onSubmit={(payload) => {
+                  const ok = updateUser(payload);
+                  if (ok) {
+                    setUsers(getUsers());
+                    setSelectedUser(null);
+                  } else alert("Failed to update user");
+                }}
+                onCancel={() => {
+                  setSelectedUser(null);
+                }}
+                className="user-edit-overlay"
+              />
+            </>
           )}
         </section>
 
@@ -187,21 +140,34 @@ export default function Users() {
             </p>
           ) : (
             <ul className="user-list">
-              {users.map((u) => (
-                <li key={u.id} className="user-item">
-                  <div className="user-avatar">
-                    {u.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="user-info">
-                    <div className="user-name">{u.name}</div>
-                    <div className="user-email">{u.email}</div>
-                  </div>
-                  <div className="user-meta">
-                    <span className="user-role">{u.role}</span>
-                    <span className="user-status">{u.status}</span>
-                  </div>
-                </li>
-              ))}
+              {users
+                .filter((u) =>
+                  !search.trim()
+                    ? true
+                    : `${u.name} ${u.email}`
+                        .toLowerCase()
+                        .includes(search.trim().toLowerCase()),
+                )
+                .map((u) => (
+                  <li
+                    key={u.id}
+                    className="user-item"
+                    onClick={() => openEditor(u)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div className="user-avatar">
+                      {u.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="user-info">
+                      <div className="user-name">{u.name}</div>
+                      <div className="user-email">{u.email}</div>
+                    </div>
+                    <div className="user-meta">
+                      <span className="user-role">{u.role}</span>
+                      <span className="user-status">{u.status}</span>
+                    </div>
+                  </li>
+                ))}
             </ul>
           )}
         </section>

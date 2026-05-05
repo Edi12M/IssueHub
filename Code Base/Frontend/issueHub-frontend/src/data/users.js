@@ -55,6 +55,29 @@ export function addUser(user) {
   persistUsers();
 }
 
+export function getUserById(id) {
+  return usersStore.find((u) => String(u.id) === String(id)) ?? null;
+}
+
+export function updateUser(updated) {
+  const idx = usersStore.findIndex((u) => String(u.id) === String(updated.id));
+  if (idx === -1) return false;
+
+  // Only update allowed fields
+  const existing = usersStore[idx];
+  usersStore[idx] = {
+    ...existing,
+    name: updated.name ?? existing.name,
+    email: updated.email ?? existing.email,
+    department: updated.department ?? existing.department ?? "",
+    role: updated.role ?? existing.role,
+    status: updated.status ?? existing.status,
+  };
+
+  persistUsers();
+  return true;
+}
+
 export function getUserByEmail(email) {
   const normalizedEmail = email.trim().toLowerCase();
   return (

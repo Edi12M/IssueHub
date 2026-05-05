@@ -114,6 +114,62 @@ code {
   margin-bottom: 14px;
 }
 
+/* Edit overlay + backdrop */
+.overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.55);
+  z-index: 85;
+}
+
+.user-edit-overlay {
+  position: fixed;
+  right: 18px;
+  top: 84px;
+  width: min(480px, calc(100% - 36px));
+  z-index: 95;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 30px 80px rgba(3, 7, 18, 0.6);
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+}
+
+/* Improve contrast for the user edit overlay and its form */
+.user-edit-overlay {
+  /* darker, more opaque background to lift the form from the page */
+  background: linear-gradient(
+    180deg,
+    rgba(6, 10, 20, 0.98),
+    rgba(8, 14, 26, 0.99)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+}
+
+.user-edit-overlay h2 {
+  color: #f8fafc;
+}
+
+.user-edit-overlay .form-label {
+  color: #cbd5e1;
+}
+
+.user-edit-overlay .form-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+}
+
+.user-edit-overlay .form-input:focus {
+  box-shadow: 0 0 0 6px rgba(255, 122, 162, 0.08);
+  border-color: #ff7aa2;
+}
+
+.user-edit-overlay .preview-actions {
+  justify-content: flex-end;
+}
+
 .form-label {
   font-size: 0.85rem;
   color: #94a3b8;
@@ -214,6 +270,58 @@ code {
 .user-status {
   font-size: 0.78rem;
   color: #f59e0b;
+}
+
+/* Users header actions (search + add button) */
+.users-actions {
+  gap: 20px;
+  align-items: center;
+}
+
+.users-actions .search-input {
+  max-width: 340px;
+  min-width: 200px;
+}
+
+@media (max-width: 720px) {
+  .users-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .users-actions .search-input {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+/* Improve user-item layout on small screens */
+@media (max-width: 720px) {
+  .user-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .user-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .user-meta {
+    align-items: flex-start;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .users-actions button,
+  .users-actions a {
+    width: 100%;
+    max-width: none;
+  }
 }
 
 /* ── Misc ── */
