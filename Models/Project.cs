@@ -22,7 +22,7 @@ namespace Backend.Models
         //Navigation
         public User Owner { get; set; }
         public Workflow Workflow { get; set; }
-        public ICollection<ProjectMembers ProjectMembers { get; set; }
+        public ICollection<ProjectMembers> ProjectMembers { get; set; }
         public ICollection<Issue> Issues { get; set; }
         public ICollection<Announcement> Announcements { get; set; }
         public ICollection<Meeting> Meetings { get; set; }
