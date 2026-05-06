@@ -8,6 +8,7 @@ namespace Backend.Models
         public int UserId { get; set; }
         public NotificationType Type { get; set; }
         public string EntityType { get; set; }
+        //FK for the project, meeting, user, workflow etc
         public int EntityId { get; set; }
         public bool IsRead { get; set; }
         public DateTime CreatedAt { get; set; }
