@@ -101,3 +101,30 @@ export function validateUserCredentials(email, password) {
 
   return user;
 }
+
+export function updateUserRole(userId, newRole) {
+  const idx = usersStore.findIndex((u) => String(u.id) === String(userId));
+  if (idx === -1) return false;
+
+  usersStore[idx].role = newRole;
+  persistUsers();
+  return true;
+}
+
+export function deactivateUser(userId) {
+  const idx = usersStore.findIndex((u) => String(u.id) === String(userId));
+  if (idx === -1) return false;
+
+  usersStore[idx].status = "Deactivated";
+  persistUsers();
+  return true;
+}
+
+export function removeUser(userId) {
+  const idx = usersStore.findIndex((u) => String(u.id) === String(userId));
+  if (idx === -1) return false;
+
+  usersStore.splice(idx, 1);
+  persistUsers();
+  return true;
+}

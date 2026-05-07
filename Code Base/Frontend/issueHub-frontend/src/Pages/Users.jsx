@@ -8,8 +8,21 @@ import {
 } from "lucide-react";
 import Button from "../Components/Button/button.jsx";
 import Sidebar from "../Components/SideBar/sideBar.jsx";
-import { addUser, getUsers, updateUser } from "../data/users.js";
+import {
+  addUser,
+  getUsers,
+  updateUser,
+  updateUserRole,
+  deactivateUser,
+  removeUser,
+} from "../data/users.js";
 import UserForm from "./UserForm.jsx";
+import RoleChangeModal from "../Components/Modals/RoleChangeModal.jsx";
+import DeactivateModal from "../Components/Modals/DeactivateModal.jsx";
+import RemoveUserModal from "../Components/Modals/RemoveUserModal.jsx";
+import UserSettingsModal from "../Components/Modals/UserSettingsModal.jsx";
+import CreateUserModal from "../Components/Modals/CreateUserModal.jsx";
+import UserListItem from "../Components/Users/UserListItem.jsx";
 import "../App.css";
 
 const ROLE_OPTIONS = [
@@ -34,10 +47,90 @@ export default function Users() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [sending, setSending] = useState(false);
   const [activeKey, setActiveKey] = useState("users");
+  const [roleModalUser, setRoleModalUser] = useState(null);
+  const [selectedRole, setSelectedRole] = useState("");
+  const [deactivateUserState, setDeactivateUserState] = useState(null);
+  const [removeUserState, setRemoveUserState] = useState(null);
+  const [settingsUser, setSettingsUser] = useState(null);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   function openEditor(user) {
     setSelectedUser(user);
     setShowForm(false);
+  }
+
+  function openRoleModal(user) {
+    setRoleModalUser(user);
+    setSelectedRole(user.role);
+  }
+
+  function handleChangeRole(value) {
+    setSelectedRole(value);
+  }
+
+  function handleChangeRoleConfirm() {
+    if (roleModalUser && selectedRole && selectedRole !== roleModalUser.role) {
+      const ok = updateUserRole(roleModalUser.id, selectedRole);
+      if (ok) {
+        setUsers(getUsers());
+        setRoleModalUser(null);
+        setSelectedRole("");
+      } else {
+        alert("Failed to update user role");
+      }
+    }
+  }
+
+  function handleDeactivate(user) {
+    setDeactivateUserState(user);
+    setSettingsUser(null);
+  }
+
+  function confirmDeactivate() {
+    if (deactivateUserState) {
+      const ok = deactivateUser(deactivateUserState.id);
+      if (ok) {
+        setUsers(getUsers());
+        setDeactivateUserState(null);
+      } else {
+        alert("Failed to deactivate user");
+      }
+    }
+  }
+
+  function handleRemove(user) {
+    setRemoveUserState(user);
+    setSettingsUser(null);
+  }
+
+  function confirmRemove() {
+    if (removeUserState) {
+      const ok = removeUser(removeUserState.id);
+      if (ok) {
+        setUsers(getUsers());
+        setRemoveUserState(null);
+      } else {
+        alert("Failed to remove user");
+      }
+    }
+  }
+
+  function openSettings(user) {
+    setSettingsUser(user);
+  }
+
+  function handleSaveSettings(payload) {
+    setIsSavingSettings(true);
+    setTimeout(() => {
+      const ok = updateUser(payload);
+      setIsSavingSettings(false);
+      if (ok) {
+        setUsers(getUsers());
+        setSettingsUser(null);
+      } else {
+        alert("Failed to update user");
+      }
+    }, 500);
   }
 
   return (
@@ -76,31 +169,26 @@ export default function Users() {
           </div>
 
           {/* New user form (reusable component) */}
-          {showForm && (
-            <UserForm
-              initial={{}}
-              showPassword={true}
-              submitLabel="Create"
-              onSubmit={(payload) => {
-                const newUser = {
-                  ...payload,
-                  id: Date.now().toString(),
-                  status: "Pending Activation",
-                  createdAt: new Date().toISOString(),
-                };
-                addUser(newUser);
-                setUsers(getUsers());
-                setShowForm(false);
-                resetForm();
-                setSending(true);
-                setTimeout(() => setSending(false), 800);
-              }}
-              onCancel={() => {
-                setShowForm(false);
-                resetForm();
-              }}
-            />
-          )}
+          <CreateUserModal
+            isOpen={showForm}
+            isSending={sending}
+            onSubmit={(payload) => {
+              const newUser = {
+                ...payload,
+                id: Date.now().toString(),
+                status: "Pending Activation",
+                createdAt: new Date().toISOString(),
+              };
+              addUser(newUser);
+              setUsers(getUsers());
+              setShowForm(false);
+              setSending(true);
+              setTimeout(() => setSending(false), 800);
+            }}
+            onCancel={() => {
+              setShowForm(false);
+            }}
+          />
 
           {/* Edit selected user */}
           {selectedUser && (
@@ -149,28 +237,44 @@ export default function Users() {
                         .includes(search.trim().toLowerCase()),
                 )
                 .map((u) => (
-                  <li
-                    key={u.id}
-                    className="user-item"
-                    onClick={() => openEditor(u)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <div className="user-avatar">
-                      {u.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="user-info">
-                      <div className="user-name">{u.name}</div>
-                      <div className="user-email">{u.email}</div>
-                    </div>
-                    <div className="user-meta">
-                      <span className="user-role">{u.role}</span>
-                      <span className="user-status">{u.status}</span>
-                    </div>
-                  </li>
+                  <UserListItem key={u.id} user={u} onSettings={openSettings} />
                 ))}
             </ul>
           )}
         </section>
+
+        {/* Modals */}
+        <RoleChangeModal
+          user={roleModalUser}
+          selectedRole={selectedRole}
+          onRoleChange={handleChangeRole}
+          onApply={handleChangeRoleConfirm}
+          onCancel={() => {
+            setRoleModalUser(null);
+            setSelectedRole("");
+          }}
+        />
+
+        <DeactivateModal
+          user={deactivateUserState}
+          onConfirm={confirmDeactivate}
+          onCancel={() => setDeactivateUserState(null)}
+        />
+
+        <RemoveUserModal
+          user={removeUserState}
+          onConfirm={confirmRemove}
+          onCancel={() => setRemoveUserState(null)}
+        />
+
+        <UserSettingsModal
+          user={settingsUser}
+          onSave={handleSaveSettings}
+          onCancel={() => setSettingsUser(null)}
+          isSaving={isSavingSettings}
+          onDeactivate={handleDeactivate}
+          onRemove={handleRemove}
+        />
       </main>
     </div>
   );
