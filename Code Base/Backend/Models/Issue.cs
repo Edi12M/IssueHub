@@ -10,7 +10,7 @@ namespace Backend.Models
         //UserId
         public int ReporterId { get; set; }
         //IssueId
-        public int ParentId { get; set; }
+        public int? ParentId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string AcceptanceCriteria { get; set; }
@@ -26,7 +26,7 @@ namespace Backend.Models
         //Navigation
         public Project Project { get; set; }
         public User Reporter { get; set; }
-        public Issue Parent { get; set; }                          // self-referencing
+        public Issue? Parent { get; set; }                         // self-referencing
         public ICollection<Issue> SubIssues { get; set; }         // self-referencing
         public ICollection<Comment> Comments { get; set; }
         public ICollection<IssueAssignment> Assignments { get; set; }

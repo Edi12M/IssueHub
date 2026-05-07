@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +13,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 // ─── Add Controllers & Swagger ─────────────────────────────────
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Prevent circular reference errors from EF navigation properties
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    // Keep automatic 400 responses for invalid model state
+    options.SuppressModelStateInvalidFilter = false;
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
