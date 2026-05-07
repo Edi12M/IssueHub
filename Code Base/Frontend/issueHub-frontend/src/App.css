@@ -164,6 +164,23 @@
   text-align: left;
 }
 
+.card {
+  padding: 24px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+.card h1,
+.card h2 {
+  color: #f8fafc;
+}
+
+.card p {
+  color: #cbd5e1;
+}
+
 @media (max-width: 1080px) {
   .hero-page,
   .preview-shell {
@@ -186,4 +203,47 @@
   .preview-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Login Page CSS styling */
+.login-page {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.login-carousel-container {
+  width: 50%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.login-carousel-container img {
+  height: 100vh;
+  object-fit: contain;
+  object-position: top;
+}
+
+.login-form-side {
+  width: 50%;
+  height: 100vh;
+}
+
+.carousel-caption h2 {
+  color: #220a3a;
+}
+
+.carousel-caption p {
+  color: #220a3a;
+}
+
+.formHead {
+  display: grid;
+  grid-template-columns: 70px 1fr 70px;
+  align-items: center;
+  width: 100%;
+}
+
+.formHead h3 {
+  margin: 0;
+  text-align: center;
 }
