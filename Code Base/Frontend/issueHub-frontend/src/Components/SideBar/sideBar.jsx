@@ -26,7 +26,7 @@ const DEFAULT_NAV_ITEMS = [
 
 export default function Sidebar({
   brandName = "IssueHub",
-  brandSub = "Admin Dashboard",
+  brandSub = "",
   navItems = DEFAULT_NAV_ITEMS,
   activeKey,
   onSelect,

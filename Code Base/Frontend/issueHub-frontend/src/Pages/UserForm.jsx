@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Button from "../Components/Button/button";
+import Button from "../Components/Button/button.jsx";
 
 export default function UserForm({
   initial = {},
@@ -95,11 +95,11 @@ export default function UserForm({
       )}
 
       <div className="preview-actions" style={{ marginTop: 8 }}>
-        <Button  size="sm" type="submit">
+        <Button size="sm" type="submit">
           {submitLabel}
         </Button>
-        
-        <Button  size="sm" onClick={onCancel}>
+
+        <Button size="sm" onClick={onCancel}>
           Cancel
         </Button>
       </div>

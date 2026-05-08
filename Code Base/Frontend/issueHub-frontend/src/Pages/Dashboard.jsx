@@ -6,6 +6,7 @@ import {
   CircleDot,
   Settings,
 } from "lucide-react";
+
 import Button from "../Components/Button/button.jsx";
 import Sidebar from "../Components/SideBar/sideBar.jsx";
 import "../App.css";
@@ -53,6 +54,7 @@ function AdminDashboardPage() {
   return (
     <div className="preview-shell">
       <Sidebar
+        brandSub="Admin Dashboard"
         navItems={ADMIN_NAV_ITEMS}
         enableNavigation={true}
         activeKey={activeKey}
@@ -61,7 +63,7 @@ function AdminDashboardPage() {
 
       <main className="preview-main">
         <section className="preview-hero card">
-          <p className="eyebrow">Admin dashboard</p>
+          <p className="eyebrow">Admin Dashboard</p>
           <h1>IssueHub Sidebar</h1>
           <p className="lead">
             This is the routed admin view. The sidebar is now visible here, and

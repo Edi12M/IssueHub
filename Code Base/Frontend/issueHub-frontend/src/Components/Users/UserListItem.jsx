@@ -1,5 +1,5 @@
 import { Settings } from "lucide-react";
-import Button from "../Button/button";
+import Button from "../Button/button.jsx";
 
 export default function UserListItem({ user, onSettings }) {
   const getStatusConfig = (status) => {

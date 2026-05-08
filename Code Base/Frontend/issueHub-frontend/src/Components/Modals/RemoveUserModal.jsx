@@ -1,4 +1,4 @@
-import Button from "../Button/button";
+import Button from "../Button/button.jsx";
 import "./modals.css";
 
 export default function RemoveUserModal({ user, onConfirm, onCancel }) {
