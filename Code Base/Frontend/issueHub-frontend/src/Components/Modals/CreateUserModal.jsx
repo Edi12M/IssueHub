@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import Button from "../Button/button";
 import "./modals.css";
 
 export default function CreateUserModal({

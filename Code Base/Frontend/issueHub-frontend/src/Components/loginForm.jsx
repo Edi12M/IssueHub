@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Container, Form, InputGroup } from "react-bootstrap";
-import Button from "./Button/button";
+import Button from "./Button/button.jsx";
 import logo from "../assets/appLogo-removebg.png";
 
 import { Eye, EyeSlash } from "react-bootstrap-icons";

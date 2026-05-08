@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Button from "../Components/Button/button";
+import Button from "../Components/Button/button.jsx";
 
 export default function UserForm({
   initial = {},
