@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Lock, Trash2, X } from "lucide-react";
-import Button from "../Button/button";
 
 const inputBase = {
   width: "100%",
@@ -46,7 +45,9 @@ function FormInput({ value, onChange, type = "text", placeholder, ...rest }) {
         ...inputBase,
         borderColor: focused ? "rgba(99,102,241,0.6)" : "rgba(255,255,255,0.1)",
         boxShadow: focused ? "0 0 0 3px rgba(99,102,241,0.15)" : "none",
-        backgroundColor: focused ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
+        backgroundColor: focused
+          ? "rgba(255,255,255,0.07)"
+          : "rgba(255,255,255,0.04)",
       }}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
@@ -65,7 +66,9 @@ function FormSelect({ value, onChange, children }) {
         ...inputBase,
         borderColor: focused ? "rgba(99,102,241,0.6)" : "rgba(255,255,255,0.1)",
         boxShadow: focused ? "0 0 0 3px rgba(99,102,241,0.15)" : "none",
-        backgroundColor: focused ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
+        backgroundColor: focused
+          ? "rgba(255,255,255,0.07)"
+          : "rgba(255,255,255,0.04)",
         cursor: "pointer",
         appearance: "none",
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
@@ -84,13 +87,33 @@ function FormSelect({ value, onChange, children }) {
 const getStatusConfig = (status) => {
   switch (status) {
     case "Pending Activation":
-      return { bg: "rgba(251,191,36,0.12)", text: "#fbbf24", border: "rgba(251,191,36,0.25)", dot: "#fbbf24" };
+      return {
+        bg: "rgba(251,191,36,0.12)",
+        text: "#fbbf24",
+        border: "rgba(251,191,36,0.25)",
+        dot: "#fbbf24",
+      };
     case "Active":
-      return { bg: "rgba(52,211,153,0.12)", text: "#34d399", border: "rgba(52,211,153,0.25)", dot: "#34d399" };
+      return {
+        bg: "rgba(52,211,153,0.12)",
+        text: "#34d399",
+        border: "rgba(52,211,153,0.25)",
+        dot: "#34d399",
+      };
     case "Deactivated":
-      return { bg: "rgba(248,113,113,0.12)", text: "#f87171", border: "rgba(248,113,113,0.25)", dot: "#f87171" };
+      return {
+        bg: "rgba(248,113,113,0.12)",
+        text: "#f87171",
+        border: "rgba(248,113,113,0.25)",
+        dot: "#f87171",
+      };
     default:
-      return { bg: "rgba(148,163,184,0.12)", text: "#94a3b8", border: "rgba(148,163,184,0.25)", dot: "#94a3b8" };
+      return {
+        bg: "rgba(148,163,184,0.12)",
+        text: "#94a3b8",
+        border: "rgba(148,163,184,0.25)",
+        dot: "#94a3b8",
+      };
   }
 };
 
@@ -117,7 +140,13 @@ export default function UserSettingsModal({
   }
 
   function handleConfirmSave() {
-    onSave({ ...user, name: name.trim(), email: email.trim(), department: department.trim(), role });
+    onSave({
+      ...user,
+      name: name.trim(),
+      email: email.trim(),
+      department: department.trim(),
+      role,
+    });
     setShowConfirm(false);
   }
 
@@ -155,13 +184,34 @@ export default function UserSettingsModal({
 
       <div style={modalCard}>
         {/* Header */}
-        <div style={{ padding: "22px 24px 20px", ...divider, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div
+          style={{
+            padding: "22px 24px 20px",
+            ...divider,
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
+        >
           <div>
-            <h2 style={{ margin: 0, color: "#f1f5f9", fontSize: "17px", fontWeight: "700", letterSpacing: "-0.02em" }}>
+            <h2
+              style={{
+                margin: 0,
+                color: "#f1f5f9",
+                fontSize: "17px",
+                fontWeight: "700",
+                letterSpacing: "-0.02em",
+              }}
+            >
               User Settings
             </h2>
-            <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: "13px" }}>
-              Editing profile for <span style={{ color: "#94a3b8", fontWeight: "500" }}>{user.name}</span>
+            <p
+              style={{ margin: "4px 0 0", color: "#64748b", fontSize: "13px" }}
+            >
+              Editing profile for{" "}
+              <span style={{ color: "#94a3b8", fontWeight: "500" }}>
+                {user.name}
+              </span>
             </p>
           </div>
           <button
@@ -188,21 +238,45 @@ export default function UserSettingsModal({
         {/* Profile Information */}
         <div style={{ padding: "22px 24px", ...divider }}>
           <p style={sectionHeadingStyle}>Profile Information</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
             <div>
               <label style={labelStyle}>Full Name</label>
-              <FormInput value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
+              <FormInput
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Full name"
+              />
             </div>
             <div>
               <label style={labelStyle}>Email Address</label>
-              <FormInput value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="name@example.com" />
+              <FormInput
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                placeholder="name@example.com"
+              />
             </div>
             <div>
               <label style={labelStyle}>
                 Department{" "}
-                <span style={{ color: "#475569", fontWeight: "400", textTransform: "none", letterSpacing: 0 }}>— optional</span>
+                <span
+                  style={{
+                    color: "#475569",
+                    fontWeight: "400",
+                    textTransform: "none",
+                    letterSpacing: 0,
+                  }}
+                >
+                  — optional
+                </span>
               </label>
-              <FormInput value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="e.g. Engineering" />
+              <FormInput
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                placeholder="e.g. Engineering"
+              />
             </div>
           </div>
         </div>
@@ -210,10 +284,15 @@ export default function UserSettingsModal({
         {/* Permissions & Status */}
         <div style={{ padding: "22px 24px", ...divider }}>
           <p style={sectionHeadingStyle}>Permissions & Status</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
             <div>
               <label style={labelStyle}>System Role</label>
-              <FormSelect value={role} onChange={(e) => setRole(e.target.value)}>
+              <FormSelect
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
                 <option>Developer</option>
                 <option>Project Manager</option>
                 <option>System Administrator</option>
@@ -221,23 +300,47 @@ export default function UserSettingsModal({
               </FormSelect>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: "11.5px", fontWeight: "600", color: "#64748b", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                Current Status
-              </span>
-              <span style={{
-                padding: "4px 10px",
-                backgroundColor: statusConfig.bg,
-                color: statusConfig.text,
-                border: `1px solid ${statusConfig.border}`,
-                borderRadius: "6px",
-                fontSize: "12px",
-                fontWeight: "500",
+            <div
+              style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "6px",
-              }}>
-                <span style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: statusConfig.dot, flexShrink: 0 }} />
+                justifyContent: "space-between",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "11.5px",
+                  fontWeight: "600",
+                  color: "#64748b",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Current Status
+              </span>
+              <span
+                style={{
+                  padding: "4px 10px",
+                  backgroundColor: statusConfig.bg,
+                  color: statusConfig.text,
+                  border: `1px solid ${statusConfig.border}`,
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "5px",
+                    height: "5px",
+                    borderRadius: "50%",
+                    backgroundColor: statusConfig.dot,
+                    flexShrink: 0,
+                  }}
+                />
                 {user.status}
               </span>
             </div>
@@ -246,7 +349,9 @@ export default function UserSettingsModal({
 
         {/* Danger Zone */}
         <div style={{ padding: "22px 24px", ...divider }}>
-          <p style={{ ...sectionHeadingStyle, color: "#ef4444", opacity: 0.7 }}>Danger Zone</p>
+          <p style={{ ...sectionHeadingStyle, color: "#ef4444", opacity: 0.7 }}>
+            Danger Zone
+          </p>
           <div style={{ display: "flex", gap: "10px" }}>
             {user.status !== "Deactivated" && (
               <button
@@ -268,11 +373,13 @@ export default function UserSettingsModal({
                   transition: "all 0.15s ease",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(251,191,36,0.18)";
+                  e.currentTarget.style.backgroundColor =
+                    "rgba(251,191,36,0.18)";
                   e.currentTarget.style.borderColor = "rgba(251,191,36,0.4)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(251,191,36,0.1)";
+                  e.currentTarget.style.backgroundColor =
+                    "rgba(251,191,36,0.1)";
                   e.currentTarget.style.borderColor = "rgba(251,191,36,0.2)";
                 }}
               >
@@ -299,7 +406,8 @@ export default function UserSettingsModal({
                 transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "rgba(248,113,113,0.18)";
+                e.currentTarget.style.backgroundColor =
+                  "rgba(248,113,113,0.18)";
                 e.currentTarget.style.borderColor = "rgba(248,113,113,0.4)";
               }}
               onMouseLeave={(e) => {
@@ -330,8 +438,12 @@ export default function UserSettingsModal({
               cursor: "pointer",
               transition: "all 0.15s ease",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.09)")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)")}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.09)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)")
+            }
           >
             Cancel
           </button>
@@ -341,7 +453,9 @@ export default function UserSettingsModal({
             style={{
               flex: 1,
               padding: "10px 18px",
-              backgroundColor: isSaving ? "rgba(99,102,241,0.4)" : "rgba(99,102,241,0.9)",
+              backgroundColor: isSaving
+                ? "rgba(99,102,241,0.4)"
+                : "rgba(99,102,241,0.9)",
               color: "#fff",
               border: "1px solid rgba(99,102,241,0.5)",
               borderRadius: "8px",
@@ -351,8 +465,14 @@ export default function UserSettingsModal({
               transition: "all 0.15s ease",
               letterSpacing: "0.01em",
             }}
-            onMouseEnter={(e) => { if (!isSaving) e.currentTarget.style.backgroundColor = "rgba(99,102,241,1)"; }}
-            onMouseLeave={(e) => { if (!isSaving) e.currentTarget.style.backgroundColor = "rgba(99,102,241,0.9)"; }}
+            onMouseEnter={(e) => {
+              if (!isSaving)
+                e.currentTarget.style.backgroundColor = "rgba(99,102,241,1)";
+            }}
+            onMouseLeave={(e) => {
+              if (!isSaving)
+                e.currentTarget.style.backgroundColor = "rgba(99,102,241,0.9)";
+            }}
           >
             {isSaving ? "Saving…" : "Save Changes"}
           </button>
@@ -364,27 +484,52 @@ export default function UserSettingsModal({
         <>
           <div
             onClick={() => setShowConfirm(false)}
-            style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.4)", zIndex: 1000 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(0,0,0,0.4)",
+              zIndex: 1000,
+            }}
           />
-          <div style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            zIndex: 1001,
-            width: "90%",
-            maxWidth: "360px",
-            backgroundColor: "#141c2b",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "12px",
-            padding: "24px",
-            boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
-          }}>
-            <h3 style={{ margin: "0 0 8px", color: "#f1f5f9", fontSize: "15px", fontWeight: "700" }}>
+          <div
+            style={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 1001,
+              width: "90%",
+              maxWidth: "360px",
+              backgroundColor: "#141c2b",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "12px",
+              padding: "24px",
+              boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
+            }}
+          >
+            <h3
+              style={{
+                margin: "0 0 8px",
+                color: "#f1f5f9",
+                fontSize: "15px",
+                fontWeight: "700",
+              }}
+            >
               Confirm Changes
             </h3>
-            <p style={{ margin: "0 0 22px", color: "#64748b", fontSize: "13.5px", lineHeight: 1.5 }}>
-              Save changes to <span style={{ color: "#94a3b8", fontWeight: "600" }}>{name}</span>'s profile?
+            <p
+              style={{
+                margin: "0 0 22px",
+                color: "#64748b",
+                fontSize: "13.5px",
+                lineHeight: 1.5,
+              }}
+            >
+              Save changes to{" "}
+              <span style={{ color: "#94a3b8", fontWeight: "600" }}>
+                {name}
+              </span>
+              's profile?
             </p>
             <div style={{ display: "flex", gap: "10px" }}>
               <button
