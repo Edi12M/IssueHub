@@ -83,6 +83,7 @@
   flex-direction: column;
   gap: 20px;
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .preview-hero {
@@ -208,6 +209,17 @@
 
   .preview-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ≤720px: hamburger toggle appears — push content below/past it */
+@media (max-width: 720px) {
+  .preview-shell {
+    overflow-x: hidden;
+  }
+
+  .preview-main {
+    padding: 80px 16px 24px;
   }
 }
 

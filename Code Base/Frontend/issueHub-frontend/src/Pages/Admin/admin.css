@@ -1,10 +1,8 @@
-/* ─────────────────────────────────────────
-   Admin Role — shared page styles
-   Used by: AdminDashboardPage, AdminProjectsPage,
-            AdminAuditLogPage, AdminSettingsPage
-───────────────────────────────────────── */
 
-/* ── Stats grid ── */
+
+/* ══════════════════════════════════════════
+   STATS GRID
+══════════════════════════════════════════ */
 .admin-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -12,7 +10,9 @@
   max-width: 920px;
 }
 
-/* ── Dashboard lower section (activity + roles) ── */
+/* ══════════════════════════════════════════
+   DASHBOARD LOWER SECTION
+══════════════════════════════════════════ */
 .admin-lower-grid {
   display: grid;
   grid-template-columns: 1fr 300px;
@@ -20,7 +20,58 @@
   max-width: 920px;
 }
 
-/* ── Activity list ── */
+/* ══════════════════════════════════════════
+   DASHBOARD SUMMARY ROW  (3-cell strip)
+══════════════════════════════════════════ */
+.admin-summary-row {
+  max-width: 920px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.admin-summary-cell {
+  padding: 18px 22px;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-summary-cell:last-child {
+  border-right: none;
+}
+
+.admin-summary-cell-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.admin-summary-cell-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-summary-cell-value {
+  color: #f1f5f9;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+}
+
+.admin-summary-cell-sub {
+  color: #64748b;
+  font-size: 12px;
+  margin: 3px 0 0;
+}
+
+/* ══════════════════════════════════════════
+   ACTIVITY LIST
+══════════════════════════════════════════ */
 .admin-activity {
   min-width: 0;
 }
@@ -31,7 +82,6 @@
   margin: 16px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .admin-activity-item {
@@ -54,18 +104,10 @@
   margin-top: 5px;
 }
 
-.admin-event-dot.cat-user {
-  background: #a5b4fc;
-}
-.admin-event-dot.cat-project {
-  background: #ff7aa2;
-}
-.admin-event-dot.cat-security {
-  background: #fbbf24;
-}
-.admin-event-dot.cat-system {
-  background: #34d399;
-}
+.admin-event-dot.cat-user     { background: #a5b4fc; }
+.admin-event-dot.cat-project  { background: #ff7aa2; }
+.admin-event-dot.cat-security { background: #fbbf24; }
+.admin-event-dot.cat-system   { background: #34d399; }
 
 .admin-activity-body {
   flex: 1;
@@ -102,24 +144,14 @@
   margin-top: 2px;
 }
 
-.admin-cat-badge.cat-user {
-  background: rgba(99, 102, 241, 0.14);
-  color: #a5b4fc;
-}
-.admin-cat-badge.cat-project {
-  background: rgba(255, 122, 162, 0.12);
-  color: #ff7aa2;
-}
-.admin-cat-badge.cat-security {
-  background: rgba(251, 191, 36, 0.12);
-  color: #fbbf24;
-}
-.admin-cat-badge.cat-system {
-  background: rgba(52, 211, 153, 0.12);
-  color: #34d399;
-}
+.admin-cat-badge.cat-user     { background: rgba(99, 102, 241, 0.14); color: #a5b4fc; }
+.admin-cat-badge.cat-project  { background: rgba(255, 122, 162, 0.12); color: #ff7aa2; }
+.admin-cat-badge.cat-security { background: rgba(251, 191, 36, 0.12);  color: #fbbf24; }
+.admin-cat-badge.cat-system   { background: rgba(52, 211, 153, 0.12);  color: #34d399; }
 
-/* ── Role distribution ── */
+/* ══════════════════════════════════════════
+   ROLE DISTRIBUTION
+══════════════════════════════════════════ */
 .admin-role-list {
   display: flex;
   flex-direction: column;
@@ -140,15 +172,9 @@
   flex-shrink: 0;
 }
 
-.role-label.role-admin {
-  color: #a5b4fc;
-}
-.role-label.role-pm {
-  color: #f9a8d4;
-}
-.role-label.role-dev {
-  color: #7dd3fc;
-}
+.role-label.role-admin { color: #a5b4fc; }
+.role-label.role-pm    { color: #f9a8d4; }
+.role-label.role-dev   { color: #7dd3fc; }
 
 .role-bar-wrap {
   flex: 1;
@@ -172,7 +198,7 @@
   color: #cbd5e1;
 }
 
-/* ── Filter bar ── */
+
 .admin-filter-bar {
   display: flex;
   gap: 8px;
@@ -190,6 +216,7 @@
   border: 1px solid rgba(107, 228, 255, 0.2);
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .admin-filter-chip:hover {
@@ -204,33 +231,56 @@
   border-color: rgba(255, 122, 162, 0.3);
 }
 
-/* ── Project list ── */
+
+.admin-table-header {
+  display: grid;
+  grid-template-columns: 1fr 130px 90px 90px 110px;
+  gap: 16px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.admin-th {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .admin-project-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.admin-project-item {
-  display: flex;
-  align-items: center;
+.admin-project-row {
+  display: grid;
+  grid-template-columns: 1fr 130px 90px 90px 110px;
   gap: 16px;
+  align-items: center;
   padding: 16px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   transition: background 0.15s ease;
   cursor: pointer;
 }
 
-.admin-project-item:last-child {
+.admin-project-row:last-child {
   border-bottom: none;
 }
 
-.admin-project-item:hover {
+.admin-project-row:hover {
   background: rgba(255, 255, 255, 0.03);
 }
 
+/* column slots (used as targets for responsive hiding) */
+.admin-col-name    { min-width: 0; }
+.admin-col-manager { font-size: 13px; color: #cbd5e1; }
+.admin-col-members { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #cbd5e1; }
+.admin-col-issues  { display: flex; align-items: center; gap: 5px; }
+.admin-col-deadline { display: flex; align-items: center; gap: 5px; }
+
 .admin-project-name {
-  flex: 1;
   min-width: 0;
 }
 
@@ -252,35 +302,27 @@
   text-overflow: ellipsis;
 }
 
-.admin-project-meta {
+.audit-list-header {
   display: flex;
-  gap: 24px;
   align-items: center;
-  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
-.admin-meta-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-}
-
-.admin-meta-label {
-  font-size: 10px;
+.audit-list-count {
+  font-size: 13px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.audit-list-tz {
+  font-size: 12px;
   color: #475569;
 }
 
-.admin-meta-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: #cbd5e1;
-}
-
-/* ── Audit log list ── */
 .admin-audit-list {
   list-style: none;
   padding: 0;
@@ -315,22 +357,10 @@
   margin-top: 1px;
 }
 
-.audit-icon-wrap.cat-user {
-  background: rgba(99, 102, 241, 0.12);
-  color: #a5b4fc;
-}
-.audit-icon-wrap.cat-project {
-  background: rgba(255, 122, 162, 0.12);
-  color: #ff7aa2;
-}
-.audit-icon-wrap.cat-security {
-  background: rgba(251, 191, 36, 0.12);
-  color: #fbbf24;
-}
-.audit-icon-wrap.cat-system {
-  background: rgba(52, 211, 153, 0.12);
-  color: #34d399;
-}
+.audit-icon-wrap.cat-user     { background: rgba(99, 102, 241, 0.12); color: #a5b4fc; }
+.audit-icon-wrap.cat-project  { background: rgba(255, 122, 162, 0.12); color: #ff7aa2; }
+.audit-icon-wrap.cat-security { background: rgba(251, 191, 36, 0.12);  color: #fbbf24; }
+.audit-icon-wrap.cat-system   { background: rgba(52, 211, 153, 0.12);  color: #34d399; }
 
 .audit-body {
   flex: 1;
@@ -341,6 +371,7 @@
   color: #f1f5f9;
   font-size: 13.5px;
   line-height: 1.45;
+  word-break: break-word;
 }
 
 .audit-meta {
@@ -348,6 +379,7 @@
   gap: 16px;
   margin-top: 5px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .audit-performer {
@@ -377,9 +409,11 @@
   margin-top: 2px;
 }
 
-/* ── Settings ── */
+/* ══════════════════════════════════════════
+   SETTINGS  (AdminSettingsPage)
+══════════════════════════════════════════ */
 .admin-settings-card {
-  max-width: 720px;
+  max-width: 760px;
 }
 
 .admin-tabs {
@@ -388,7 +422,12 @@
   margin-bottom: 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding-bottom: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+
+.admin-tabs::-webkit-scrollbar { display: none; }
 
 .admin-tab {
   padding: 9px 18px;
@@ -402,6 +441,8 @@
   cursor: pointer;
   transition: all 0.15s ease;
   border-radius: 6px 6px 0 0;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .admin-tab:hover {
@@ -460,7 +501,7 @@
   line-height: 1.5;
 }
 
-/* Toggle switch */
+/* ── Toggle switch ── */
 .toggle-switch {
   position: relative;
   display: inline-flex;
@@ -508,7 +549,7 @@
   background: white;
 }
 
-/* Number / text inputs in settings */
+/* ── Number / text inputs ── */
 .admin-number-input {
   width: 80px;
   padding: 7px 10px;
@@ -559,7 +600,7 @@
   flex-shrink: 0;
 }
 
-/* Save feedback */
+/* ── Save feedback ── */
 .admin-save-banner {
   display: inline-flex;
   align-items: center;
@@ -580,9 +621,12 @@
   margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
 }
 
-/* Project detail modal extras */
+/* ══════════════════════════════════════════
+   PROJECT DETAIL MODAL
+══════════════════════════════════════════ */
 .project-detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -625,30 +669,222 @@
   transition: width 0.4s ease;
 }
 
-/* Responsive */
+/* ══════════════════════════════════════════
+   RESPONSIVE  —  4 breakpoints
+══════════════════════════════════════════ */
+
+/* ── 1200px  large tablet ── */
 @media (max-width: 1200px) {
   .admin-stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+/* ── 900px  tablet ── */
 @media (max-width: 900px) {
+  /* Dashboard lower grid stacks */
   .admin-lower-grid {
     grid-template-columns: 1fr;
   }
-  .admin-project-meta {
+
+  /* Summary row stacks */
+  .admin-summary-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-summary-cell {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 14px 18px;
+  }
+
+  .admin-summary-cell:last-child {
+    border-bottom: none;
+  }
+
+  /* Project table: keep name + manager + issues only */
+  .admin-table-header,
+  .admin-project-row {
+    grid-template-columns: 1fr 120px 80px;
+  }
+
+  .admin-col-deadline,
+  .admin-col-members,
+  .admin-th-deadline,
+  .admin-th-members {
     display: none;
   }
 }
 
-@media (max-width: 720px) {
+/* ── 640px  mobile ── */
+@media (max-width: 640px) {
+  /* Stats: single column */
   .admin-stats-grid {
     grid-template-columns: 1fr;
   }
-  .admin-tabs {
+
+  /* Preview-main reduced side padding (top is handled by the 720px rule in App.css) */
+  .preview-main {
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 16px;
+    gap: 14px;
+  }
+
+  /* Cards reduced padding */
+  .preview-hero.card,
+  .card {
+    padding: 16px;
+  }
+
+  /* Preview-hero h1 */
+  .preview-hero h1 {
+    font-size: 1.8rem;
+    margin-top: 6px;
+    margin-bottom: 8px;
+  }
+
+  /* Action buttons wrap */
+  .preview-actions {
     flex-wrap: wrap;
   }
+
+  /* Activity description can wrap */
+  .admin-activity-desc {
+    white-space: normal;
+  }
+
+  /* Activity: hide category badge to save width */
+  .admin-cat-badge {
+    display: none;
+  }
+
+  /* Project table: hide header, switch to card rows */
+  .admin-table-header {
+    display: none;
+  }
+
+  .admin-project-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 14px 16px;
+  }
+
+  .admin-col-manager {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .admin-col-members,
+  .admin-col-issues,
+  .admin-col-deadline {
+    display: none;
+  }
+
+  /* Hide timezone label on mobile — saves space */
+  .audit-list-tz { display: none; }
+
+  /* Tighten audit list header padding */
+  .audit-list-header { padding: 10px 14px; }
+
+  /* Audit: tighten items, move timestamp below body */
+  .admin-audit-item {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .audit-icon-wrap {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  .audit-timestamp {
+    order: 3;
+    flex-basis: 100%;
+    text-align: left;
+    margin-top: 0;
+    padding-left: 38px;
+  }
+
+  .audit-timestamp-abs {
+    display: none;
+  }
+
+  .audit-meta {
+    gap: 8px;
+  }
+
+  /* Settings rows: stack label above control */
+  .admin-setting-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  /* Text input full-width in stacked row */
+  .admin-text-input {
+    width: 100%;
+    max-width: 340px;
+  }
+
+  /* Project modal */
+  .modal-container.modal-md {
+    width: 96%;
+    max-height: 92vh;
+  }
+
   .project-detail-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Role label shorter on mobile */
+  .role-label {
+    width: 96px;
+    font-size: 11.5px;
+  }
+
+  /* Filter bar: horizontal scroll instead of wrapping */
+  .admin-filter-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .admin-filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ── 480px  small mobile ── */
+@media (max-width: 480px) {
+  .admin-stats-grid {
+    gap: 10px;
+  }
+
+  .admin-summary-cell {
+    padding: 12px 14px;
+  }
+
+  .audit-desc {
+    font-size: 12.5px;
+  }
+
+  .admin-setting-title {
+    font-size: 13.5px;
+  }
+
+  /* Settings tabs: scroll */
+  .admin-tabs {
+    gap: 2px;
+  }
+
+  .admin-tab {
+    padding: 8px 12px;
+    font-size: 12px;
   }
 }

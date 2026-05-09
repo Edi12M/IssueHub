@@ -122,22 +122,12 @@ export default function AdminAuditLogPage() {
 
         {/* Log list */}
         <section className="card" style={{ maxWidth: 920, padding: 0, overflow: "hidden" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "12px 20px",
-              borderBottom: "1px solid rgba(255,255,255,0.07)",
-            }}
-          >
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8" }}>
+          <div className="audit-list-header">
+            <span className="audit-list-count">
               {filtered.length} {filtered.length === 1 ? "event" : "events"}
               {categoryFilter !== "All" && ` in ${categoryFilter}`}
             </span>
-            <span style={{ fontSize: 12, color: "#475569" }}>
-              All times in local timezone
-            </span>
+            <span className="audit-list-tz">All times in local timezone</span>
           </div>
 
           {filtered.length === 0 ? (

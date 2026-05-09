@@ -296,46 +296,18 @@ export default function AdminProjectsPage() {
         </section>
 
         {/* Project list */}
-        <section
-          className="card"
-          style={{ maxWidth: 920, padding: 0, overflow: "hidden" }}
-        >
-          {/* Table head */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 130px 90px 90px 110px",
-              gap: 16,
-              padding: "10px 20px",
-              borderBottom: "1px solid rgba(255,255,255,0.07)",
-            }}
-          >
-            {["Project", "Manager", "Members", "Issues", "Deadline"].map(
-              (h) => (
-                <span
-                  key={h}
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#475569",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                  }}
-                >
-                  {h}
-                </span>
-              ),
-            )}
+        <section className="card" style={{ maxWidth: 920, padding: 0, overflow: "hidden" }}>
+          {/* Table header */}
+          <div className="admin-table-header">
+            <span className="admin-th">Project</span>
+            <span className="admin-th admin-th-manager">Manager</span>
+            <span className="admin-th admin-th-members">Members</span>
+            <span className="admin-th admin-th-issues">Issues</span>
+            <span className="admin-th admin-th-deadline">Deadline</span>
           </div>
 
           {filtered.length === 0 ? (
-            <div
-              style={{
-                padding: "40px 20px",
-                textAlign: "center",
-                color: "#64748b",
-              }}
-            >
+            <div style={{ padding: "40px 20px", textAlign: "center", color: "#64748b" }}>
               No projects match the current filter.
             </div>
           ) : (
@@ -343,24 +315,12 @@ export default function AdminProjectsPage() {
               {filtered.map((p) => (
                 <li
                   key={p.id}
-                  className="admin-project-item"
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 130px 90px 90px 110px",
-                    gap: 16,
-                  }}
+                  className="admin-project-row"
                   onClick={() => setSelected(p)}
                 >
                   {/* Name + status */}
-                  <div className="admin-project-name">
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        marginBottom: 3,
-                      }}
-                    >
+                  <div className="admin-col-name admin-project-name">
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
                       <span className="admin-project-title">{p.name}</span>
                       <StatusBadge status={p.status} />
                     </div>
@@ -368,63 +328,25 @@ export default function AdminProjectsPage() {
                   </div>
 
                   {/* Manager */}
-                  <span
-                    style={{
-                      fontSize: 13,
-                      color: "#cbd5e1",
-                      alignSelf: "center",
-                    }}
-                  >
-                    {p.manager}
-                  </span>
+                  <span className="admin-col-manager">{p.manager}</span>
 
                   {/* Members */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
-                      alignSelf: "center",
-                    }}
-                  >
+                  <div className="admin-col-members">
                     <UsersIcon size={13} color="#64748b" />
-                    <span style={{ fontSize: 13, color: "#cbd5e1" }}>
-                      {p.membersCount}
-                    </span>
+                    <span>{p.membersCount}</span>
                   </div>
 
                   {/* Open issues */}
                   <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
-                      alignSelf: "center",
-                    }}
+                    className="admin-col-issues"
+                    style={{ color: p.openIssues > 0 ? "#f59e0b" : "#34d399" }}
                   >
-                    <AlertCircle
-                      size={13}
-                      color={p.openIssues > 0 ? "#f59e0b" : "#34d399"}
-                    />
-                    <span
-                      style={{
-                        fontSize: 13,
-                        color: p.openIssues > 0 ? "#f59e0b" : "#34d399",
-                      }}
-                    >
-                      {p.openIssues}
-                    </span>
+                    <AlertCircle size={13} color={p.openIssues > 0 ? "#f59e0b" : "#34d399"} />
+                    <span style={{ fontSize: 13 }}>{p.openIssues}</span>
                   </div>
 
                   {/* Deadline */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
-                      alignSelf: "center",
-                    }}
-                  >
+                  <div className="admin-col-deadline">
                     <Calendar size={13} color="#64748b" />
                     <span style={{ fontSize: 12.5, color: "#94a3b8" }}>
                       {formatDate(p.deadline)}

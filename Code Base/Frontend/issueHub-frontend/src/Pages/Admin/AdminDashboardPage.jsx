@@ -200,17 +200,7 @@ export function AdminDashboardPage() {
         </section>
 
         {/* System summary row */}
-        <section
-          className="card"
-          style={{
-            maxWidth: 920,
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 0,
-            padding: 0,
-            overflow: "hidden",
-          }}
-        >
+        <section className="card admin-summary-row">
           {[
             {
               icon: <UsersIcon size={16} color="#a5b4fc" />,
@@ -231,21 +221,13 @@ export function AdminDashboardPage() {
               sub: formatDate("2026-05-07T08:44:00Z"),
             },
           ].map((item, i) => (
-            <div
-              key={i}
-              style={{
-                padding: "18px 22px",
-                borderRight: i < 2 ? "1px solid rgba(255,255,255,0.06)" : "none",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <div key={i} className="admin-summary-cell">
+              <div className="admin-summary-cell-header">
                 {item.icon}
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  {item.label}
-                </span>
+                <span className="admin-summary-cell-label">{item.label}</span>
               </div>
-              <p style={{ color: "#f1f5f9", fontWeight: 600, fontSize: 14, margin: 0 }}>{item.value}</p>
-              <p style={{ color: "#64748b", fontSize: 12, margin: "3px 0 0" }}>{item.sub}</p>
+              <p className="admin-summary-cell-value">{item.value}</p>
+              <p className="admin-summary-cell-sub">{item.sub}</p>
             </div>
           ))}
         </section>
