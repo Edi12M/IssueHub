@@ -1,9 +1,16 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Hero from "./Pages/Hero.jsx";
-import { AdminDashboardPage } from "./Pages/Dashboard.jsx";
-import { ManagerDashboardPage } from "./Pages/Manager/ManagerLayout.jsx";
 import Users from "./Pages/Users.jsx";
 import Login from "./Pages/Login.jsx";
+
+// Admin pages
+import { AdminDashboardPage } from "./Pages/Admin/AdminDashboardPage.jsx";
+import AdminProjectsPage from "./Pages/Admin/AdminProjectsPage.jsx";
+import AdminAuditLogPage from "./Pages/Admin/AdminAuditLogPage.jsx";
+import AdminSettingsPage from "./Pages/Admin/AdminSettingsPage.jsx";
+
+// Manager pages
+import { ManagerDashboardPage } from "./Pages/Manager/ManagerLayout.jsx";
 import ProjectsPage from "./Pages/Manager/ProjectsPage.jsx";
 import TasksPage from "./Pages/Manager/TasksPage.jsx";
 import KanbanPage from "./Pages/Manager/KanbanPage.jsx";
@@ -15,8 +22,16 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Hero />} />
+      <Route path="/login" element={<Login />} />
+
+      {/* Admin routes */}
       <Route path="/admin" element={<AdminDashboardPage />} />
       <Route path="/admin/users" element={<Users />} />
+      <Route path="/admin/projects" element={<AdminProjectsPage />} />
+      <Route path="/admin/audit" element={<AdminAuditLogPage />} />
+      <Route path="/admin/settings" element={<AdminSettingsPage />} />
+
+      {/* Manager routes */}
       <Route path="/manager" element={<ManagerDashboardPage />} />
       <Route path="/manager/projects" element={<ProjectsPage />} />
       <Route path="/manager/tasks" element={<TasksPage />} />
@@ -24,7 +39,7 @@ export default function App() {
       <Route path="/manager/analytics" element={<AnalyticsPage />} />
       <Route path="/manager/timetracking" element={<TimeTrackingPage />} />
       <Route path="/manager/settings" element={<PMSettingsPage />} />
-      <Route path="/login" element={<Login />} />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

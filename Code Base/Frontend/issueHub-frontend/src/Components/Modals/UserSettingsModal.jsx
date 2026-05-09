@@ -3,8 +3,8 @@ import { Lock, Trash2, X } from "lucide-react";
 
 const inputBase = {
   width: "100%",
-  backgroundColor: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.1)",
+  backgroundColor: "rgba(15, 23, 42, 0.4)",
+  border: "1px solid rgba(107, 228, 255, 0.2)",
   color: "#f1f5f9",
   padding: "10px 12px",
   fontSize: "13.5px",
@@ -43,11 +43,13 @@ function FormInput({ value, onChange, type = "text", placeholder, ...rest }) {
       placeholder={placeholder}
       style={{
         ...inputBase,
-        borderColor: focused ? "rgba(99,102,241,0.6)" : "rgba(255,255,255,0.1)",
-        boxShadow: focused ? "0 0 0 3px rgba(99,102,241,0.15)" : "none",
+        borderColor: focused
+          ? "rgba(107, 228, 255, 0.6)"
+          : "rgba(107, 228, 255, 0.2)",
+        boxShadow: focused ? "0 0 0 3px rgba(107, 228, 255, 0.15)" : "none",
         backgroundColor: focused
-          ? "rgba(255,255,255,0.07)"
-          : "rgba(255,255,255,0.04)",
+          ? "rgba(15, 23, 42, 0.5)"
+          : "rgba(15, 23, 42, 0.4)",
       }}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
@@ -64,11 +66,13 @@ function FormSelect({ value, onChange, children }) {
       onChange={onChange}
       style={{
         ...inputBase,
-        borderColor: focused ? "rgba(99,102,241,0.6)" : "rgba(255,255,255,0.1)",
-        boxShadow: focused ? "0 0 0 3px rgba(99,102,241,0.15)" : "none",
+        borderColor: focused
+          ? "rgba(107, 228, 255, 0.6)"
+          : "rgba(107, 228, 255, 0.2)",
+        boxShadow: focused ? "0 0 0 3px rgba(107, 228, 255, 0.15)" : "none",
         backgroundColor: focused
-          ? "rgba(255,255,255,0.07)"
-          : "rgba(255,255,255,0.04)",
+          ? "rgba(15, 23, 42, 0.5)"
+          : "rgba(15, 23, 42, 0.4)",
         cursor: "pointer",
         appearance: "none",
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,

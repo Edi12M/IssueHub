@@ -1,11 +1,4 @@
 import { useState } from "react";
-import {
-  LayoutDashboard,
-  Users as UsersIcon,
-  FolderKanban,
-  CircleDot,
-  Settings,
-} from "lucide-react";
 import Button from "../Components/Button/button.jsx";
 import Sidebar from "../Components/SideBar/sideBar.jsx";
 import {
@@ -23,15 +16,8 @@ import RemoveUserModal from "../Components/Modals/RemoveUserModal.jsx";
 import UserSettingsModal from "../Components/Modals/UserSettingsModal.jsx";
 import CreateUserModal from "../Components/Modals/CreateUserModal.jsx";
 import UserListItem from "../Components/Users/UserListItem.jsx";
+import { ADMIN_NAV_ITEMS } from "./Admin/adminConstants.js";
 import "../App.css";
-
-const ADMIN_NAV_ITEMS = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, to: "/admin" },
-  { key: "users", label: "Users", icon: UsersIcon, to: "/admin/users" },
-  { key: "projects", label: "Projects", icon: FolderKanban },
-  { key: "issues", label: "Issues", icon: CircleDot },
-  { key: "settings", label: "Settings", icon: Settings },
-];
 
 export default function Users() {
   const [users, setUsers] = useState(() => getUsers());
