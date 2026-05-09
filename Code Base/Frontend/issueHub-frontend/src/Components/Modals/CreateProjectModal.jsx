@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { X } from "lucide-react";
+import DatePicker from "react-datepicker";
 import Button from "../Button/button.jsx";
+import "react-datepicker/dist/react-datepicker.css";
+import "./datepicker-custom.css";
 
 const METHODOLOGY_OPTIONS = ["Scrum", "Kanban", "Waterfall"];
 const VISIBILITY_OPTIONS = ["Private", "Team", "Organisation"];
@@ -14,8 +17,8 @@ export default function CreateProjectModal({
     name: "",
     description: "",
     goals: "",
-    startDate: "",
-    endDate: "",
+    startDate: null,
+    endDate: null,
     visibility: "Private",
     methodology: "Scrum",
   });
@@ -30,10 +33,7 @@ export default function CreateProjectModal({
     }
 
     if (projectForm.startDate && projectForm.endDate) {
-      const start = new Date(projectForm.startDate);
-      const end = new Date(projectForm.endDate);
-
-      if (end <= start) {
+      if (projectForm.endDate <= projectForm.startDate) {
         newErrors.endDate = "End date must be after start date";
       }
     }
@@ -52,6 +52,12 @@ export default function CreateProjectModal({
     const newProject = {
       id: `proj_${Date.now()}`,
       ...projectForm,
+      startDate: projectForm.startDate
+        ? projectForm.startDate.toISOString().split("T")[0]
+        : "",
+      endDate: projectForm.endDate
+        ? projectForm.endDate.toISOString().split("T")[0]
+        : "",
       createdAt: new Date().toISOString(),
       status: "Active",
       members: [],
@@ -64,8 +70,8 @@ export default function CreateProjectModal({
       name: "",
       description: "",
       goals: "",
-      startDate: "",
-      endDate: "",
+      startDate: null,
+      endDate: null,
       visibility: "Private",
       methodology: "Scrum",
     });
@@ -78,35 +84,43 @@ export default function CreateProjectModal({
     setProjectForm((prev) => {
       const updatedForm = { ...prev, [field]: value };
 
-      // Clear error for this field when user starts typing
+      // Clear error for this field when user changes it
       if (errors[field]) {
-        setErrors((prevErrors) => ({ ...prevErrors, [field]: undefined }));
+        setErrors((prevErrors) => {
+          const newErrors = { ...prevErrors };
+          delete newErrors[field];
+          return newErrors;
+        });
       }
 
       // Special validation for dates
       if (field === "startDate" && value && updatedForm.endDate) {
-        const start = new Date(value);
-        const end = new Date(updatedForm.endDate);
-        if (end <= start) {
+        if (updatedForm.endDate <= value) {
           setErrors((prevErrors) => ({
             ...prevErrors,
             endDate: "End date must be after start date",
           }));
         } else {
-          setErrors((prevErrors) => ({ ...prevErrors, endDate: undefined }));
+          setErrors((prevErrors) => {
+            const newErrors = { ...prevErrors };
+            delete newErrors.endDate;
+            return newErrors;
+          });
         }
       }
 
       if (field === "endDate" && value && updatedForm.startDate) {
-        const start = new Date(updatedForm.startDate);
-        const end = new Date(value);
-        if (end <= start) {
+        if (value <= updatedForm.startDate) {
           setErrors((prevErrors) => ({
             ...prevErrors,
             endDate: "End date must be after start date",
           }));
         } else {
-          setErrors((prevErrors) => ({ ...prevErrors, endDate: undefined }));
+          setErrors((prevErrors) => {
+            const newErrors = { ...prevErrors };
+            delete newErrors.endDate;
+            return newErrors;
+          });
         }
       }
 
@@ -168,13 +182,14 @@ export default function CreateProjectModal({
           <div className="form-row">
             <div className={`form-group ${errors.startDate ? "error" : ""}`}>
               <label htmlFor="startDate">Start Date</label>
-              <input
-                id="startDate"
-                type="date"
+              <DatePicker
+                selected={projectForm.startDate}
+                onChange={(date) => handleInputChange("startDate", date)}
+                minDate={new Date()}
+                dateFormat="MMM dd, yyyy"
+                placeholderText="Select start date"
                 className="form-input"
-                value={projectForm.startDate}
-                onChange={(e) => handleInputChange("startDate", e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
+                id="startDate"
               />
               {errors.startDate && (
                 <span className="form-error">{errors.startDate}</span>
@@ -182,16 +197,18 @@ export default function CreateProjectModal({
             </div>
             <div className={`form-group ${errors.endDate ? "error" : ""}`}>
               <label htmlFor="endDate">End Date</label>
-              <input
-                id="endDate"
-                type="date"
-                className="form-input"
-                value={projectForm.endDate}
-                onChange={(e) => handleInputChange("endDate", e.target.value)}
-                min={
-                  projectForm.startDate ||
-                  new Date().toISOString().split("T")[0]
+              <DatePicker
+                selected={projectForm.endDate}
+                onChange={(date) => handleInputChange("endDate", date)}
+                minDate={
+                  projectForm.startDate
+                    ? new Date(projectForm.startDate.getTime() + 86400000)
+                    : new Date()
                 }
+                dateFormat="MMM dd, yyyy"
+                placeholderText="Select end date"
+                className="form-input"
+                id="endDate"
               />
               {errors.endDate && (
                 <span className="form-error">{errors.endDate}</span>
