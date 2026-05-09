@@ -25,13 +25,6 @@ import CreateUserModal from "../Components/Modals/CreateUserModal.jsx";
 import UserListItem from "../Components/Users/UserListItem.jsx";
 import "../App.css";
 
-const ROLE_OPTIONS = [
-  "Developer",
-  "Project Manager",
-  "System Administrator",
-  "Viewer",
-];
-
 const ADMIN_NAV_ITEMS = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, to: "/admin" },
   { key: "users", label: "Users", icon: UsersIcon, to: "/admin/users" },
@@ -53,16 +46,6 @@ export default function Users() {
   const [removeUserState, setRemoveUserState] = useState(null);
   const [settingsUser, setSettingsUser] = useState(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
-
-  function openEditor(user) {
-    setSelectedUser(user);
-    setShowForm(false);
-  }
-
-  function openRoleModal(user) {
-    setRoleModalUser(user);
-    setSelectedRole(user.role);
-  }
 
   function handleChangeRole(value) {
     setSelectedRole(value);
