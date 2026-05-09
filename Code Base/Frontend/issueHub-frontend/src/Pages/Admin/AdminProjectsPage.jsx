@@ -1,9 +1,8 @@
 import { useState, useMemo } from "react";
-import { X, Users as UsersIcon, AlertCircle, CheckCircle, Calendar, DollarSign } from "lucide-react";
+import { X, Users as UsersIcon, AlertCircle, Calendar } from "lucide-react";
 
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import StatusBadge from "../../Components/StatusBadge/StatusBadge.jsx";
-import Button from "../../Components/Button/button.jsx";
 import { ADMIN_NAV_ITEMS } from "./adminConstants.js";
 import { getProjects, updateProjectStatus } from "../../data/projects.js";
 import { formatDate } from "../../utils/formatTime.js";
@@ -13,12 +12,18 @@ import "./admin.css";
 const STATUS_FILTERS = ["All", "Active", "Archived", "Closed"];
 
 function ProjectDetailModal({ project, onClose, onStatusChange }) {
-  const budgetPct = Math.min(100, Math.round((project.spent / project.budget) * 100));
+  const budgetPct = Math.min(
+    100,
+    Math.round((project.spent / project.budget) * 100),
+  );
   const [newStatus, setNewStatus] = useState(project.status);
   const [saving, setSaving] = useState(false);
 
   function handleSave() {
-    if (newStatus === project.status) { onClose(); return; }
+    if (newStatus === project.status) {
+      onClose();
+      return;
+    }
     setSaving(true);
     setTimeout(() => {
       onStatusChange(project.id, newStatus);
@@ -32,12 +37,25 @@ function ProjectDetailModal({ project, onClose, onStatusChange }) {
       <div className="modal-backdrop" onClick={onClose} />
       <div className="modal-container modal-md" style={{ position: "fixed" }}>
         {/* Header */}
-        <div className="modal-header" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div
+          className="modal-header"
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
+        >
           <div>
             <h3 className="modal-title">{project.name}</h3>
-            <p className="modal-description" style={{ marginTop: 4 }}>{project.description}</p>
+            <p className="modal-description" style={{ marginTop: 4 }}>
+              {project.description}
+            </p>
           </div>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Close">
+          <button
+            className="modal-close-btn"
+            onClick={onClose}
+            aria-label="Close"
+          >
             <X size={16} />
           </button>
         </div>
@@ -53,35 +71,60 @@ function ProjectDetailModal({ project, onClose, onStatusChange }) {
             </div>
             <div className="project-detail-cell">
               <span className="project-detail-cell-label">Manager</span>
-              <span className="project-detail-cell-value">{project.manager}</span>
+              <span className="project-detail-cell-value">
+                {project.manager}
+              </span>
             </div>
             <div className="project-detail-cell">
               <span className="project-detail-cell-label">Team Size</span>
-              <span className="project-detail-cell-value">{project.membersCount} members</span>
+              <span className="project-detail-cell-value">
+                {project.membersCount} members
+              </span>
             </div>
             <div className="project-detail-cell">
               <span className="project-detail-cell-label">Deadline</span>
-              <span className="project-detail-cell-value">{formatDate(project.deadline)}</span>
+              <span className="project-detail-cell-value">
+                {formatDate(project.deadline)}
+              </span>
             </div>
             <div className="project-detail-cell">
               <span className="project-detail-cell-label">Open Issues</span>
-              <span className="project-detail-cell-value" style={{ color: project.openIssues > 0 ? "#f59e0b" : "#34d399" }}>
+              <span
+                className="project-detail-cell-value"
+                style={{
+                  color: project.openIssues > 0 ? "#f59e0b" : "#34d399",
+                }}
+              >
                 {project.openIssues}
               </span>
             </div>
             <div className="project-detail-cell">
-              <span className="project-detail-cell-label">Completed Issues</span>
-              <span className="project-detail-cell-value" style={{ color: "#34d399" }}>
+              <span className="project-detail-cell-label">
+                Completed Issues
+              </span>
+              <span
+                className="project-detail-cell-value"
+                style={{ color: "#34d399" }}
+              >
                 {project.completedIssues}
               </span>
             </div>
             <div className="project-detail-cell">
               <span className="project-detail-cell-label">Created</span>
-              <span className="project-detail-cell-value">{formatDate(project.createdAt)}</span>
+              <span className="project-detail-cell-value">
+                {formatDate(project.createdAt)}
+              </span>
             </div>
             <div className="project-detail-cell">
               <span className="project-detail-cell-label">Tags</span>
-              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 4 }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 4,
+                  flexWrap: "wrap",
+                  marginTop: 4,
+                }}
+              >
                 {project.tags.map((t) => (
                   <span
                     key={t}
@@ -103,10 +146,19 @@ function ProjectDetailModal({ project, onClose, onStatusChange }) {
 
           {/* Budget bar */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 6,
+              }}
+            >
               <span className="project-detail-cell-label">Budget Used</span>
-              <span style={{ fontSize: 12.5, color: "#cbd5e1", fontWeight: 600 }}>
-                ${project.spent.toLocaleString()} / ${project.budget.toLocaleString()} ({budgetPct}%)
+              <span
+                style={{ fontSize: 12.5, color: "#cbd5e1", fontWeight: 600 }}
+              >
+                ${project.spent.toLocaleString()} / $
+                {project.budget.toLocaleString()} ({budgetPct}%)
               </span>
             </div>
             <div className="project-budget-bar-wrap">
@@ -114,7 +166,10 @@ function ProjectDetailModal({ project, onClose, onStatusChange }) {
                 className="project-budget-bar"
                 style={{
                   width: `${budgetPct}%`,
-                  background: budgetPct > 90 ? "#f87171" : "linear-gradient(90deg,#ff7aa2,#ffb86b)",
+                  background:
+                    budgetPct > 90
+                      ? "#f87171"
+                      : "linear-gradient(90deg,#ff7aa2,#ffb86b)",
                 }}
               />
             </div>
@@ -122,7 +177,10 @@ function ProjectDetailModal({ project, onClose, onStatusChange }) {
 
           {/* Change status */}
           <div style={{ marginBottom: 8 }}>
-            <label className="form-section-heading" style={{ display: "block", marginBottom: 8 }}>
+            <label
+              className="form-section-heading"
+              style={{ display: "block", marginBottom: 8 }}
+            >
               Change Status
             </label>
             <select
@@ -142,7 +200,11 @@ function ProjectDetailModal({ project, onClose, onStatusChange }) {
           <button className="modal-button-cancel" onClick={onClose}>
             Cancel
           </button>
-          <button className="modal-button-primary" onClick={handleSave} disabled={saving}>
+          <button
+            className="modal-button-primary"
+            onClick={handleSave}
+            disabled={saving}
+          >
             {saving ? "Saving…" : "Save Changes"}
           </button>
         </div>
@@ -198,8 +260,8 @@ export default function AdminProjectsPage() {
           <p className="eyebrow">System Overview</p>
           <h1 style={{ marginTop: 10, marginBottom: 12 }}>Projects</h1>
           <p className="lead">
-            View and manage all projects across the platform. Click any project to
-            inspect details or change its status.
+            View and manage all projects across the platform. Click any project
+            to inspect details or change its status.
           </p>
           <div className="preview-actions" style={{ marginTop: 16 }}>
             <input
@@ -234,7 +296,10 @@ export default function AdminProjectsPage() {
         </section>
 
         {/* Project list */}
-        <section className="card" style={{ maxWidth: 920, padding: 0, overflow: "hidden" }}>
+        <section
+          className="card"
+          style={{ maxWidth: 920, padding: 0, overflow: "hidden" }}
+        >
           {/* Table head */}
           <div
             style={{
@@ -245,24 +310,32 @@ export default function AdminProjectsPage() {
               borderBottom: "1px solid rgba(255,255,255,0.07)",
             }}
           >
-            {["Project", "Manager", "Members", "Issues", "Deadline"].map((h) => (
-              <span
-                key={h}
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: "#475569",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                {h}
-              </span>
-            ))}
+            {["Project", "Manager", "Members", "Issues", "Deadline"].map(
+              (h) => (
+                <span
+                  key={h}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#475569",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {h}
+                </span>
+              ),
+            )}
           </div>
 
           {filtered.length === 0 ? (
-            <div style={{ padding: "40px 20px", textAlign: "center", color: "#64748b" }}>
+            <div
+              style={{
+                padding: "40px 20px",
+                textAlign: "center",
+                color: "#64748b",
+              }}
+            >
               No projects match the current filter.
             </div>
           ) : (
@@ -280,7 +353,14 @@ export default function AdminProjectsPage() {
                 >
                   {/* Name + status */}
                   <div className="admin-project-name">
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: 3,
+                      }}
+                    >
                       <span className="admin-project-title">{p.name}</span>
                       <StatusBadge status={p.status} />
                     </div>
@@ -288,26 +368,63 @@ export default function AdminProjectsPage() {
                   </div>
 
                   {/* Manager */}
-                  <span style={{ fontSize: 13, color: "#cbd5e1", alignSelf: "center" }}>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      color: "#cbd5e1",
+                      alignSelf: "center",
+                    }}
+                  >
                     {p.manager}
                   </span>
 
                   {/* Members */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, alignSelf: "center" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      alignSelf: "center",
+                    }}
+                  >
                     <UsersIcon size={13} color="#64748b" />
-                    <span style={{ fontSize: 13, color: "#cbd5e1" }}>{p.membersCount}</span>
+                    <span style={{ fontSize: 13, color: "#cbd5e1" }}>
+                      {p.membersCount}
+                    </span>
                   </div>
 
                   {/* Open issues */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, alignSelf: "center" }}>
-                    <AlertCircle size={13} color={p.openIssues > 0 ? "#f59e0b" : "#34d399"} />
-                    <span style={{ fontSize: 13, color: p.openIssues > 0 ? "#f59e0b" : "#34d399" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      alignSelf: "center",
+                    }}
+                  >
+                    <AlertCircle
+                      size={13}
+                      color={p.openIssues > 0 ? "#f59e0b" : "#34d399"}
+                    />
+                    <span
+                      style={{
+                        fontSize: 13,
+                        color: p.openIssues > 0 ? "#f59e0b" : "#34d399",
+                      }}
+                    >
                       {p.openIssues}
                     </span>
                   </div>
 
                   {/* Deadline */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, alignSelf: "center" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      alignSelf: "center",
+                    }}
+                  >
                     <Calendar size={13} color="#64748b" />
                     <span style={{ fontSize: 12.5, color: "#94a3b8" }}>
                       {formatDate(p.deadline)}
