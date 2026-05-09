@@ -105,6 +105,7 @@ export default function Users() {
   return (
     <div className="preview-shell">
       <Sidebar
+        brandSub="Admin Dashboard"
         navItems={ADMIN_NAV_ITEMS}
         enableNavigation={true}
         activeKey={activeKey}

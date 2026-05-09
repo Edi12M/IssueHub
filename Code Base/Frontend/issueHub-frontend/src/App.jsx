@@ -34,11 +34,11 @@ export default function App() {
       {/* Manager routes */}
       <Route path="/manager" element={<ManagerDashboardPage />} />
       <Route path="/manager/projects" element={<ProjectsPage />} />
-      <Route path="/manager/tasks" element={<TasksPage />} />
       <Route path="/manager/kanban" element={<KanbanPage />} />
       <Route path="/manager/analytics" element={<AnalyticsPage />} />
       <Route path="/manager/timetracking" element={<TimeTrackingPage />} />
       <Route path="/manager/settings" element={<PMSettingsPage />} />
+      <Route path="/manager/tasks" element={<TasksPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
