@@ -40,14 +40,14 @@ const MANAGER_NAV_ITEMS = [
   },
   {
     key: "kanbanboard",
-    label: "KanbanBoard",
+    label: "Kanban Board",
     icon: TbLayoutKanban,
     to: "/manager/kanban",
   },
   { key: "tasks", label: "Tasks", icon: SiGoogletasks, to: "/manager/tasks" },
   {
     key: "timetracking",
-    label: "TimeTracking",
+    label: "Time Tracking",
     icon: CiTimer,
     to: "/manager/timetracking",
   },
