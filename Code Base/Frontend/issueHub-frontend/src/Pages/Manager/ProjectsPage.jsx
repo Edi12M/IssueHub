@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { LayoutDashboard, Settings, Plus } from "lucide-react";
 
 import { GoProject } from "react-icons/go";
@@ -35,7 +35,7 @@ const MANAGER_NAV_ITEMS = [
   },
   {
     key: "kanbanboard",
-    label: "KanbanBoard",
+    label: "Kanban Board",
     icon: TbLayoutKanban,
     to: "/manager/kanban",
   },
@@ -47,7 +47,7 @@ const MANAGER_NAV_ITEMS = [
   },
   {
     key: "timetracking",
-    label: "TimeTracking",
+    label: "Time Tracking",
     icon: CiTimer,
     to: "/manager/timetracking",
   },
@@ -64,6 +64,8 @@ const MANAGER_NAV_ITEMS = [
     to: "/manager/settings",
   },
 ];
+
+const PROJECTS_KEY = "issuehub_projects";
 
 const INITIAL_PROJECTS = [
   {
@@ -95,9 +97,20 @@ const INITIAL_PROJECTS = [
 export default function ProjectsPage() {
   const [activeKey, setActiveKey] = useState("projects");
 
-  const [projects, setProjects] = useState(INITIAL_PROJECTS);
+  const [projects, setProjects] = useState(() => {
+    try {
+      const stored = localStorage.getItem(PROJECTS_KEY);
+      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
+    } catch {
+      return INITIAL_PROJECTS;
+    }
+  });
 
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+  }, [projects]);
 
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
 

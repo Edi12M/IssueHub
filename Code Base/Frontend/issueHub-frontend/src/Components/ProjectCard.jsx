@@ -29,7 +29,7 @@ export default function ProjectCard({ project, onManageMembers }) {
 
       <div className="project-actions">
         <Button variant="secondary" size="sm">
-          View Dashboard
+          View Project
         </Button>
         <Button
           variant="outline"
