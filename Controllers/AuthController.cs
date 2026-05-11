@@ -81,8 +81,7 @@ public class AuthController : ControllerBase
         };
     }
 
-    // Simplified password hashing for university project/demo.
-    // In a real product, replace this with BCrypt/ASP.NET Identity.
+    // Simplified password hashing (can be replaced with a hashing algorithm like BCrypt or ASP.NET Identity in production).
     private static string SimpleHash(string password)
     {
         return Convert.ToBase64String(Encoding.UTF8.GetBytes(password));

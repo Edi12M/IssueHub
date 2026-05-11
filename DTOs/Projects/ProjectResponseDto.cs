@@ -16,7 +16,6 @@ public class ProjectResponseDto
 
     public Visibility Visibility { get; set; }
 
-    // NOTE: Project model currently uses UserStatus for project status.
     public UserStatus Status { get; set; }
 
     public DateTime StartDate { get; set; }
