@@ -18,7 +18,6 @@ public class UpdateProjectDto
     [Required]
     public Visibility Visibility { get; set; }
 
-    // NOTE: Project model currently uses UserStatus for project status.
     [Required]
     public UserStatus Status { get; set; }
 
