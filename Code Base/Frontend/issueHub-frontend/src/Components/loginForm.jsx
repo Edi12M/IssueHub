@@ -4,26 +4,20 @@ import { Container, Form, InputGroup } from "react-bootstrap";
 import Button from "./Button/button.jsx";
 import logo from "../assets/appLogo-removebg.png";
 import { Eye, EyeSlash } from "react-bootstrap-icons";
+import { validateUserCredentials } from "../data/users.js";
 
-const CREDENTIALS = [
-  {
-    email: "admin@issuehub.com",
-    password: "Admin@123",
-    role: "System Admin",
-    redirect: "/admin",
-  },
-  {
-    email: "pm@issuehub.com",
-    password: "PM@123",
-    role: "Project Manager",
-    redirect: "/manager",
-  },
-  {
-    email: "dev@issuehub.com",
-    password: "Dev@123",
-    role: "Developer",
-    redirect: "/manager/kanban",
-  },
+const ROLE_ROUTES = {
+  "System Administrator": "/admin",
+  "Project Manager":      "/manager",
+  "Developer":            "/manager/kanban",
+  "Viewer":               "/manager/kanban",
+};
+
+// Demo hint rows — UI only, not used for auth logic
+const DEMO_HINTS = [
+  { role: "System Admin",    email: "admin@issuehub.com", password: "Admin@123" },
+  { role: "Project Manager", email: "pm@issuehub.com",    password: "PM@123"    },
+  { role: "Developer",       email: "dev@issuehub.com",   password: "Dev@123"   },
 ];
 
 function LoginForm() {
@@ -35,11 +29,9 @@ function LoginForm() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    const match = CREDENTIALS.find(
-      (c) => c.email === email.trim() && c.password === password,
-    );
-    if (match) {
-      navigate(match.redirect);
+    const user = validateUserCredentials(email.trim(), password);
+    if (user) {
+      navigate(ROLE_ROUTES[user.role] ?? "/manager/kanban");
     } else {
       setError("Invalid email or password.");
     }
@@ -126,7 +118,7 @@ function LoginForm() {
         >
           Demo Accounts
         </p>
-        {CREDENTIALS.map((c) => (
+        {DEMO_HINTS.map((c) => (
           <button
             key={c.email}
             type="button"
