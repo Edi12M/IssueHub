@@ -20,10 +20,11 @@ export default function AddMemberModal({
   const filteredUsers = useMemo(() => {
     const q = search.toLowerCase().trim();
     return availableUsers.filter((u) => {
+      const notAdmin = u.role !== "System Administrator";
       const notAlreadyMember = !existingIds.has(u.id);
       const matchesSearch =
         u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-      return notAlreadyMember && matchesSearch;
+      return notAdmin && notAlreadyMember && matchesSearch;
     });
   }, [search, availableUsers, project]);
 

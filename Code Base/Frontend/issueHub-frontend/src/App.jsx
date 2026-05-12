@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Hero from "./Pages/Hero.jsx";
 import Users from "./Pages/Users.jsx";
 import Login from "./Pages/Login.jsx";
 
@@ -21,8 +20,7 @@ import TimeTrackingPage from "./Pages/Manager/TimeTrackingPage.jsx";
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Hero />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Login />} />
 
       {/* Admin routes */}
       <Route path="/admin" element={<AdminDashboardPage />} />

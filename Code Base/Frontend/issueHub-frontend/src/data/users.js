@@ -2,13 +2,31 @@ const STORAGE_KEY = "issuehub.users";
 
 const seedUsers = [
   {
-    id: "seed-1",
-    name: "Alex Morgan",
-    email: "alex.morgan@issuehub.local",
-    password: "Pass1234!",
+    id: "seed-admin",
+    name: "System Admin",
+    email: "admin@issuehub.com",
+    password: "Admin@123",
+    role: "System Administrator",
+    status: "Active",
+    createdAt: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: "seed-pm",
+    name: "Project Manager",
+    email: "pm@issuehub.com",
+    password: "PM@123",
+    role: "Project Manager",
+    status: "Active",
+    createdAt: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: "seed-dev",
+    name: "Developer",
+    email: "dev@issuehub.com",
+    password: "Dev@123",
     role: "Developer",
-    status: "Pending Activation",
-    createdAt: new Date().toISOString(),
+    status: "Active",
+    createdAt: "2026-01-01T00:00:00Z",
   },
 ];
 
@@ -28,7 +46,15 @@ function readStoredUsers() {
       return [...seedUsers];
     }
 
-    return parsed;
+    // Ensure seed accounts always exist so demo logins work after migrations
+    const existingIds = new Set(parsed.map((u) => u.id));
+    const merged = [...parsed];
+    for (const seed of seedUsers) {
+      if (!existingIds.has(seed.id)) {
+        merged.push(seed);
+      }
+    }
+    return merged;
   } catch {
     return [...seedUsers];
   }
