@@ -7,7 +7,7 @@
         //UserId
         public int AuthorId { get; set; }
         //comment id?
-        public int ParentId { get; set; }
+        public int? ParentId { get; set; }
         public string Body { get; set; }
         public bool IsEdited { get; set; }
         public bool IsDeleted { get; set; }
@@ -17,7 +17,7 @@
         //Navigation
         public Issue Issue { get; set; }
         public User Author { get; set; }
-        public Comment Parent { get; set; }                        // self-referencing (replies)
+        public Comment? Parent { get; set; }                       // self-referencing (replies)
         public ICollection<Comment> Replies { get; set; }         // self-referencing
     }
 }
