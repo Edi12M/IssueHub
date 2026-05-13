@@ -233,5 +233,10 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<TimeLog>()
             .Property(t => t.Hours)
             .HasColumnType("decimal(8,2)");
+
+        // ProjectMembers HourlyRate precision
+        modelBuilder.Entity<ProjectMembers>()
+            .Property(pm => pm.HourlyRate)
+            .HasColumnType("decimal(10,2)");
     }
 }

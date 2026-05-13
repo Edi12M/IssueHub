@@ -1,23 +1,11 @@
-using System.ComponentModel.DataAnnotations;
-using Backend.Enum;
-
-namespace Backend.DTOs.Users;
-
-public class CreateUserDto
+namespace Backend.DTOs.Users
 {
-    [Required]
-    [MaxLength(150)]
-    public string FullName { get; set; } = string.Empty;
-
-    [Required]
-    [EmailAddress]
-    [MaxLength(200)]
-    public string Email { get; set; } = string.Empty;
-
-    [Required]
-    [MinLength(6)]
-    public string Password { get; set; } = string.Empty;
-
-    [Required]
-    public UserRole Role { get; set; }
+    public class CreateUserDto
+    {
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? Department { get; set; }
+        public string Role { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
 }

@@ -1,4 +1,4 @@
-﻿using Backend.Enum;
+using Backend.Enum;
 
 namespace Backend.Models
 {
@@ -9,6 +9,7 @@ namespace Backend.Models
         public int UserId { get; set; }
         public ProjectMemberRole Role { get; set; }
         public DateTime JoinedAt { get; set; }
+        public decimal HourlyRate { get; set; }
 
         //Navigation
         public User User { get; set; }
