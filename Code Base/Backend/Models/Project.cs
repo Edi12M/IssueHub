@@ -1,4 +1,4 @@
-﻿using Backend.Enum;
+using Backend.Enum;
 
 namespace Backend.Models
 {
@@ -8,16 +8,17 @@ namespace Backend.Models
         public string Name { get; set; }
         public string ProjectCode { get; set; }
         public string Description { get; set; }
+        public string? Goals { get; set; }
+        public string Methodology { get; set; } = "Scrum";
         public ProjectType Type { get; set; }
         public Visibility Visibility { get; set; }
-        public UserStatus Status { get; set; }
+        public ProjectStatus Status { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public bool IsArchived { get; set; }
         public decimal BudgetHours { get; set; }
         public int OwnerId { get; set; }
         public int WorkflowId { get; set; }
-        public DateTime CreateAt { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         //Navigation
         public User Owner { get; set; }

@@ -1,4 +1,4 @@
-﻿using Backend.Enum;
+using Backend.Enum;
 
 namespace Backend.Models
 {
@@ -8,12 +8,14 @@ namespace Backend.Models
         public string FullName { get; set; }
         public string Email { get; set; }
         public string PasswordHash { get; set; }
+        public string? Department { get; set; }
+        public string? Icon { get; set; }
         public UserRole Role { get; set; }
         public UserStatus Status { get; set; }
         public int FailedLoginAttempts { get; set; }
         public DateTime LockedUntil { get; set; }
         public DateTime LastLoginAt { get; set; }
-        public DateTime CreateAt { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         //Navigation
         public ICollection<ProjectMembers> ProjectMembers { get; set; }
