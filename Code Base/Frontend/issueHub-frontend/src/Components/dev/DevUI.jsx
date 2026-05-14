@@ -1,29 +1,53 @@
 // src/Components/dev/DevUI.jsx
 import { PRIORITY_META, STATUS_META } from "../../data/mockIssues";
-import Sidebar from "../dev-ui/sideBar";
+import Sidebar from "../SideBar/sideBar";
 import Button from "../Button/button";
+import { CheckSquare, ListTodo } from "lucide-react";
+
+/* ── Dev nav items ──────────────────────────── */
+const DEV_NAV_ITEMS = [
+  {
+    key: "assigned-issues",
+    label: "Assigned Issues",
+    icon: CheckSquare,
+    to: "/dev/assigned-issues",
+  },
+  { key: "tasks", label: "My Tasks", icon: ListTodo, to: "/dev/tasks" },
+];
 
 /* ── Design tokens ──────────────────────────── */
 export const C = {
-  bg:      "#0f1117",
+  bg: "#0f1117",
   surface: "#161b27",
-  border:  "#1e2535",
-  accent:  "#7c8cf8",
+  border: "#1e2535",
+  accent: "#7c8cf8",
   accent2: "#a78bfa",
-  muted:   "#64748b",
-  subtle:  "#475569",
-  text:    "#e2e8f0",
-  textHi:  "#f1f5f9",
+  muted: "#64748b",
+  subtle: "#475569",
+  text: "#e2e8f0",
+  textHi: "#f1f5f9",
 };
 
 /* ── Priority tag ───────────────────────────── */
 export function PriorityTag({ priority }) {
   const m = PRIORITY_META[priority] || PRIORITY_META.Low;
   return (
-    <span style={{ display:"inline-flex", alignItems:"center", gap:5,
-      background:m.bg, color:m.color, fontSize:11, fontWeight:600,
-      padding:"3px 9px", borderRadius:99 }}>
-      <span style={{ width:6, height:6, borderRadius:"50%", background:m.dot }} />
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        background: m.bg,
+        color: m.color,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "3px 9px",
+        borderRadius: 99,
+      }}
+    >
+      <span
+        style={{ width: 6, height: 6, borderRadius: "50%", background: m.dot }}
+      />
       {priority}
     </span>
   );
@@ -31,11 +55,21 @@ export function PriorityTag({ priority }) {
 
 /* ── Status tag ─────────────────────────────── */
 export function StatusTag({ status }) {
-  const m = STATUS_META[status] || { color:"#94a3b8", bg:"#1e2535" };
+  const m = STATUS_META[status] || { color: "#94a3b8", bg: "#1e2535" };
   return (
-    <span style={{ display:"inline-flex", alignItems:"center", gap:5,
-      background:m.bg, color:m.color, fontSize:11, fontWeight:600,
-      padding:"3px 9px", borderRadius:99 }}>
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        background: m.bg,
+        color: m.color,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "3px 9px",
+        borderRadius: 99,
+      }}
+    >
       {status}
     </span>
   );
@@ -44,54 +78,93 @@ export function StatusTag({ status }) {
 /* ── Avatar ─────────────────────────────────── */
 export function Avatar({ initials, size = 28 }) {
   return (
-    <div style={{
-      width:size, height:size, borderRadius:"50%",
-      background:"linear-gradient(135deg,#7c8cf8,#a78bfa)",
-      display:"flex", alignItems:"center", justifyContent:"center",
-      fontSize:size * 0.38, fontWeight:700, color:"#fff",
-      fontFamily:"'DM Mono', monospace", flexShrink:0,
-    }}>
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: "linear-gradient(135deg,#7c8cf8,#a78bfa)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: size * 0.38,
+        fontWeight: 700,
+        color: "#fff",
+        fontFamily: "'DM Mono', monospace",
+        flexShrink: 0,
+      }}
+    >
       {initials}
     </div>
   );
 }
 
 /* ── Dev shell ──────────────────────────────── */
-// Wraps every developer page with the top bar + your real Sidebar.
-// navItems="dev" → Assigned Issues & My Tasks with /dev/... routes.
-// Active item is auto-detected from the URL inside Sidebar via useLocation.
+// Wraps every developer page with sidebar only. Page header is handled per-page.
 export function DevShell({ children }) {
   return (
-    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif",
-      background:C.bg, minHeight:"100vh", color:C.text,
-      display:"flex", flexDirection:"column" }}>
-
-      {/* Top bar */}
-      <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`,
-        padding:"0 28px", display:"flex", alignItems:"center",
-        justifyContent:"space-between", height:58,
-        position:"sticky", top:0, zIndex:100 }}>
-        <div style={{ fontFamily:"'DM Mono',monospace", fontWeight:700,
-          fontSize:18, color:C.accent, letterSpacing:-0.5 }}>
-          Issue<span style={{ color:C.text }}>Hub</span>
-        </div>
-        <div style={{ display:"flex", alignItems:"center", gap:10,
-          background:"#1e2535", borderRadius:99,
-          padding:"5px 14px 5px 8px", fontSize:13 }}>
-          <Avatar initials="AR" />
-          <span>Alex Rivera</span>
-          <span style={{ color:C.muted }}>· Developer</span>
-        </div>
-      </div>
-
-      <div style={{ display:"flex", flex:1 }}>
+    <div
+      style={{
+        fontFamily: "'DM Sans','Segoe UI',sans-serif",
+        background: C.bg,
+        minHeight: "100vh",
+        color: C.text,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div style={{ display: "flex", flex: 1 }}>
         <Sidebar
           brandName="IssueHub"
           brandSub="Developer Portal"
-          navItems="dev"
+          navItems={DEV_NAV_ITEMS}
         />
-        <div style={{ flex:1, padding:"28px 32px", overflowY:"auto" }}>
+        <div style={{ flex: 1, padding: "28px 32px", overflowY: "auto" }}>
           {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Page header with user profile ──────────── */
+// Use this at the top of each dev page content
+export function PageHeader({ title, subtitle }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 24,
+      }}
+    >
+      <div>
+        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, color: C.textHi }}>
+          {title}
+        </div>
+        {subtitle && (
+          <div style={{ fontSize: 13, color: C.muted }}>
+            {subtitle}
+          </div>
+        )}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          background: C.surface,
+          border: `1px solid ${C.border}`,
+          borderRadius: 99,
+          padding: "8px 16px 8px 8px",
+          fontSize: 13,
+        }}
+      >
+        <Avatar initials="AR" />
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <span style={{ fontWeight: 600, color: C.text }}>Alex Rivera</span>
+          <span style={{ fontSize: 11, color: C.muted }}>Developer</span>
         </div>
       </div>
     </div>
@@ -101,7 +174,7 @@ export function DevShell({ children }) {
 /* ── Back link ──────────────────────────────── */
 export function BackLink({ to, label = "Back" }) {
   return (
-    <Button variant="ghost" size="sm" to={to} style={{ marginBottom:20 }}>
+    <Button variant="ghost" size="sm" to={to} style={{ marginBottom: 20 }}>
       ← {label}
     </Button>
   );
@@ -121,8 +194,16 @@ export function FilterButton({ label, active, to }) {
 /* ── Section label ──────────────────────────── */
 export function SectionLabel({ children }) {
   return (
-    <div style={{ fontSize:11, fontWeight:700, color:C.muted,
-      letterSpacing:1, textTransform:"uppercase", marginBottom:14 }}>
+    <div
+      style={{
+        fontSize: 11,
+        fontWeight: 700,
+        color: C.muted,
+        letterSpacing: 1,
+        textTransform: "uppercase",
+        marginBottom: 14,
+      }}
+    >
       {children}
     </div>
   );
@@ -131,8 +212,16 @@ export function SectionLabel({ children }) {
 /* ── Card ───────────────────────────────────── */
 export function Card({ children, style }) {
   return (
-    <div style={{ background:C.surface, border:`1px solid ${C.border}`,
-      borderRadius:12, padding:"24px", marginBottom:16, ...style }}>
+    <div
+      style={{
+        background: C.surface,
+        border: `1px solid ${C.border}`,
+        borderRadius: 12,
+        padding: "24px",
+        marginBottom: 16,
+        ...style,
+      }}
+    >
       {children}
     </div>
   );
@@ -141,10 +230,18 @@ export function Card({ children, style }) {
 /* ── Tiny inline text button (Edit / Delete) ── */
 export function TinyBtn({ danger, children, onClick }) {
   return (
-    <button onClick={onClick}
-      style={{ fontSize:11, color: danger ? "#ef4444" : C.muted,
-        background:"none", border:"none", cursor:"pointer",
-        padding:0, fontWeight:600 }}>
+    <button
+      onClick={onClick}
+      style={{
+        fontSize: 11,
+        color: danger ? "#ef4444" : C.muted,
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        padding: 0,
+        fontWeight: 600,
+      }}
+    >
       {children}
     </button>
   );
