@@ -53,10 +53,6 @@ namespace Backend.Services
             if (!ownerExists)
                 throw new KeyNotFoundException($"Owner user {dto.OwnerId} not found.");
 
-            var workflowExists = await _context.Workflows.AnyAsync(w => w.Id == dto.WorkflowId);
-            if (!workflowExists)
-                throw new KeyNotFoundException($"Workflow {dto.WorkflowId} not found.");
-
             var visibility = ParseEnumOrDefault(dto.Visibility, Visibility.Private);
             var type = ParseEnumOrDefault(dto.Type, ProjectType.Software);
 
@@ -81,7 +77,6 @@ namespace Backend.Services
                 EndDate = dto.EndDate,
                 BudgetHours = dto.BudgetHours ?? 0m,
                 OwnerId = dto.OwnerId,
-                WorkflowId = dto.WorkflowId,
                 CreatedAt = DateTime.UtcNow
             };
 

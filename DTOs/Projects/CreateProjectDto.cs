@@ -8,7 +8,6 @@ namespace Backend.DTOs.Projects
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int OwnerId { get; set; }
-        public int WorkflowId { get; set; }
         public string? ProjectCode { get; set; }
         public string? Type { get; set; }
         public string? Visibility { get; set; }
