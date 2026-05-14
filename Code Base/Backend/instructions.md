@@ -45,104 +45,14 @@ Follow this pattern strictly for every service and controller:
 
 ---
 
-## PHASE 0 — MODEL CHANGES
-
-Apply these changes to the models before implementing anything else:
-
-1. **User model** — Add `Department` (string, nullable) and `Icon` (string, nullable) fields.
-2. **User model** — Rename `CreateAt` to `CreatedAt`. Update all references across the codebase.
-3. **UserRole enum** — Use the actual values: `Admin`, `Manager`, `Developer`, `Guest`. All instructions referencing "ProjectManager" mean `Manager`.
-4. **Project model** — Add `Goals` (string, nullable) and `Methodology` (string, default "Scrum"). The existing `Type` field serves as tags — do NOT add a separate Tags field.
-5. **Project model** — Create a `ProjectStatus` enum with values: `Active`, `Archived`, `Closed`. Replace the current status typing on Project with `ProjectStatus`. Remove the `IsArchived` bool — archiving is handled by setting status to `Archived`. Make sure `User` still uses `UserStatus`.
-6. **ProjectMembers model** — Rename `HourRate` to `HourlyRate` and change type from `int` to `decimal`.
-
-After changes, run `dotnet build` to verify everything compiles.
-
-**→ STOP. Ask for review.**
-
----
-
 ## PHASE 1 — SERVICES + DTOs
 
-Implement **only** these 7 services. If any other services exist in the codebase from a previous iteration, **delete them**. The final `Services/` folder should contain exactly these files and their interfaces.
+Implement **only** these services. If any other services exist in the codebase from a previous iteration, **delete them**. The final `Services/` folder should contain exactly these files and their interfaces.
 
 **DTOs are created alongside each service** — when implementing a service, create only the DTOs that service needs in `DTOs/<Domain>/`. Do NOT create DTOs as a separate phase. They get reviewed together with their service.
 
 Implement them **one at a time** in the order below. After finishing each service + its DTOs, **stop and ask for my review** before moving to the next.
 
-### 1. UserService : IUserService
-
-Interface + class in `Services/` with interface in `Services/Interfaces/`.
-
-Methods:
-- `SearchUsersAsync(string query)` — search users by name or email using case-insensitive `.Contains()`. Return list of DTOs with: id, icon, full name, email, role, status.
-- `CreateUserAsync(CreateUserDto dto)` — create user with full name, email, department, role, password. Hash password with `BCrypt.Net.BCrypt.HashPassword()`. Check for duplicate email first. Set status to "Active", set `CreatedAt` to `DateTime.UtcNow`.
-- `UpdateUserAsync(int userId, UpdateUserDto dto)` — partial update for name, email, department, role, status. Only update non-null fields. Check for duplicate email if email is being changed.
-- `DeleteUserAsync(int userId)` — delete user. Throw if not found.
-- `GetUserCountsByRoleAsync()` — return total user count + specific counts for Admin, Manager, Developer using `GroupBy`. Single method, single DTO.
-- `GetLastCreatedUserAsync()` — return name and created date of the most recently created user.
-
-Each method that returns DTOs should use a `private static` mapping function.
-
-**→ STOP. Ask for review.**
-
-### 2. ProjectService : IProjectService
-
-Methods:
-- `SearchProjectsAsync(string query)` — search by project name or manager name (case-insensitive contains). Return list with: status, manager name, team size (count from `ProjectMembers`), deadline, open issue count, completed issue count, created date, type (this is the tags field), budget used.
-- `CreateProjectAsync(CreateProjectDto dto)` — create with name, description, goals, start date, end date. Defaults: visibility = "Private", methodology = "Scrum".
-- `UpdateProjectAsync(int projectId, UpdateProjectDto dto)` — partial update, nullable fields.
-- `UpdateProjectStatusAsync(int projectId, string status)` — update only the status field.
-- `ArchiveProjectAsync(int projectId)` — set status to "Archived".
-- `GetProjectsByStatusAsync(string status)` — filter and return list by status (Active, Archived, Closed).
-- `GetProjectsByManagerAsync(int managerId)` — return list with: title, description, status, methodology, member count.
-- `GetProjectsByManagerFilteredAsync(int managerId, string? status, string? type)` — same as above but filtered. If no filters given, return all for that manager.
-- `GetProjectCountsByStatusAsync()` — return counts for active, archived, closed.
-- `GetLastCreatedProjectAsync()` — return title and created date.
-- `GetMemberCountAsync(int projectId)` — count from `ProjectMembers` table.
-- `GetOpenIssueCountAsync(int projectId)` — count issues with status "Open" for that project.
-- `GetClosedIssueCountAsync(int projectId)` — count issues with status "Closed" for that project.
-- `GetBudgetUsedAsync(int projectId)` — join `TimeLog` with `ProjectMembers` on user + project. Sum `hours × hourlyRate` where `isBillable == true`.
-
-**→ STOP. Ask for review.**
-
-### 3. IssueService : IIssueService
-
-Methods:
-- `CreateIssueAsync(CreateIssueDto dto)` — create issue with title, description, type, acceptance criteria, priority, start date, due date, project FK. Also accept a list of issue IDs that depend on this issue and create `IssueDependency` records.
-- `UpdateIssueAsync(int issueId, UpdateIssueDto dto)` — partial update, nullable fields.
-- `CreateIssueHistoryAsync(CreateIssueHistoryDto dto)` — create a history record for an issue.
-- `GetAllIssuesCountAsync()` — total issue count across all projects.
-- `GetIssuesByAdminAsync(int adminId)` — issues created by a specific admin. Return: title, target, type, date assigned.
-- `GetIssuesByAdminFilteredByTypeAsync(int adminId, string type)` — same as above, filtered by type.
-- `GetLastCreatedSecurityIssueAsync()` — most recent issue with type "Security". Return: title, creator name.
-- `GetTasksFilteredAsync(int userId, string? status, string? priority)` — return issues for projects where the user is a member (Developer or Manager role) via `ProjectMembers`. Filter by status and/or priority. If no filters, return all.
-
-**→ STOP. Ask for review.**
-
-### 4. AuthenticationService : IAuthenticationService
-
-Methods:
-- `LoginAsync(LoginDto dto)` — validate email + password using `BCrypt.Net.BCrypt.Verify()`. If email not found, throw. If password wrong, call `IncrementFailedLoginAttemptAsync`. If correct, call `UpdateLastLoginAsync` and generate + return a JWT token.
-- `IncrementFailedLoginAttemptAsync(string email)` — find user by email, increment the failed login attempt counter, save.
-- `UpdateLastLoginAsync(int userId)` — set the last login timestamp to `DateTime.UtcNow`, save.
-
-Add this comment at the top of the service class:
-```csharp
-// TODO: Implement lockout logic — check and update time until lockout after repeated failed login attempts
-```
-
-For JWT generation, read the existing JWT configuration in `Program.cs` or `appsettings.json` to understand the key, issuer, audience setup. Generate a token with claims for user ID, email, and role.
-
-**→ STOP. Ask for review.**
-
-### 5. AssignmentService : IAssignmentService
-
-Methods:
-- `AssignIssueToUserAsync(int issueId, int userId)` — create an `IssueAssignment` record. Check that both the issue and user exist. Check for duplicate assignment.
-- `AssignUserToProjectAsync(int projectId, int userId)` — create a `ProjectMembers` record. Check that both the project and user exist. Check for duplicate membership.
-
-**→ STOP. Ask for review.**
 
 ### 6. TimeLogService : ITimeLogService
 
