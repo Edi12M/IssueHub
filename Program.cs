@@ -82,6 +82,20 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// ─── Application services ──────────────────────────────────────
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IIssueService, IssueService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
+builder.Services.AddScoped<ITimeLogService, TimeLogService>();
+builder.Services.AddScoped<IHealthService, HealthService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+builder.Services.AddScoped<IIssueHistoryService, IssueHistoryService>();
+builder.Services.AddScoped<IEmailService, LoggingEmailService>();
+
 var app = builder.Build();
 
 // ─── Middleware pipeline ───────────────────────────────────────
