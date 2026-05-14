@@ -21,9 +21,27 @@ const seedUsers = [
   },
   {
     id: "seed-dev",
-    name: "Developer",
-    email: "dev@issuehub.com",
-    password: "Dev@123",
+    name: "Alex Rivera",
+    email: "alex@issuehub.com",
+    password: "Alex@123",
+    role: "Developer",
+    status: "Active",
+    createdAt: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: "seed-dev-2",
+    name: "Maya Patel",
+    email: "maya@issuehub.com",
+    password: "Maya@123",
+    role: "Developer",
+    status: "Active",
+    createdAt: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: "seed-dev-3",
+    name: "Jordan Kim",
+    email: "jordan@issuehub.com",
+    password: "Jordan@123",
     role: "Developer",
     status: "Active",
     createdAt: "2026-01-01T00:00:00Z",
@@ -46,11 +64,18 @@ function readStoredUsers() {
       return [...seedUsers];
     }
 
-    // Ensure seed accounts always exist so demo logins work after migrations
-    const existingIds = new Set(parsed.map((u) => u.id));
-    const merged = [...parsed];
+    // Keep existing user-created accounts; sync seed accounts so name/email
+    // changes in the seed definition propagate to existing localStorage data.
+    const seedMap = Object.fromEntries(seedUsers.map((s) => [s.id, s]));
+    const merged = parsed.map((u) => {
+      const seed = seedMap[u.id];
+      if (!seed) return u;
+      // Overwrite identity fields for seeds; preserve any admin-made edits to
+      // status/department by only touching the fields seeds own.
+      return { ...u, name: seed.name, email: seed.email, role: seed.role, password: seed.password };
+    });
     for (const seed of seedUsers) {
-      if (!existingIds.has(seed.id)) {
+      if (!merged.find((u) => u.id === seed.id)) {
         merged.push(seed);
       }
     }
@@ -153,4 +178,26 @@ export function removeUser(userId) {
   usersStore.splice(idx, 1);
   persistUsers();
   return true;
+}
+
+const SESSION_KEY = "issuehub_session";
+
+export function setSession(user) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+}
+
+export function getSession() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearSession() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(SESSION_KEY);
 }

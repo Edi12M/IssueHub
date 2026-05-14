@@ -1,5 +1,6 @@
 // src/Components/dev/DevUI.jsx
 import { PRIORITY_META, STATUS_META } from "../../data/mockIssues";
+import { getSession } from "../../data/users.js";
 import Sidebar from "../SideBar/sideBar";
 import Button from "../Button/button";
 import { CheckSquare, ListTodo } from "lucide-react";
@@ -128,8 +129,17 @@ export function DevShell({ children }) {
 }
 
 /* ── Page header with user profile ──────────── */
-// Use this at the top of each dev page content
 export function PageHeader({ title, subtitle }) {
+  const session = getSession();
+  const name = session?.name || "Developer";
+  const role = session?.role || "Developer";
+  const initials = name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <div
       style={{
@@ -161,10 +171,10 @@ export function PageHeader({ title, subtitle }) {
           fontSize: 13,
         }}
       >
-        <Avatar initials="AR" />
+        <Avatar initials={initials} />
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontWeight: 600, color: C.text }}>Alex Rivera</span>
-          <span style={{ fontSize: 11, color: C.muted }}>Developer</span>
+          <span style={{ fontWeight: 600, color: C.text }}>{name}</span>
+          <span style={{ fontSize: 11, color: C.muted }}>{role}</span>
         </div>
       </div>
     </div>

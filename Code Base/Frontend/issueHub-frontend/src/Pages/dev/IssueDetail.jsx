@@ -1,7 +1,13 @@
-// src/Pages/dev/IssueDetail.jsx
 import { useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { MOCK_ISSUES, STATUSES, today, isOverdue } from "../../data/mockIssues";
+import {
+  getDevIssueById,
+  STATUSES,
+  today,
+  isOverdue,
+  updateTaskStatus,
+} from "../../data/mockIssues";
+import { getSession } from "../../data/users.js";
 import {
   DevShell,
   PageHeader,
@@ -18,7 +24,7 @@ import Button from "../../Components/Button/button";
 
 export default function IssueDetailPage() {
   const { id } = useParams();
-  const source = MOCK_ISSUES.find((i) => i.id === id);
+  const source = getDevIssueById(id);
 
   if (!source) {
     return (
@@ -32,6 +38,15 @@ export default function IssueDetailPage() {
 }
 
 function IssueDetail({ source }) {
+  const session = getSession();
+  const authorName = session?.name || "Developer";
+  const authorInitials = authorName
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   const [issue, setIssue] = useState(source);
   const [newStatus, setNewStatus] = useState(source.status);
   const [commentText, setCommentText] = useState("");
@@ -48,12 +63,13 @@ function IssueDetail({ source }) {
       dateStyle: "short",
       timeStyle: "short",
     });
+    updateTaskStatus(issue.id, newStatus);
     setIssue((prev) => ({
       ...prev,
       status: newStatus,
       statusHistory: [
         ...prev.statusHistory,
-        { status: newStatus, date: now, by: "Alex Rivera" },
+        { status: newStatus, date: now, by: authorName },
       ],
     }));
   }
@@ -71,8 +87,8 @@ function IssueDetail({ source }) {
         ...prev.comments,
         {
           id: "c" + Date.now(),
-          author: "Alex Rivera",
-          avatar: "AR",
+          author: authorName,
+          avatar: authorInitials,
           text: commentText.trim(),
           date: now,
           mine: true,
@@ -92,10 +108,10 @@ function IssueDetail({ source }) {
     setEditingComment(null);
   }
 
-  function handleDeleteComment(id) {
+  function handleDeleteComment(commentId) {
     setIssue((prev) => ({
       ...prev,
-      comments: prev.comments.filter((c) => c.id !== id),
+      comments: prev.comments.filter((c) => c.id !== commentId),
     }));
   }
 
@@ -151,13 +167,9 @@ function IssueDetail({ source }) {
 
   return (
     <DevShell>
-      {/* Back → uses Button with `to` prop (React Router Link) */}
       <BackLink to="/dev/assigned-issues" label="Back to Assigned Issues" />
 
-      <PageHeader 
-        title={issue.title}
-        subtitle={issue.id}
-      />
+      <PageHeader title={issue.title} subtitle={issue.id} />
 
       {/* Meta tags */}
       <div
@@ -166,6 +178,7 @@ function IssueDetail({ source }) {
           alignItems: "center",
           gap: 12,
           marginBottom: 20,
+          flexWrap: "wrap",
         }}
       >
         <PriorityTag priority={issue.priority} />
@@ -204,7 +217,7 @@ function IssueDetail({ source }) {
                 margin: 0,
               }}
             >
-              {issue.description}
+              {issue.description || "No description provided."}
             </p>
           </Card>
 
@@ -428,10 +441,9 @@ function IssueDetail({ source }) {
             <SectionLabel>Details</SectionLabel>
             {[
               ["Project", issue.project],
-              ["Assignee", issue.assignee],
               ["Priority", issue.priority],
               ["Created", issue.createdAt],
-              ["Deadline", issue.deadline],
+              ["Deadline", issue.deadline || "—"],
             ].map(([k, v]) => (
               <div
                 key={k}
@@ -485,6 +497,11 @@ function IssueDetail({ source }) {
           {/* Status history */}
           <Card>
             <SectionLabel>Status History</SectionLabel>
+            {issue.statusHistory.length === 0 && (
+              <div style={{ color: C.subtle, fontSize: 13 }}>
+                No history yet.
+              </div>
+            )}
             {issue.statusHistory.map((h, i) => (
               <div
                 key={i}

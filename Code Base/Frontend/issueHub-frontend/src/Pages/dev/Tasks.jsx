@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MOCK_ISSUES, isOverdue } from "../../data/mockIssues";
+import { getDevIssues, isOverdue } from "../../data/mockIssues";
+import { getSession } from "../../data/users.js";
 import {
   DevShell,
   PageHeader,
@@ -10,27 +11,32 @@ import {
 } from "../../Components/dev/DevUI";
 import Button from "../../Components/Button/button";
 
-export default function TasksPage() {
+export default function DevTasksPage() {
   const navigate = useNavigate();
+  const session = getSession();
   const [sort, setSort] = useState("deadline");
 
-  const sorted = [...MOCK_ISSUES].sort((a, b) => {
-    if (sort === "deadline") return a.deadline.localeCompare(b.deadline);
-    const po = { High: 0, Medium: 1, Low: 2 };
-    return po[a.priority] - po[b.priority];
+  const issues = getDevIssues(session?.id);
+
+  const sorted = [...issues].sort((a, b) => {
+    if (sort === "deadline") {
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return a.deadline.localeCompare(b.deadline);
+    }
+    const po = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+    return (po[a.priority] ?? 4) - (po[b.priority] ?? 4);
   });
 
-  const total = MOCK_ISSUES.length;
-  const completed = MOCK_ISSUES.filter((i) => i.status === "Completed").length;
-  const overdueCt = MOCK_ISSUES.filter((i) => isOverdue(i)).length;
-  const inProgress = MOCK_ISSUES.filter(
-    (i) => i.status === "In Progress",
-  ).length;
+  const total = issues.length;
+  const completed = issues.filter((i) => i.status === "Done").length;
+  const overdueCt = issues.filter((i) => isOverdue(i)).length;
+  const inProgress = issues.filter((i) => i.status === "In Progress").length;
 
   return (
     <DevShell>
-      <PageHeader 
-        title="My Tasks" 
+      <PageHeader
+        title="My Tasks"
         subtitle={`Personal task tracker — sorted by ${sort}`}
       />
 
@@ -46,7 +52,7 @@ export default function TasksPage() {
         {[
           { label: "Total", val: total, color: "#7c8cf8" },
           { label: "In Progress", val: inProgress, color: "#f59e0b" },
-          { label: "Completed", val: completed, color: "#22c55e" },
+          { label: "Done", val: completed, color: "#22c55e" },
           { label: "Overdue", val: overdueCt, color: "#ef4444" },
         ].map(({ label, val, color }) => (
           <div
@@ -70,7 +76,7 @@ export default function TasksPage() {
         ))}
       </div>
 
-      {/* Sort controls — Button component */}
+      {/* Sort controls */}
       <div
         style={{
           display: "flex",
@@ -96,9 +102,22 @@ export default function TasksPage() {
         </Button>
       </div>
 
+      {sorted.length === 0 && (
+        <div
+          style={{
+            color: C.subtle,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
+          No tasks found.
+        </div>
+      )}
+
       {/* Task rows */}
       {sorted.map((issue) => {
-        const done = issue.status === "Completed";
+        const done = issue.status === "Done";
         const od = isOverdue(issue);
         return (
           <div
@@ -133,20 +152,30 @@ export default function TasksPage() {
                 fontSize: 14,
                 fontWeight: 600,
                 flex: 1,
+                minWidth: 0,
                 color: done ? C.subtle : C.textHi,
                 textDecoration: done ? "line-through" : "none",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
               {issue.title}
             </div>
             <PriorityTag priority={issue.priority} />
             <StatusTag status={issue.status} />
-            <span
-              style={{ fontSize: 12, color: od && !done ? "#ef4444" : C.muted }}
-            >
-              {od && !done ? "⚠ " : ""}
-              {issue.deadline}
-            </span>
+            {issue.deadline && (
+              <span
+                style={{
+                  fontSize: 12,
+                  color: od && !done ? "#ef4444" : C.muted,
+                  flexShrink: 0,
+                }}
+              >
+                {od && !done ? "⚠ " : ""}
+                {issue.deadline}
+              </span>
+            )}
           </div>
         );
       })}

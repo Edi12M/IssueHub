@@ -1,7 +1,7 @@
-// src/Pages/dev/AssignedIssues.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MOCK_ISSUES, STATUS_TO_SLUG, isOverdue } from "../../data/mockIssues";
+import { getDevIssues, STATUS_TO_SLUG, isOverdue } from "../../data/mockIssues";
+import { getSession } from "../../data/users.js";
 import {
   DevShell,
   PageHeader,
@@ -11,24 +11,19 @@ import {
   C,
 } from "../../Components/dev/DevUI";
 
-const FILTERS = [
-  "All",
-  "Open",
-  "In Progress",
-  "Review",
-  "Completed",
-  "Blocked",
-];
+const FILTERS = ["All", "Backlog", "To Do", "In Progress", "In Review", "Done"];
 
 export default function AssignedIssuesPage() {
+  const session = getSession();
+  const issues = getDevIssues(session?.id);
+
   return (
     <DevShell>
       <PageHeader
         title="My Assigned Issues"
-        subtitle={`${MOCK_ISSUES.length} issues assigned to you`}
+        subtitle={`${issues.length} issue${issues.length !== 1 ? "s" : ""} assigned to you`}
       />
 
-      {/* Filter bar — each button navigates to its own URL */}
       <div
         style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}
       >
@@ -43,7 +38,20 @@ export default function AssignedIssuesPage() {
         })}
       </div>
 
-      {MOCK_ISSUES.map((issue) => (
+      {issues.length === 0 && (
+        <div
+          style={{
+            color: C.subtle,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
+          No issues assigned to you yet.
+        </div>
+      )}
+
+      {issues.map((issue) => (
         <IssueCard key={issue.id} issue={issue} />
       ))}
     </DevShell>
@@ -80,7 +88,7 @@ function IssueCard({ issue }) {
           gap: 16,
         }}
       >
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
               fontFamily: "'DM Mono',monospace",
@@ -111,31 +119,15 @@ function IssueCard({ issue }) {
           >
             <PriorityTag priority={issue.priority} />
             <StatusTag status={issue.status} />
-            <span
-              style={{ fontSize: 12, color: overdue ? "#ef4444" : C.muted }}
-            >
-              {overdue ? "⚠ Overdue · " : "Due: "}
-              {issue.deadline}
-            </span>
+            {issue.deadline && (
+              <span
+                style={{ fontSize: 12, color: overdue ? "#ef4444" : C.muted }}
+              >
+                {overdue ? "⚠ Overdue · " : "Due: "}
+                {issue.deadline}
+              </span>
+            )}
           </div>
-        </div>
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: "50%",
-            background: "linear-gradient(135deg,#7c8cf8,#a78bfa)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 11,
-            fontWeight: 700,
-            color: "#fff",
-            flexShrink: 0,
-            fontFamily: "'DM Mono',monospace",
-          }}
-        >
-          AR
         </div>
       </div>
     </div>

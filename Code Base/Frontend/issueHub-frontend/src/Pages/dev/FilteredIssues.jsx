@@ -1,12 +1,12 @@
-// src/Pages/dev/FilteredIssues.jsx
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  MOCK_ISSUES,
+  getDevIssues,
   STATUS_SLUG,
   STATUS_TO_SLUG,
   isOverdue,
 } from "../../data/mockIssues";
+import { getSession } from "../../data/users.js";
 import {
   DevShell,
   PageHeader,
@@ -16,40 +16,31 @@ import {
   C,
 } from "../../Components/dev/DevUI";
 
-const FILTERS = [
-  "All",
-  "Open",
-  "In Progress",
-  "Review",
-  "Completed",
-  "Blocked",
-];
+const FILTERS = ["All", "Backlog", "To Do", "In Progress", "In Review", "Done"];
 
 export default function FilteredIssuesPage() {
-  // :status slug comes from the URL, e.g. "in-progress"
   const { status: statusSlug } = useParams();
-
-  // "in-progress" → "In Progress"
   const activeFilter = STATUS_SLUG[statusSlug] || "All";
 
+  const session = getSession();
+  const issues = getDevIssues(session?.id);
   const shown =
     activeFilter === "All"
-      ? MOCK_ISSUES
-      : MOCK_ISSUES.filter((i) => i.status === activeFilter);
+      ? issues
+      : issues.filter((i) => i.status === activeFilter);
 
   return (
     <DevShell>
       <PageHeader
         title="My Assigned Issues"
-        subtitle={`${shown.length} issue${shown.length !== 1 ? "s" : ""} · filtered by `}
+        subtitle={`${shown.length} issue${shown.length !== 1 ? "s" : ""} · filtered by status`}
       />
-      {/* Filter indicator */}
+
       <div style={{ marginBottom: 20, color: C.muted, fontSize: 13 }}>
         Showing{" "}
         <span style={{ color: C.accent, fontWeight: 600 }}>{activeFilter}</span>
       </div>
 
-      {/* Filter bar — active button matches current URL slug */}
       <div
         style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}
       >
@@ -119,7 +110,7 @@ function IssueCard({ issue }) {
           gap: 16,
         }}
       >
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
               fontFamily: "'DM Mono',monospace",
@@ -150,31 +141,15 @@ function IssueCard({ issue }) {
           >
             <PriorityTag priority={issue.priority} />
             <StatusTag status={issue.status} />
-            <span
-              style={{ fontSize: 12, color: overdue ? "#ef4444" : C.muted }}
-            >
-              {overdue ? "⚠ Overdue · " : "Due: "}
-              {issue.deadline}
-            </span>
+            {issue.deadline && (
+              <span
+                style={{ fontSize: 12, color: overdue ? "#ef4444" : C.muted }}
+              >
+                {overdue ? "⚠ Overdue · " : "Due: "}
+                {issue.deadline}
+              </span>
+            )}
           </div>
-        </div>
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: "50%",
-            background: "linear-gradient(135deg,#7c8cf8,#a78bfa)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 11,
-            fontWeight: 700,
-            color: "#fff",
-            flexShrink: 0,
-            fontFamily: "'DM Mono',monospace",
-          }}
-        >
-          AR
         </div>
       </div>
     </div>

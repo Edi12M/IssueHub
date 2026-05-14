@@ -4,20 +4,22 @@ import { Container, Form, InputGroup } from "react-bootstrap";
 import Button from "./Button/button.jsx";
 import logo from "../assets/appLogo-removebg.png";
 import { Eye, EyeSlash } from "react-bootstrap-icons";
-import { validateUserCredentials } from "../data/users.js";
+import { validateUserCredentials, setSession } from "../data/users.js";
 
 const ROLE_ROUTES = {
   "System Administrator": "/admin",
   "Project Manager":      "/manager",
-  "Developer":            "/manager/kanban",
-  "Viewer":               "/manager/kanban",
+  "Developer":            "/dev/assigned-issues",
+  "Viewer":               "/dev/assigned-issues",
 };
 
 // Demo hint rows — UI only, not used for auth logic
 const DEMO_HINTS = [
-  { role: "System Admin",    email: "admin@issuehub.com", password: "Admin@123" },
-  { role: "Project Manager", email: "pm@issuehub.com",    password: "PM@123"    },
-  { role: "Developer",       email: "dev@issuehub.com",   password: "Dev@123"   },
+  { role: "System Admin",    email: "admin@issuehub.com",  password: "Admin@123"  },
+  { role: "Project Manager", email: "pm@issuehub.com",     password: "PM@123"     },
+  { role: "Dev · Alex Rivera",  email: "alex@issuehub.com",  password: "Alex@123"   },
+  { role: "Dev · Maya Patel",   email: "maya@issuehub.com",  password: "Maya@123"   },
+  { role: "Dev · Jordan Kim",   email: "jordan@issuehub.com",password: "Jordan@123" },
 ];
 
 function LoginForm() {
@@ -31,7 +33,8 @@ function LoginForm() {
     e.preventDefault();
     const user = validateUserCredentials(email.trim(), password);
     if (user) {
-      navigate(ROLE_ROUTES[user.role] ?? "/manager/kanban");
+      setSession(user);
+      navigate(ROLE_ROUTES[user.role] ?? "/dev/assigned-issues");
     } else {
       setError("Invalid email or password.");
     }

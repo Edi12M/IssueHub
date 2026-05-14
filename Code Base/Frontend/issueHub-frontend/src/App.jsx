@@ -19,6 +19,7 @@ import TimeTrackingPage from "./Pages/Manager/TimeTrackingPage.jsx";
 import AssignedIssuesPage from "./Pages/dev/AssignedIssues.jsx";
 import FilteredIssuesPage from "./Pages/dev/FilteredIssues.jsx";
 import IssueDetailPage from "./Pages/dev/IssueDetail.jsx";
+import DevTasksPage from "./Pages/dev/Tasks.jsx";
 
 export default function App() {
   return (
@@ -52,7 +53,7 @@ export default function App() {
         element={<FilteredIssuesPage />}
       />
       <Route path="/dev/issues/:id" element={<IssueDetailPage />} />
-      <Route path="/dev/tasks" element={<TasksPage />} />
+      <Route path="/dev/tasks" element={<DevTasksPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
