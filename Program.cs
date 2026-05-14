@@ -7,6 +7,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 using Backend.Data;
 using Backend.Middleware;
+using Backend.Services;
+using Backend.Services.Email;
+using Backend.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
