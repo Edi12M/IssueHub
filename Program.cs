@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
+using Backend.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 
@@ -38,6 +39,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
