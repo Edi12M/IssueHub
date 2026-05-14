@@ -29,10 +29,73 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // ── Column constraints ──────────────────────────────────
         // User
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Email)
-            .IsUnique();
+        modelBuilder.Entity<User>(b =>
+        {
+            b.Property(u => u.FullName).IsRequired().HasMaxLength(100);
+            b.Property(u => u.Email).IsRequired().HasMaxLength(150);
+            b.Property(u => u.PasswordHash).IsRequired().HasMaxLength(255);
+            b.Property(u => u.Department).HasMaxLength(100);
+            b.Property(u => u.Icon).HasMaxLength(255);
+            b.HasIndex(u => u.Email).IsUnique();
+        });
+
+        // Project
+        modelBuilder.Entity<Project>(b =>
+        {
+            b.Property(p => p.Name).IsRequired().HasMaxLength(150);
+            b.Property(p => p.ProjectCode).IsRequired().HasMaxLength(50);
+            b.Property(p => p.Description).IsRequired().HasMaxLength(2000);
+            b.Property(p => p.Goals).HasMaxLength(2000);
+            b.Property(p => p.Methodology).IsRequired().HasMaxLength(50);
+        });
+
+        // Issue
+        modelBuilder.Entity<Issue>(b =>
+        {
+            b.Property(i => i.IssueCode).IsRequired().HasMaxLength(50);
+            b.Property(i => i.Title).IsRequired().HasMaxLength(200);
+            b.Property(i => i.Description).IsRequired().HasMaxLength(5000);
+            b.Property(i => i.AcceptanceCriteria).HasMaxLength(5000);
+        });
+
+        // Comment
+        modelBuilder.Entity<Comment>(b =>
+        {
+            b.Property(c => c.Body).IsRequired().HasMaxLength(5000);
+        });
+
+        // IssueHistory
+        modelBuilder.Entity<IssueHistory>(b =>
+        {
+            b.Property(h => h.FieldName).IsRequired().HasMaxLength(100);
+            b.Property(h => h.OldValue).HasMaxLength(500);
+            b.Property(h => h.NewValue).HasMaxLength(500);
+            b.Property(h => h.TransitionNote).HasMaxLength(500);
+        });
+
+        // Attachment
+        modelBuilder.Entity<Attachment>(b =>
+        {
+            b.Property(a => a.FileName).IsRequired().HasMaxLength(255);
+            b.Property(a => a.FileType).IsRequired().HasMaxLength(100);
+            b.Property(a => a.StoragePath).IsRequired().HasMaxLength(500);
+        });
+
+        // Notification
+        modelBuilder.Entity<Notification>(b =>
+        {
+            b.Property(n => n.EntityType).IsRequired().HasMaxLength(50);
+        });
+
+        // TimeLog
+        modelBuilder.Entity<TimeLog>(b =>
+        {
+            b.Property(t => t.Note).HasMaxLength(1000);
+        });
+
+        // ── Relationships & indexes ─────────────────────────────
 
         // Project → Owner
         modelBuilder.Entity<Project>()

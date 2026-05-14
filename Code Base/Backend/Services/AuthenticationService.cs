@@ -1,9 +1,9 @@
-// TODO: Implement lockout logic — check and update time until lockout after repeated failed login attempts
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Backend.Data;
 using Backend.DTOs.Auth;
+using Backend.Exceptions;
 using Backend.Models;
 using Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +13,9 @@ namespace Backend.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
+        private const int MaxFailedAttempts = 5;
+        private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
+
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
 
@@ -26,12 +29,16 @@ namespace Backend.Services
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
             if (user == null)
-                throw new KeyNotFoundException($"User with email '{dto.Email}' not found.");
+                throw new BadRequestException("Invalid email or password.");
+
+            if (user.LockedUntil.HasValue && user.LockedUntil.Value > DateTime.UtcNow)
+                throw new ConflictException(
+                    $"Account is locked. Try again after {user.LockedUntil.Value:u}.");
 
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             {
                 await IncrementFailedLoginAttemptAsync(dto.Email);
-                throw new InvalidOperationException("Invalid email or password.");
+                throw new BadRequestException("Invalid email or password.");
             }
 
             await UpdateLastLoginAsync(user.Id);
@@ -55,16 +62,24 @@ namespace Backend.Services
             if (user == null) return;
 
             user.FailedLoginAttempts += 1;
+
+            if (user.FailedLoginAttempts >= MaxFailedAttempts)
+            {
+                user.LockedUntil = DateTime.UtcNow.Add(LockoutDuration);
+                user.FailedLoginAttempts = 0;
+            }
+
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateLastLoginAsync(int userId)
         {
             var user = await _context.Users.FindAsync(userId)
-                ?? throw new KeyNotFoundException($"User {userId} not found.");
+                ?? throw new NotFoundException(nameof(User), userId);
 
             user.LastLoginAt = DateTime.UtcNow;
             user.FailedLoginAttempts = 0;
+            user.LockedUntil = null;
             await _context.SaveChangesAsync();
         }
 
