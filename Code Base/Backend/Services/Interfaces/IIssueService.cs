@@ -5,7 +5,8 @@ namespace Backend.Services.Interfaces
     public interface IIssueService
     {
         Task<IssueResponseDto> CreateIssueAsync(CreateIssueDto dto);
-        Task<IssueResponseDto> UpdateIssueAsync(int issueId, UpdateIssueDto dto);
+        Task<IssueResponseDto> UpdateIssueAsync(int issueId, UpdateIssueDto dto, int actorId);
+        Task<IssueDetailDto> GetIssueByIdForUserAsync(int issueId);
         Task<IssueHistoryResponseDto> CreateIssueHistoryAsync(CreateIssueHistoryDto dto);
         Task<int> GetAllIssuesCountAsync();
         Task<List<IssueByAdminDto>> GetIssuesByAdminAsync(int adminId);
