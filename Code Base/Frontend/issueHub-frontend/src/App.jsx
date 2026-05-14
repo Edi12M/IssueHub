@@ -19,7 +19,6 @@ import TimeTrackingPage from "./Pages/Manager/TimeTrackingPage.jsx";
 import AssignedIssuesPage from "./Pages/dev/AssignedIssues.jsx";
 import FilteredIssuesPage from "./Pages/dev/FilteredIssues.jsx";
 import IssueDetailPage from "./Pages/dev/IssueDetail.jsx";
-import TasksPage from "./Pages/dev/Tasks.jsx";
 
 export default function App() {
   return (
