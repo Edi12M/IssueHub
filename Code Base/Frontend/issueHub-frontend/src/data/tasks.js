@@ -1,5 +1,12 @@
 const TASKS_KEY = "issuehub_tasks";
 
+// Developer IDs matching the seed users in users.js
+const DEV = {
+  ALEX:   "seed-dev",   // Alex Rivera
+  MAYA:   "seed-dev-2", // Maya Patel
+  JORDAN: "seed-dev-3", // Jordan Kim
+};
+
 const SEED_TASKS = [
   {
     id: "TASK-001",
@@ -9,7 +16,7 @@ const SEED_TASKS = [
     priority: "Medium",
     status: "Backlog",
     projectId: "p1",
-    assignees: [],
+    assignees: [DEV.MAYA],
     dueDate: "2026-06-20T17:00:00Z",
     startDate: "2026-05-20T09:00:00Z",
     createdAt: "2026-05-01T08:00:00Z",
@@ -24,7 +31,7 @@ const SEED_TASKS = [
     priority: "Low",
     status: "Backlog",
     projectId: "p2",
-    assignees: [],
+    assignees: [DEV.JORDAN],
     dueDate: "2026-07-01T17:00:00Z",
     startDate: "2026-06-01T09:00:00Z",
     createdAt: "2026-05-02T08:00:00Z",
@@ -39,7 +46,7 @@ const SEED_TASKS = [
     priority: "High",
     status: "To Do",
     projectId: "p1",
-    assignees: [],
+    assignees: [DEV.ALEX],
     dueDate: "2026-05-28T17:00:00Z",
     startDate: "2026-05-14T09:00:00Z",
     createdAt: "2026-05-03T08:00:00Z",
@@ -54,7 +61,7 @@ const SEED_TASKS = [
     priority: "Critical",
     status: "To Do",
     projectId: "p2",
-    assignees: [],
+    assignees: [DEV.ALEX],
     dueDate: "2026-05-22T17:00:00Z",
     startDate: "2026-05-12T09:00:00Z",
     createdAt: "2026-05-04T08:00:00Z",
@@ -69,7 +76,7 @@ const SEED_TASKS = [
     priority: "High",
     status: "In Progress",
     projectId: "p1",
-    assignees: [],
+    assignees: [DEV.MAYA],
     dueDate: "2026-05-30T17:00:00Z",
     startDate: "2026-05-08T09:00:00Z",
     createdAt: "2026-05-05T08:00:00Z",
@@ -84,7 +91,7 @@ const SEED_TASKS = [
     priority: "Medium",
     status: "In Progress",
     projectId: "p1",
-    assignees: [],
+    assignees: [DEV.JORDAN],
     dueDate: "2026-06-05T17:00:00Z",
     startDate: "2026-05-10T09:00:00Z",
     createdAt: "2026-05-06T08:00:00Z",
@@ -99,7 +106,7 @@ const SEED_TASKS = [
     priority: "Medium",
     status: "In Review",
     projectId: "p1",
-    assignees: [],
+    assignees: [DEV.MAYA],
     dueDate: "2026-05-20T17:00:00Z",
     startDate: "2026-05-01T09:00:00Z",
     createdAt: "2026-05-07T08:00:00Z",
@@ -114,7 +121,7 @@ const SEED_TASKS = [
     priority: "High",
     status: "In Review",
     projectId: "p2",
-    assignees: [],
+    assignees: [DEV.ALEX],
     dueDate: "2026-05-18T17:00:00Z",
     startDate: "2026-04-28T09:00:00Z",
     createdAt: "2026-05-08T08:00:00Z",
@@ -129,7 +136,7 @@ const SEED_TASKS = [
     priority: "High",
     status: "Done",
     projectId: "p1",
-    assignees: [],
+    assignees: [DEV.JORDAN],
     dueDate: "2026-05-10T17:00:00Z",
     startDate: "2026-04-20T09:00:00Z",
     createdAt: "2026-04-20T08:00:00Z",
@@ -144,7 +151,7 @@ const SEED_TASKS = [
     priority: "Critical",
     status: "Done",
     projectId: "p1",
-    assignees: [],
+    assignees: [DEV.ALEX],
     dueDate: "2026-05-05T17:00:00Z",
     startDate: "2026-04-15T09:00:00Z",
     createdAt: "2026-04-15T08:00:00Z",
@@ -153,12 +160,37 @@ const SEED_TASKS = [
   },
 ];
 
+// Migrate assignees from seed definitions into stored tasks that still have
+// empty assignees. Runs once the first time tasks are loaded after this update.
+function migrateAssignees(stored) {
+  const seedMap = Object.fromEntries(SEED_TASKS.map((t) => [t.id, t]));
+  let changed = false;
+  const migrated = stored.map((task) => {
+    const seed = seedMap[task.id];
+    if (
+      seed &&
+      (!Array.isArray(task.assignees) || task.assignees.length === 0) &&
+      seed.assignees.length > 0
+    ) {
+      changed = true;
+      return { ...task, assignees: seed.assignees };
+    }
+    return task;
+  });
+  if (changed) {
+    localStorage.setItem(TASKS_KEY, JSON.stringify(migrated));
+  }
+  return migrated;
+}
+
 export function getTasks() {
   try {
     const stored = localStorage.getItem(TASKS_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return migrateAssignees(parsed);
+      }
     }
     localStorage.setItem(TASKS_KEY, JSON.stringify(SEED_TASKS));
     return SEED_TASKS;

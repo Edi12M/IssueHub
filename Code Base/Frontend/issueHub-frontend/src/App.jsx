@@ -16,6 +16,10 @@ import KanbanPage from "./Pages/Manager/KanbanPage.jsx";
 import AnalyticsPage from "./Pages/Manager/AnalyticsPage.jsx";
 import PMSettingsPage from "./Pages/Manager/PMSettingsPage.jsx";
 import TimeTrackingPage from "./Pages/Manager/TimeTrackingPage.jsx";
+import AssignedIssuesPage from "./Pages/dev/AssignedIssues.jsx";
+import FilteredIssuesPage from "./Pages/dev/FilteredIssues.jsx";
+import IssueDetailPage from "./Pages/dev/IssueDetail.jsx";
+import DevTasksPage from "./Pages/dev/Tasks.jsx";
 
 export default function App() {
   return (
@@ -37,6 +41,19 @@ export default function App() {
       <Route path="/manager/timetracking" element={<TimeTrackingPage />} />
       <Route path="/manager/settings" element={<PMSettingsPage />} />
       <Route path="/manager/tasks" element={<TasksPage />} />
+
+      {/* Developer Routes */}
+      <Route
+        path="/dev"
+        element={<Navigate to="/dev/assigned-issues" replace />}
+      />
+      <Route path="/dev/assigned-issues" element={<AssignedIssuesPage />} />
+      <Route
+        path="/dev/assigned-issues/:status"
+        element={<FilteredIssuesPage />}
+      />
+      <Route path="/dev/issues/:id" element={<IssueDetailPage />} />
+      <Route path="/dev/tasks" element={<DevTasksPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
