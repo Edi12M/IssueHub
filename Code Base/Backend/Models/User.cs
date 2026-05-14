@@ -13,8 +13,8 @@ namespace Backend.Models
         public UserRole Role { get; set; }
         public UserStatus Status { get; set; }
         public int FailedLoginAttempts { get; set; }
-        public DateTime LockedUntil { get; set; }
-        public DateTime LastLoginAt { get; set; }
+        public DateTime? LockedUntil { get; set; }
+        public DateTime? LastLoginAt { get; set; }
         public DateTime CreatedAt { get; set; }
 
         //Navigation

@@ -13,7 +13,6 @@ public class AppDbContext : DbContext
     public DbSet<User>             Users             { get; set; }
     public DbSet<Project>          Projects          { get; set; }
     public DbSet<ProjectMembers>   ProjectMembers    { get; set; }
-    public DbSet<Workflow>         Workflows         { get; set; }
     public DbSet<Issue>            Issues            { get; set; }
     public DbSet<IssueAssignment>  IssueAssignments  { get; set; }
     public DbSet<IssueDependency>  IssueDependencies { get; set; }
@@ -40,13 +39,6 @@ public class AppDbContext : DbContext
             .HasOne(p => p.Owner)
             .WithMany(u => u.OwnedProjects)
             .HasForeignKey(p => p.OwnerId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // Project → Workflow
-        modelBuilder.Entity<Project>()
-            .HasOne(p => p.Workflow)
-            .WithMany()
-            .HasForeignKey(p => p.WorkflowId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Project>()
@@ -213,13 +205,6 @@ public class AppDbContext : DbContext
             .HasOne(t => t.User)
             .WithMany(u => u.TimeLogs)
             .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // Workflow → CreatedBy
-        modelBuilder.Entity<Workflow>()
-            .HasOne(w => w.CreatedBy)
-            .WithMany()
-            .HasForeignKey(w => w.CreatedById)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Notification → User

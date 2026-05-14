@@ -17,12 +17,10 @@ namespace Backend.Models
         public DateTime EndDate { get; set; }
         public decimal BudgetHours { get; set; }
         public int OwnerId { get; set; }
-        public int WorkflowId { get; set; }
         public DateTime CreatedAt { get; set; }
 
         //Navigation
         public User Owner { get; set; }
-        public Workflow Workflow { get; set; }
         public ICollection<ProjectMembers> ProjectMembers { get; set; }
         public ICollection<Issue> Issues { get; set; }
         public ICollection<Announcement> Announcements { get; set; }
