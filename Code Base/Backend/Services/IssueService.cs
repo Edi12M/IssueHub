@@ -301,7 +301,7 @@ namespace Backend.Services
             _context.IssueHistories.Add(history);
             await _context.SaveChangesAsync();
 
-            return MapToHistoryDto(history);
+            return await MapToHistoryDtoAsync(history);
         }
 
         public Task<int> GetAllIssuesCountAsync() => _context.Issues.CountAsync();
@@ -431,17 +431,26 @@ namespace Backend.Services
             UpdatedAt = i.UpdatedAt
         };
 
-        private static IssueHistoryResponseDto MapToHistoryDto(IssueHistory h) => new()
+        private async Task<IssueHistoryResponseDto> MapToHistoryDtoAsync(IssueHistory h)
         {
-            Id = h.Id,
-            IssueId = h.IssueId,
-            ActorId = h.ActorId,
-            FieldName = h.FieldName,
-            OldValue = h.OldValue,
-            NewValue = h.NewValue,
-            TransitionNote = h.TransitionNote,
-            CreatedAt = h.CreatedAt
-        };
+            var actorName = await _context.Users
+                .Where(u => u.Id == h.ActorId)
+                .Select(u => u.FullName)
+                .FirstOrDefaultAsync() ?? string.Empty;
+
+            return new IssueHistoryResponseDto
+            {
+                Id = h.Id,
+                IssueId = h.IssueId,
+                ActorId = h.ActorId,
+                ActorName = actorName,
+                FieldName = h.FieldName,
+                OldValue = h.OldValue,
+                NewValue = h.NewValue,
+                TransitionNote = h.TransitionNote,
+                CreatedAt = h.CreatedAt
+            };
+        }
 
         private static TaskDto MapToTaskDto(Issue i) => new()
         {

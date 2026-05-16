@@ -56,15 +56,19 @@ namespace Backend.Services
             await _context.SaveChangesAsync();
 
             await _notifications.NotifyIssueParticipantsAsync(
-                issue.Id,
-                NotificationType.CommentAdded,
-                NotificationEntityTypes.Comment,
-                comment.Id,
-                excludeUserId: authorId,
-                emailSubject: $"[{issue.IssueCode}] New comment",
-                emailBody: $"A new comment was added to issue {issue.IssueCode} \"{issue.Title}\".");
+                  issue.Id,
+                  NotificationType.CommentAdded,
+                  NotificationEntityTypes.Comment,
+                  comment.Id,
+                  excludeUserId: authorId,
+                  emailSubject: $"[{issue.IssueCode}] New comment",
+                  emailBody: $"A new comment was added to issue {issue.IssueCode} \"{issue.Title}\".");
 
-            return await MapToResponseDtoAsync(comment);
+            var saved = await _context.Comments
+                .Include(c => c.Author)
+                .FirstAsync(c => c.Id == comment.Id);
+
+            return MapToResponseDto(saved);
         }
 
         public async Task<CommentResponseDto> GetCommentAsync(int commentId)
@@ -178,27 +182,6 @@ namespace Backend.Services
                 }
             }
             return result;
-        }
-
-        private async Task<CommentResponseDto> MapToResponseDtoAsync(Comment c)
-        {
-            var authorName = await _context.Users
-                .Where(u => u.Id == c.AuthorId)
-                .Select(u => u.FullName)
-                .FirstOrDefaultAsync() ?? string.Empty;
-
-            return new CommentResponseDto
-            {
-                Id = c.Id,
-                IssueId = c.IssueId,
-                AuthorId = c.AuthorId,
-                AuthorName = authorName,
-                ParentId = c.ParentId,
-                Body = c.Body,
-                IsEdited = c.IsEdited,
-                CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt
-            };
         }
 
         private static CommentResponseDto MapToResponseDto(Comment c) => new()

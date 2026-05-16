@@ -27,7 +27,7 @@ namespace Backend.Services
                 .OrderByDescending(h => h.CreatedAt)
                 .ToListAsync();
 
-            return history.Select(MapToDto).ToList();
+            return await EnrichWithActorNamesAsync(history);
         }
 
         public async Task<List<IssueHistoryResponseDto>> GetHistoryForUserAsync(int userId)
@@ -36,7 +36,6 @@ namespace Backend.Services
             if (!userExists)
                 throw new NotFoundException(nameof(User), userId);
 
-            // Issues the user is currently assigned to.
             var assignedIssueIds = _context.IssueAssignments
                 .Where(a => a.UserId == userId)
                 .Select(a => a.IssueId);
@@ -46,19 +45,36 @@ namespace Backend.Services
                 .OrderByDescending(h => h.CreatedAt)
                 .ToListAsync();
 
-            return history.Select(MapToDto).ToList();
+            return await EnrichWithActorNamesAsync(history);
         }
 
-        private static IssueHistoryResponseDto MapToDto(IssueHistory h) => new()
+        // -- Internals -------------------------------------------------------
+
+        private async Task<List<IssueHistoryResponseDto>> EnrichWithActorNamesAsync(
+            List<IssueHistory> history)
         {
-            Id = h.Id,
-            IssueId = h.IssueId,
-            ActorId = h.ActorId,
-            FieldName = h.FieldName,
-            OldValue = h.OldValue,
-            NewValue = h.NewValue,
-            TransitionNote = h.TransitionNote,
-            CreatedAt = h.CreatedAt
-        };
+            var actorIds = history.Select(h => h.ActorId).Distinct().ToList();
+
+            var actorNames = await _context.Users
+                .Where(u => actorIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u.FullName);
+
+            return history.Select(h => MapToDto(h, actorNames)).ToList();
+        }
+
+        private static IssueHistoryResponseDto MapToDto(
+            IssueHistory h,
+            IReadOnlyDictionary<int, string> actorNames) => new()
+            {
+                Id = h.Id,
+                IssueId = h.IssueId,
+                ActorId = h.ActorId,
+                ActorName = actorNames.TryGetValue(h.ActorId, out var name) ? name : string.Empty,
+                FieldName = h.FieldName,
+                OldValue = h.OldValue,
+                NewValue = h.NewValue,
+                TransitionNote = h.TransitionNote,
+                CreatedAt = h.CreatedAt
+            };
     }
 }

@@ -97,7 +97,11 @@ namespace Backend.Services
                 emailSubject: $"[{issue.IssueCode}] New attachment",
                 emailBody: $"\"{safeName}\" was attached to issue {issue.IssueCode}.");
 
-            return await MapToResponseDtoAsync(attachment);
+            var saved = await _context.Attachments
+               .Include(a => a.UploadedBy)
+               .FirstAsync(a => a.Id == attachment.Id);
+
+            return MapToResponseDto(saved);
         }
 
         public async Task<AttachmentResponseDto> GetAttachmentAsync(int attachmentId)
@@ -181,26 +185,6 @@ namespace Backend.Services
         }
 
         // ── Internals ────────────────────────────────────────────
-
-        private async Task<AttachmentResponseDto> MapToResponseDtoAsync(Attachment a)
-        {
-            var name = await _context.Users
-                .Where(u => u.Id == a.UploadedById)
-                .Select(u => u.FullName)
-                .FirstOrDefaultAsync() ?? string.Empty;
-
-            return new AttachmentResponseDto
-            {
-                Id = a.Id,
-                IssueId = a.IssueId,
-                UploadedById = a.UploadedById,
-                UploadedByName = name,
-                FileName = a.FileName,
-                FileType = a.FileType,
-                FileSizeBytes = a.FileSizeBytes,
-                UploadedAt = a.UploadedAt
-            };
-        }
 
         private static AttachmentResponseDto MapToResponseDto(Attachment a) => new()
         {
