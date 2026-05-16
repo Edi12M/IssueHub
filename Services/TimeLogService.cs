@@ -42,7 +42,12 @@ namespace Backend.Services
             _context.TimeLogs.Add(timeLog);
             await _context.SaveChangesAsync();
 
-            return MapToResponseDto(timeLog);
+            var saved = await _context.TimeLogs
+                .Include(t => t.Issue)
+                .Include(t => t.User)
+                .FirstAsync(t => t.Id == timeLog.Id);
+
+            return MapToResponseDto(saved);
         }
 
         public async Task<decimal> CalculateBudgetUsedAsync(int projectId)
@@ -68,7 +73,9 @@ namespace Backend.Services
         {
             Id = t.Id,
             IssueId = t.IssueId,
+            IssueTitle = t.Issue?.Title ?? string.Empty,
             UserId = t.UserId,
+            UserFullName = t.User?.FullName ?? string.Empty,
             Hours = t.Hours,
             IsBillable = t.IsBillable,
             LogDate = t.LogDate,

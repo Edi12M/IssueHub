@@ -481,4 +481,8 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 obj/
-bin/
+bin/a p p s e t t i n g s . D e v e l o p m e n t . j s o n  
+ a t t a c h m e n t s _ s t o r a g e /  
+ 
+appsettings.Development.json
+attachments_storage/
