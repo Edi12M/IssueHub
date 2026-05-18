@@ -1,4 +1,4 @@
-import { LayoutDashboard, Settings } from "lucide-react";
+import { LayoutDashboard, Settings, Mic } from "lucide-react";
 import { GoProject } from "react-icons/go";
 import { TbLayoutKanban } from "react-icons/tb";
 import { SiGoogletasks } from "react-icons/si";
@@ -6,13 +6,55 @@ import { CiTimer } from "react-icons/ci";
 import { GrAnalytics } from "react-icons/gr";
 
 export const MANAGER_NAV_ITEMS = [
-  { key: "dashboard",    label: "Dashboard",    icon: LayoutDashboard, to: "/manager" },
-  { key: "projects",     label: "Projects",     icon: GoProject,       to: "/manager/projects" },
-  { key: "kanbanboard",  label: "Kanban Board", icon: TbLayoutKanban,  to: "/manager/kanban" },
-  { key: "tasks",        label: "Tasks",        icon: SiGoogletasks,   to: "/manager/tasks" },
-  { key: "timetracking", label: "Time Tracking",icon: CiTimer,         to: "/manager/timetracking" },
-  { key: "analytics",    label: "Analytics",    icon: GrAnalytics,     to: "/manager/analytics" },
-  { key: "settings",     label: "Settings",     icon: Settings,        to: "/manager/settings" },
+  {
+    key: "dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    to: "/manager",
+  },
+  {
+    key: "projects",
+    label: "Projects",
+    icon: GoProject,
+    to: "/manager/projects",
+  },
+  {
+    key: "kanbanboard",
+    label: "Kanban Board",
+    icon: TbLayoutKanban,
+    to: "/manager/kanban",
+  },
+  {
+    key: "capacity",
+    label: "Capacity",
+    icon: CiTimer,
+    to: "/manager/capacity",
+  },
+  { key: "tasks", label: "Tasks", icon: SiGoogletasks, to: "/manager/tasks" },
+  {
+    key: "meetings",
+    label: "Meeting Capture",
+    icon: Mic,
+    to: "/manager/meetings",
+  },
+  {
+    key: "timetracking",
+    label: "Time Tracking",
+    icon: CiTimer,
+    to: "/manager/timetracking",
+  },
+  {
+    key: "analytics",
+    label: "Analytics",
+    icon: GrAnalytics,
+    to: "/manager/analytics",
+  },
+  {
+    key: "settings",
+    label: "Settings",
+    icon: Settings,
+    to: "/manager/settings",
+  },
 ];
 
 export const PROJECTS_KEY = "issuehub_projects";

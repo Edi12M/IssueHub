@@ -1,62 +1,12 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit } from "lucide-react";
+import { Plus, Edit, Settings } from "lucide-react";
 import Button from "../../Components/Button/button.jsx";
 import CreateTaskModal from "../../Components/Modals/CreateTaskModal.jsx";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
-import { LayoutDashboard, Settings } from "lucide-react";
-import { GoProject } from "react-icons/go";
-import { TbLayoutKanban } from "react-icons/tb";
-import { SiGoogletasks } from "react-icons/si";
-import { CiTimer } from "react-icons/ci";
-import { GrAnalytics } from "react-icons/gr";
+import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
+import { getTasks, saveTasks } from "../../data/tasks.js";
 
-const TASKS_KEY = "issuehub_tasks";
 const PROJECTS_KEY = "issuehub_projects";
-
-const MANAGER_NAV_ITEMS = [
-  {
-    key: "dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    to: "/manager",
-  },
-  {
-    key: "projects",
-    label: "Projects",
-    icon: GoProject,
-    to: "/manager/projects",
-  },
-  {
-    key: "kanbanboard",
-    label: "Kanban Board",
-    icon: TbLayoutKanban,
-    to: "/manager/kanban",
-  },
-  {
-    key: "tasks",
-    label: "Tasks",
-    icon: SiGoogletasks,
-    to: "/manager/tasks",
-  },
-  {
-    key: "timetracking",
-    label: "Time Tracking",
-    icon: CiTimer,
-    to: "/manager/timetracking",
-  },
-  {
-    key: "analytics",
-    label: "Analytics",
-    icon: GrAnalytics,
-    to: "/manager/analytics",
-  },
-  {
-    key: "settings",
-    label: "Settings",
-    icon: Settings,
-    to: "/manager/settings",
-  },
-];
 
 const STATUSES = [
   "All",
@@ -96,14 +46,7 @@ const INITIAL_PROJECTS = [
 ];
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState(() => {
-    try {
-      const stored = localStorage.getItem(TASKS_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [tasks, setTasks] = useState(() => getTasks());
 
   const [projects] = useState(() => {
     try {
@@ -122,7 +65,7 @@ export default function TasksPage() {
   const [selectedProjectId, setSelectedProjectId] = useState("");
 
   useEffect(() => {
-    localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+    saveTasks(tasks);
   }, [tasks]);
 
   useEffect(() => {
@@ -391,6 +334,30 @@ export default function TasksPage() {
                   >
                     {task.description || "No description"}
                   </p>
+                  {Array.isArray(task.dependencies) &&
+                    task.dependencies.length > 0 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "8px",
+                          flexWrap: "wrap",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "13px",
+                            color: "#94a3b8",
+                            background: "rgba(255,255,255,0.05)",
+                            padding: "6px 10px",
+                            borderRadius: 8,
+                          }}
+                        >
+                          {task.dependencies.length} dependency
+                          {task.dependencies.length !== 1 ? "ies" : ""}
+                        </span>
+                      </div>
+                    )}
                   <div
                     style={{
                       display: "flex",
@@ -436,6 +403,7 @@ export default function TasksPage() {
           onClose={handleCloseModal}
           onSubmit={handleCreateTask}
           projects={projects}
+          tasks={tasks}
           editTask={editingTask}
         />
       </main>
