@@ -16,12 +16,14 @@ const PRIORITIES = [
   { label: "Medium", color: "#eab308" },
   { label: "Low", color: "#22c55e" },
 ];
+const DEPENDENCY_TYPES = ["Blocks", "Blocked By", "Relates To", "Duplicates"];
 
 export default function CreateTaskModal({
   isOpen,
   onClose,
   onSubmit,
   projects = [],
+  tasks = [],
   editTask = null,
 }) {
   const [title, setTitle] = useState(editTask?.title || "");
@@ -34,6 +36,12 @@ export default function CreateTaskModal({
   const [newSubtask, setNewSubtask] = useState("");
   const [projectId, setProjectId] = useState(editTask?.projectId || "");
   const [assignees, setAssignees] = useState(editTask?.assignees || []);
+  const [dependencies, setDependencies] = useState(
+    editTask?.dependencies || [],
+  );
+  const [selectedDependencyTaskId, setSelectedDependencyTaskId] = useState("");
+  const [selectedDependencyType, setSelectedDependencyType] =
+    useState("Blocks");
   const [priority, setPriority] = useState(editTask?.priority || "Medium");
   const [startDate, setStartDate] = useState(
     editTask?.startDate ? new Date(editTask.startDate) : null,
@@ -51,6 +59,9 @@ export default function CreateTaskModal({
     setNewSubtask("");
     setProjectId(editTask?.projectId || "");
     setAssignees(editTask?.assignees || []);
+    setDependencies(editTask?.dependencies || []);
+    setSelectedDependencyTaskId("");
+    setSelectedDependencyType("Blocks");
     setPriority(editTask?.priority || "Medium");
     setStartDate(editTask?.startDate ? new Date(editTask.startDate) : null);
     setDueDate(editTask?.dueDate ? new Date(editTask.dueDate) : null);
@@ -92,6 +103,7 @@ export default function CreateTaskModal({
       subtasks,
       projectId,
       assignees,
+      dependencies,
       priority,
       startDate: startDate ? startDate.toISOString() : null,
       dueDate: dueDate ? dueDate.toISOString() : null,
@@ -103,9 +115,16 @@ export default function CreateTaskModal({
     reset();
   }
 
-  // get members of selected project
   const projectMembers =
     projects.find((p) => p.id === projectId)?.members || [];
+  const availableDependencyTasks = tasks.filter((task) => {
+    if (task.id === editTask?.id) return false;
+    if (!projectId) return true;
+    return task.projectId === projectId;
+  });
+  const selectedDependencyTask = availableDependencyTasks.find(
+    (task) => task.id === selectedDependencyTaskId,
+  );
 
   if (!isOpen) return null;
 
@@ -432,6 +451,138 @@ export default function CreateTaskModal({
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* DEPENDENCIES */}
+          <div className="form-section">
+            <p className="form-section-heading">
+              Dependencies{" "}
+              <span
+                className="form-label-optional"
+                style={{ textTransform: "none", letterSpacing: 0 }}
+              >
+                — optional
+              </span>
+            </p>
+            <div className="form-group-container">
+              <div style={{ display: "grid", gap: "12px" }}>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <select
+                    className="form-select-base"
+                    value={selectedDependencyTaskId}
+                    onChange={(e) =>
+                      setSelectedDependencyTaskId(e.target.value)
+                    }
+                  >
+                    <option value="">— Select task —</option>
+                    {availableDependencyTasks.map((task) => (
+                      <option key={task.id} value={task.id}>
+                        {task.title}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    className="form-select-base"
+                    value={selectedDependencyType}
+                    onChange={(e) => setSelectedDependencyType(e.target.value)}
+                  >
+                    {DEPENDENCY_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!selectedDependencyTaskId) return;
+                      const exists = dependencies.some(
+                        (dep) => dep.taskId === selectedDependencyTaskId,
+                      );
+                      if (exists) return;
+                      setDependencies((prev) => [
+                        ...prev,
+                        {
+                          taskId: selectedDependencyTaskId,
+                          type: selectedDependencyType,
+                        },
+                      ]);
+                      setSelectedDependencyTaskId("");
+                    }}
+                    style={{
+                      padding: "0 14px",
+                      background: "rgba(255,122,162,0.15)",
+                      border: "1px solid rgba(255,122,162,0.3)",
+                      borderRadius: "8px",
+                      color: "#ff7aa2",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Add
+                  </button>
+                </div>
+                {projectId === "" && availableDependencyTasks.length === 0 && (
+                  <p style={{ color: "#94a3b8", fontSize: "13px" }}>
+                    No tasks available yet. Create a task first or select a
+                    project with stored tasks.
+                  </p>
+                )}
+                {projectId !== "" && availableDependencyTasks.length === 0 && (
+                  <p style={{ color: "#94a3b8", fontSize: "13px" }}>
+                    No other tasks available in this project.
+                  </p>
+                )}
+                {dependencies.length > 0 && (
+                  <div style={{ display: "grid", gap: "8px" }}>
+                    {dependencies.map((dependency, index) => {
+                      const dependencyTask = tasks.find(
+                        (task) => task.id === dependency.taskId,
+                      );
+                      return (
+                        <div
+                          key={`${dependency.taskId}-${index}`}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: "10px 12px",
+                            borderRadius: "8px",
+                            background: "rgba(255,255,255,0.04)",
+                            border: "1px solid rgba(255,255,255,0.06)",
+                          }}
+                        >
+                          <div>
+                            <div style={{ color: "#f8fafc", fontSize: "13px" }}>
+                              {dependencyTask?.title || "Unknown task"}
+                            </div>
+                            <div style={{ color: "#94a3b8", fontSize: "12px" }}>
+                              {dependency.type}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDependencies((prev) =>
+                                prev.filter((_, i) => i !== index),
+                              )
+                            }
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: "#94a3b8",
+                              cursor: "pointer",
+                              padding: "2px",
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
