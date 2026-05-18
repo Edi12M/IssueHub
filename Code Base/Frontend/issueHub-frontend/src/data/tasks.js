@@ -2,8 +2,8 @@ const TASKS_KEY = "issuehub_tasks";
 
 // Developer IDs matching the seed users in users.js
 const DEV = {
-  ALEX:   "seed-dev",   // Alex Rivera
-  MAYA:   "seed-dev-2", // Maya Patel
+  ALEX: "seed-dev", // Alex Rivera
+  MAYA: "seed-dev-2", // Maya Patel
   JORDAN: "seed-dev-3", // Jordan Kim
 };
 
@@ -11,7 +11,8 @@ const SEED_TASKS = [
   {
     id: "TASK-001",
     title: "Design system component audit",
-    description: "Review all existing UI components for style inconsistencies and accessibility gaps.",
+    description:
+      "Review all existing UI components for style inconsistencies and accessibility gaps.",
     type: "Research",
     priority: "Medium",
     status: "Backlog",
@@ -41,7 +42,8 @@ const SEED_TASKS = [
   {
     id: "TASK-003",
     title: "Implement dark mode toggle",
-    description: "Add persistent dark/light theme switching to the settings panel.",
+    description:
+      "Add persistent dark/light theme switching to the settings panel.",
     type: "Feature",
     priority: "High",
     status: "To Do",
@@ -56,7 +58,8 @@ const SEED_TASKS = [
   {
     id: "TASK-004",
     title: "Fix auth crash on iOS 17",
-    description: "App crashes on token refresh for iOS 17+ devices during the sign-in flow.",
+    description:
+      "App crashes on token refresh for iOS 17+ devices during the sign-in flow.",
     type: "Bug",
     priority: "Critical",
     status: "To Do",
@@ -71,7 +74,8 @@ const SEED_TASKS = [
   {
     id: "TASK-005",
     title: "Redesign landing page hero",
-    description: "Update the hero section with new brand visuals and revised CTA copy.",
+    description:
+      "Update the hero section with new brand visuals and revised CTA copy.",
     type: "Improvement",
     priority: "High",
     status: "In Progress",
@@ -86,7 +90,8 @@ const SEED_TASKS = [
   {
     id: "TASK-006",
     title: "Analytics API integration",
-    description: "Connect dashboard charts to live API endpoints and handle loading states.",
+    description:
+      "Connect dashboard charts to live API endpoints and handle loading states.",
     type: "Feature",
     priority: "Medium",
     status: "In Progress",
@@ -101,7 +106,8 @@ const SEED_TASKS = [
   {
     id: "TASK-007",
     title: "User profile settings page",
-    description: "Build the profile settings UI with avatar upload and password change.",
+    description:
+      "Build the profile settings UI with avatar upload and password change.",
     type: "Feature",
     priority: "Medium",
     status: "In Review",
@@ -116,7 +122,8 @@ const SEED_TASKS = [
   {
     id: "TASK-008",
     title: "Performance audit — bundle size",
-    description: "Analyse and reduce JS bundle size, targeting < 200 kB initial load.",
+    description:
+      "Analyse and reduce JS bundle size, targeting < 200 kB initial load.",
     type: "Research",
     priority: "High",
     status: "In Review",
@@ -131,7 +138,8 @@ const SEED_TASKS = [
   {
     id: "TASK-009",
     title: "Project creation wizard",
-    description: "Implement the full project creation flow with team member assignment.",
+    description:
+      "Implement the full project creation flow with team member assignment.",
     type: "Feature",
     priority: "High",
     status: "Done",
@@ -146,7 +154,8 @@ const SEED_TASKS = [
   {
     id: "TASK-010",
     title: "Initial database schema design",
-    description: "Define entity relationships and write migration scripts for the v1 schema.",
+    description:
+      "Define entity relationships and write migration scripts for the v1 schema.",
     type: "Feature",
     priority: "Critical",
     status: "Done",
@@ -183,19 +192,28 @@ function migrateAssignees(stored) {
   return migrated;
 }
 
+function normalizeTask(task) {
+  return {
+    ...task,
+    dependencies: Array.isArray(task.dependencies) ? task.dependencies : [],
+  };
+}
+
 export function getTasks() {
   try {
     const stored = localStorage.getItem(TASKS_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return migrateAssignees(parsed);
+        const normalized = parsed.map(normalizeTask);
+        return migrateAssignees(normalized);
       }
     }
-    localStorage.setItem(TASKS_KEY, JSON.stringify(SEED_TASKS));
-    return SEED_TASKS;
+    const seeded = SEED_TASKS.map(normalizeTask);
+    localStorage.setItem(TASKS_KEY, JSON.stringify(seeded));
+    return seeded;
   } catch {
-    return SEED_TASKS;
+    return SEED_TASKS.map(normalizeTask);
   }
 }
 
