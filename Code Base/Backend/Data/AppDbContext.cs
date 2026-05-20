@@ -31,6 +31,8 @@ public class AppDbContext : DbContext
 
         // ── Column constraints ──────────────────────────────────
         // User
+        // ── Column constraints ──────────────────────────────────
+        // User
         modelBuilder.Entity<User>(b =>
         {
             b.Property(u => u.FullName).IsRequired().HasMaxLength(100);
@@ -39,6 +41,57 @@ public class AppDbContext : DbContext
             b.Property(u => u.Department).HasMaxLength(100);
             b.Property(u => u.Icon).HasMaxLength(255);
             b.HasIndex(u => u.Email).IsUnique();
+
+            // ── SEED INITIAL TEST USERS ─────────────────────────
+            // Plaintext password for all accounts is: Testing123!
+            b.HasData(
+                new User
+                {
+                    Id = 1,
+                    FullName = "System Admin",
+                    Email = "admin@issuehub.com",
+                    PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                    Department = "IT",
+                    Role = UserRole.Admin
+                },
+                new User
+                {
+                    Id = 2,
+                    FullName = "Project Manager",
+                    Email = "pm@issuehub.com",
+                    PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                    Department = "Management",
+                    Role = UserRole.Manager
+                },
+                new User
+                {
+                    Id = 3,
+                    FullName = "Developer One",
+                    Email = "dev1@issuehub.com",
+                    PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                    Department = "Engineering",
+                    Role = UserRole.Developer
+                },
+                new User
+                {
+                    Id = 4,
+                    FullName = "Developer Two",
+                    Email = "dev2@issuehub.com",
+                    PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                    Department = "Engineering",
+                    Role = UserRole.Developer
+                },
+                new User
+                {
+                    Id = 5,
+                    FullName = "Developer Three",
+                    Email = "dev3@issuehub.com",
+                    PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                    Department = "Engineering",
+                    Role = UserRole.Developer
+                }
+            );
+            // ────────────────────────────────────────────────────
         });
 
         // Project
