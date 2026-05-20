@@ -4,22 +4,35 @@ import { Container, Form, InputGroup } from "react-bootstrap";
 import Button from "./Button/button.jsx";
 import logo from "../assets/appLogo-removebg.png";
 import { Eye, EyeSlash } from "react-bootstrap-icons";
-import { validateUserCredentials, setSession } from "../data/users.js";
+import { setSession } from "../data/users.js";
+import { authAPI } from "../services/api.js";
 
 const ROLE_ROUTES = {
   "System Administrator": "/admin",
-  "Project Manager":      "/manager",
-  "Developer":            "/dev/assigned-issues",
-  "Viewer":               "/dev/assigned-issues",
+  "Project Manager": "/manager",
+  Developer: "/dev/assigned-issues",
+  Viewer: "/dev/assigned-issues",
 };
 
 // Demo hint rows — UI only, not used for auth logic
 const DEMO_HINTS = [
-  { role: "System Admin",    email: "admin@issuehub.com",  password: "Admin@123"  },
-  { role: "Project Manager", email: "pm@issuehub.com",     password: "PM@123"     },
-  { role: "Dev · Alex Rivera",  email: "alex@issuehub.com",  password: "Alex@123"   },
-  { role: "Dev · Maya Patel",   email: "maya@issuehub.com",  password: "Maya@123"   },
-  { role: "Dev · Jordan Kim",   email: "jordan@issuehub.com",password: "Jordan@123" },
+  { role: "System Admin", email: "admin@issuehub.com", password: "Admin@123" },
+  { role: "Project Manager", email: "pm@issuehub.com", password: "PM@123" },
+  {
+    role: "Dev · Alex Rivera",
+    email: "alex@issuehub.com",
+    password: "Alex@123",
+  },
+  {
+    role: "Dev · Maya Patel",
+    email: "maya@issuehub.com",
+    password: "Maya@123",
+  },
+  {
+    role: "Dev · Jordan Kim",
+    email: "jordan@issuehub.com",
+    password: "Jordan@123",
+  },
 ];
 
 function LoginForm() {
@@ -28,15 +41,30 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const user = validateUserCredentials(email.trim(), password);
-    if (user) {
-      setSession(user);
-      navigate(ROLE_ROUTES[user.role] ?? "/dev/assigned-issues");
-    } else {
-      setError("Invalid email or password.");
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await authAPI.login({
+        email: email.trim(),
+        password: password,
+      });
+
+      if (response && response.user) {
+        setSession(response.user);
+        navigate(ROLE_ROUTES[response.user.role] ?? "/dev/assigned-issues");
+      } else {
+        setError("Login failed. Please try again.");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err.message || "Invalid email or password.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -63,8 +91,12 @@ function LoginForm() {
             type="email"
             placeholder="Enter your email"
             value={email}
-            onChange={(e) => { setEmail(e.target.value); setError(""); }}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError("");
+            }}
             required
+            disabled={loading}
           />
         </Form.Group>
 
@@ -75,13 +107,18 @@ function LoginForm() {
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => { setPassword(e.target.value); setError(""); }}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError("");
+              }}
               required
+              disabled={loading}
             />
             <Button
               variant="outline-secondary"
               onClick={() => setShowPassword((s) => !s)}
               aria-label={showPassword ? "Hide password" : "Show password"}
+              disabled={loading}
             >
               {showPassword ? <EyeSlash /> : <Eye />}
             </Button>
@@ -89,13 +126,20 @@ function LoginForm() {
         </Form.Group>
 
         {error && (
-          <p style={{ color: "#f87171", fontSize: "13px", marginBottom: "12px" }}>
+          <p
+            style={{ color: "#f87171", fontSize: "13px", marginBottom: "12px" }}
+          >
             {error}
           </p>
         )}
 
-        <Button variant="primary" type="submit" style={{ width: "100%" }}>
-          Sign In
+        <Button
+          variant="primary"
+          type="submit"
+          style={{ width: "100%" }}
+          disabled={loading}
+        >
+          {loading ? "Signing in..." : "Sign In"}
         </Button>
       </Form>
 
@@ -125,7 +169,11 @@ function LoginForm() {
           <button
             key={c.email}
             type="button"
-            onClick={() => { setEmail(c.email); setPassword(c.password); setError(""); }}
+            onClick={() => {
+              setEmail(c.email);
+              setPassword(c.password);
+              setError("");
+            }}
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -136,12 +184,23 @@ function LoginForm() {
               padding: "6px 0",
               cursor: "pointer",
               borderBottom: "1px solid rgba(255,255,255,0.05)",
+              opacity: loading ? 0.5 : 1,
+              pointerEvents: loading ? "none" : "auto",
             }}
+            disabled={loading}
           >
-            <span style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 600 }}>
+            <span
+              style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 600 }}
+            >
               {c.role}
             </span>
-            <span style={{ fontSize: "11px", color: "#475569", fontFamily: "monospace" }}>
+            <span
+              style={{
+                fontSize: "11px",
+                color: "#475569",
+                fontFamily: "monospace",
+              }}
+            >
               {c.email}
             </span>
           </button>

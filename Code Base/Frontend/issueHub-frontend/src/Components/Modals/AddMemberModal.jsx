@@ -15,7 +15,13 @@ export default function AddMemberModal({
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [roles, setRoles] = useState({});
 
-  const existingIds = new Set(project?.members?.map((m) => m.id));
+  const existingIds = useMemo(
+    () =>
+      new Set(
+        project && project.members ? project.members.map((m) => m.id) : [],
+      ),
+    [project],
+  );
 
   const filteredUsers = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -26,7 +32,7 @@ export default function AddMemberModal({
         u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
       return notAdmin && notAlreadyMember && matchesSearch;
     });
-  }, [search, availableUsers, project]);
+  }, [search, availableUsers, existingIds]);
 
   const toggleUser = (id) => {
     setSelectedUsers((prev) =>

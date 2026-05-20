@@ -1,187 +1,204 @@
-const STORAGE_KEY = "issuehub.users";
-
-const seedUsers = [
-  {
-    id: "seed-admin",
-    name: "System Admin",
-    email: "admin@issuehub.com",
-    password: "Admin@123",
-    role: "System Administrator",
-    status: "Active",
-    createdAt: "2026-01-01T00:00:00Z",
-  },
-  {
-    id: "seed-pm",
-    name: "Project Manager",
-    email: "pm@issuehub.com",
-    password: "PM@123",
-    role: "Project Manager",
-    status: "Active",
-    createdAt: "2026-01-01T00:00:00Z",
-  },
-  {
-    id: "seed-dev",
-    name: "Alex Rivera",
-    email: "alex@issuehub.com",
-    password: "Alex@123",
-    role: "Developer",
-    status: "Active",
-    createdAt: "2026-01-01T00:00:00Z",
-  },
-  {
-    id: "seed-dev-2",
-    name: "Maya Patel",
-    email: "maya@issuehub.com",
-    password: "Maya@123",
-    role: "Developer",
-    status: "Active",
-    createdAt: "2026-01-01T00:00:00Z",
-  },
-  {
-    id: "seed-dev-3",
-    name: "Jordan Kim",
-    email: "jordan@issuehub.com",
-    password: "Jordan@123",
-    role: "Developer",
-    status: "Active",
-    createdAt: "2026-01-01T00:00:00Z",
-  },
-];
-
-function readStoredUsers() {
-  if (typeof window === "undefined") {
-    return [...seedUsers];
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return [...seedUsers];
-    }
-
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      return [...seedUsers];
-    }
-
-    // Keep existing user-created accounts; sync seed accounts so name/email
-    // changes in the seed definition propagate to existing localStorage data.
-    const seedMap = Object.fromEntries(seedUsers.map((s) => [s.id, s]));
-    const merged = parsed.map((u) => {
-      const seed = seedMap[u.id];
-      if (!seed) return u;
-      // Overwrite identity fields for seeds; preserve any admin-made edits to
-      // status/department by only touching the fields seeds own.
-      return { ...u, name: seed.name, email: seed.email, role: seed.role, password: seed.password };
-    });
-    for (const seed of seedUsers) {
-      if (!merged.find((u) => u.id === seed.id)) {
-        merged.push(seed);
-      }
-    }
-    return merged;
-  } catch {
-    return [...seedUsers];
-  }
-}
-
-function persistUsers() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(usersStore));
-}
-
-export const usersStore = readStoredUsers();
-
-export function getUsers() {
-  return [...usersStore].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
-}
-
-export function addUser(user) {
-  usersStore.push(user);
-  persistUsers();
-}
-
-export function getUserById(id) {
-  return usersStore.find((u) => String(u.id) === String(id)) ?? null;
-}
-
-export function updateUser(updated) {
-  const idx = usersStore.findIndex((u) => String(u.id) === String(updated.id));
-  if (idx === -1) return false;
-
-  // Only update allowed fields
-  const existing = usersStore[idx];
-  usersStore[idx] = {
-    ...existing,
-    name: updated.name ?? existing.name,
-    email: updated.email ?? existing.email,
-    department: updated.department ?? existing.department ?? "",
-    role: updated.role ?? existing.role,
-    status: updated.status ?? existing.status,
-  };
-
-  persistUsers();
-  return true;
-}
-
-export function getUserByEmail(email) {
-  const normalizedEmail = email.trim().toLowerCase();
-  return (
-    usersStore.find((u) => u.email.toLowerCase() === normalizedEmail) ?? null
-  );
-}
-
-export function validateUserCredentials(email, password) {
-  const user = getUserByEmail(email);
-  if (!user) {
-    return null;
-  }
-
-  if (!user.password) {
-    return null;
-  }
-
-  if (user.password !== password) {
-    return null;
-  }
-
-  return user;
-}
-
-export function updateUserRole(userId, newRole) {
-  const idx = usersStore.findIndex((u) => String(u.id) === String(userId));
-  if (idx === -1) return false;
-
-  usersStore[idx].role = newRole;
-  persistUsers();
-  return true;
-}
-
-export function deactivateUser(userId) {
-  const idx = usersStore.findIndex((u) => String(u.id) === String(userId));
-  if (idx === -1) return false;
-
-  usersStore[idx].status = "Deactivated";
-  persistUsers();
-  return true;
-}
-
-export function removeUser(userId) {
-  const idx = usersStore.findIndex((u) => String(u.id) === String(userId));
-  if (idx === -1) return false;
-
-  usersStore.splice(idx, 1);
-  persistUsers();
-  return true;
-}
+import { usersAPI } from "../services/api.js";
 
 const SESSION_KEY = "issuehub_session";
 
+// Cache for users to avoid repeated API calls
+let usersCache = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Helper function to check if cache is still valid
+function isCacheValid() {
+  return usersCache && Date.now() - cacheTimestamp < CACHE_DURATION;
+}
+
+/**
+ * Get all users from the API
+ * Results are cached for 5 minutes
+ */
+export async function getUsers() {
+  try {
+    // Return cached data if still valid
+    if (isCacheValid()) {
+      return [...usersCache];
+    }
+
+    const users = await usersAPI.getAll();
+    // Map API response fields to expected frontend fields
+    const mappedUsers = users.map((user) => ({
+      id: user.id,
+      name: user.fullName || user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status === "PendingVerification" ? "Active" : user.status,
+      createdAt: user.createAt || user.createdAt,
+      password: undefined, // Don't expose passwords
+    }));
+
+    // Cache the results
+    usersCache = mappedUsers;
+    cacheTimestamp = Date.now();
+
+    return [...mappedUsers];
+  } catch (error) {
+    console.error("Failed to fetch users:", error);
+    // Return cached data if available, even if expired
+    if (usersCache) {
+      return [...usersCache];
+    }
+    // Return empty array as fallback
+    return [];
+  }
+}
+
+/**
+ * Add a new user
+ */
+export async function addUser(user) {
+  try {
+    const userData = {
+      fullName: user.name,
+      email: user.email,
+      password: user.password,
+      role: user.role,
+    };
+
+    const result = await usersAPI.create(userData);
+    // Invalidate cache
+    usersCache = null;
+
+    return {
+      ...result,
+      name: result.fullName || result.name,
+      status:
+        result.status === "PendingVerification" ? "Active" : result.status,
+    };
+  } catch (error) {
+    console.error("Failed to add user:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get a user by ID
+ */
+export async function getUserById(id) {
+  try {
+    const user = await usersAPI.getById(id);
+    return {
+      ...user,
+      name: user.fullName || user.name,
+      status: user.status === "PendingVerification" ? "Active" : user.status,
+    };
+  } catch (error) {
+    console.error("Failed to fetch user:", error);
+    return null;
+  }
+}
+
+/**
+ * Update a user
+ */
+export async function updateUser(updated) {
+  try {
+    const userData = {
+      fullName: updated.name || updated.fullName,
+      email: updated.email,
+      role: updated.role,
+      status: updated.status,
+    };
+
+    await usersAPI.update(updated.id, userData);
+    // Invalidate cache
+    usersCache = null;
+    return true;
+  } catch (error) {
+    console.error("Failed to update user:", error);
+    return false;
+  }
+}
+
+/**
+ * Get a user by email
+ */
+export async function getUserByEmail(email) {
+  try {
+    const users = await getUsers();
+    const normalizedEmail = email.trim().toLowerCase();
+    return users.find((u) => u.email.toLowerCase() === normalizedEmail) ?? null;
+  } catch (error) {
+    console.error("Failed to fetch user by email:", error);
+    return null;
+  }
+}
+
+/**
+ * Validate user credentials (for login)
+ * Note: This should be handled by a separate auth API endpoint
+ */
+export async function validateUserCredentials(email) {
+  try {
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return null;
+    }
+
+    // In a real application, this would validate against the backend
+    // For now, we'll return the user if they exist
+    // TODO: Implement proper backend authentication endpoint
+    return user;
+  } catch (error) {
+    console.error("Failed to validate credentials:", error);
+    return null;
+  }
+}
+
+/**
+ * Update a user's role
+ */
+export async function updateUserRole(userId, newRole) {
+  try {
+    await usersAPI.updateRole(userId, { role: newRole });
+    // Invalidate cache
+    usersCache = null;
+    return true;
+  } catch (error) {
+    console.error("Failed to update user role:", error);
+    return false;
+  }
+}
+
+/**
+ * Deactivate a user
+ */
+export async function deactivateUser(userId) {
+  try {
+    await usersAPI.deactivate(userId);
+    // Invalidate cache
+    usersCache = null;
+    return true;
+  } catch (error) {
+    console.error("Failed to deactivate user:", error);
+    return false;
+  }
+}
+
+/**
+ * Remove (delete) a user
+ */
+export async function removeUser(userId) {
+  try {
+    await usersAPI.delete(userId);
+    // Invalidate cache
+    usersCache = null;
+    return true;
+  } catch (error) {
+    console.error("Failed to remove user:", error);
+    return false;
+  }
+}
+
+// Session management (for authentication tokens)
 export function setSession(user) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(SESSION_KEY, JSON.stringify(user));

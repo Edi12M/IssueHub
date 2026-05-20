@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Settings, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import Button from "../../Components/Button/button.jsx";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";

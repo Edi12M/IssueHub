@@ -5,8 +5,8 @@ import {
   STATUSES,
   today,
   isOverdue,
-  updateTaskStatus,
 } from "../../data/mockIssues";
+import { updateTaskStatus } from "../../data/tasks";
 import { getSession } from "../../data/users.js";
 import {
   DevShell,
