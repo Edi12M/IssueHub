@@ -1,42 +1,37 @@
 using System.ComponentModel.DataAnnotations;
-using Backend.Enum;
 
-namespace Backend.DTOs.Projects;
-
-public class CreateProjectDto
+namespace Backend.DTOs.Projects
 {
-    [Required]
-    [MaxLength(150)]
-    public string Name { get; set; } = string.Empty;
+    public class CreateProjectDto
+    {
+        [Required, StringLength(150, MinimumLength = 1)]
+        public string Name { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(50)]
-    public string ProjectCode { get; set; } = string.Empty;
+        [Required, StringLength(2000)]
+        public string Description { get; set; } = string.Empty;
 
-    [Required]
-    public string Description { get; set; } = string.Empty;
+        [StringLength(2000)]
+        public string? Goals { get; set; }
 
-    [Required]
-    public ProjectType Type { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
 
-    [Required]
-    public Visibility Visibility { get; set; }
+        [Range(1, int.MaxValue)]
+        public int OwnerId { get; set; }
 
-    [Required]
-    public UserStatus Status { get; set; }
+        [StringLength(50)]
+        public string? ProjectCode { get; set; }
 
-    [Required]
-    public DateTime StartDate { get; set; }
+        [StringLength(50)]
+        public string? Type { get; set; }
 
-    [Required]
-    public DateTime EndDate { get; set; }
+        [StringLength(50)]
+        public string? Visibility { get; set; }
 
-    [Range(0, 100000)]
-    public decimal BudgetHours { get; set; }
+        [StringLength(50)]
+        public string? Methodology { get; set; }
 
-    [Required]
-    public int OwnerId { get; set; }
-
-    [Required]
-    public int WorkflowId { get; set; }
+        [Range(0, 1_000_000)]
+        public decimal? BudgetHours { get; set; }
+    }
 }

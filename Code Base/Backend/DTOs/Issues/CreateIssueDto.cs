@@ -1,38 +1,36 @@
 using System.ComponentModel.DataAnnotations;
-using Backend.Enum;
 
-namespace Backend.DTOs.Issues;
-
-public class CreateIssueDto
+namespace Backend.DTOs.Issues
 {
-    [Required]
-    public int ProjectId { get; set; }
+    public class CreateIssueDto
+    {
+        [Required, StringLength(200, MinimumLength = 1)]
+        public string Title { get; set; } = string.Empty;
 
-    [Required]
-    public int ReporterId { get; set; }
+        [Required, StringLength(5000)]
+        public string Description { get; set; } = string.Empty;
 
-    public int? ParentId { get; set; }
+        [StringLength(5000)]
+        public string AcceptanceCriteria { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(200)]
-    public string Title { get; set; } = string.Empty;
+        [Required, StringLength(50)]
+        public string Type { get; set; } = string.Empty;
 
-    [Required]
-    public string Description { get; set; } = string.Empty;
+        [Required, StringLength(50)]
+        public string Priority { get; set; } = string.Empty;
 
-    public string AcceptanceCriteria { get; set; } = string.Empty;
+        public DateTime StartDate { get; set; }
+        public DateTime DueDate { get; set; }
 
-    [Required]
-    public IssueType Type { get; set; }
+        [Range(1, int.MaxValue)]
+        public int ProjectId { get; set; }
 
-    [Required]
-    public IssuePriority Priority { get; set; }
+        [Range(1, int.MaxValue)]
+        public int ReporterId { get; set; }
 
-    [Required]
-    public DateTime StartDate { get; set; }
+        [StringLength(50)]
+        public string? IssueCode { get; set; }
 
-    [Required]
-    public DateTime DueDate { get; set; }
-
-    public List<int> AssigneeIds { get; set; } = new();
+        public List<int>? DependentIssueIds { get; set; }
+    }
 }

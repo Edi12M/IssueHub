@@ -66,21 +66,24 @@ namespace Backend.Migrations
 
                     b.Property<string>("FileName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<int>("FileSizeBytes")
                         .HasColumnType("int");
 
                     b.Property<string>("FileType")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("IssueId")
                         .HasColumnType("int");
 
                     b.Property<string>("StoragePath")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<DateTime>("UploadedAt")
                         .HasColumnType("datetime(6)");
@@ -110,7 +113,8 @@ namespace Backend.Migrations
 
                     b.Property<string>("Body")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(5000)
+                        .HasColumnType("varchar(5000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -151,14 +155,16 @@ namespace Backend.Migrations
 
                     b.Property<string>("AcceptanceCriteria")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(5000)
+                        .HasColumnType("varchar(5000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(5000)
+                        .HasColumnType("varchar(5000)");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime(6)");
@@ -168,7 +174,8 @@ namespace Backend.Migrations
 
                     b.Property<string>("IssueCode")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<int?>("ParentId")
                         .HasColumnType("int");
@@ -190,7 +197,8 @@ namespace Backend.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
@@ -283,22 +291,26 @@ namespace Backend.Migrations
 
                     b.Property<string>("FieldName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("IssueId")
                         .HasColumnType("int");
 
                     b.Property<string>("NewValue")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("OldValue")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("TransitionNote")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.HasKey("Id");
 
@@ -371,7 +383,8 @@ namespace Backend.Migrations
 
                     b.Property<string>("EntityType")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("tinyint(1)");
@@ -400,29 +413,38 @@ namespace Backend.Migrations
                     b.Property<decimal>("BudgetHours")
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<DateTime>("CreateAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<bool>("IsArchived")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<string>("Goals")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("Methodology")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<int>("OwnerId")
                         .HasColumnType("int");
 
                     b.Property<string>("ProjectCode")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime(6)");
@@ -436,17 +458,12 @@ namespace Backend.Migrations
                     b.Property<int>("Visibility")
                         .HasColumnType("int");
 
-                    b.Property<int>("WorkflowId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
 
                     b.HasIndex("ProjectCode")
                         .IsUnique();
-
-                    b.HasIndex("WorkflowId");
 
                     b.ToTable("Projects");
                 });
@@ -458,6 +475,9 @@ namespace Backend.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("HourlyRate")
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<DateTime>("JoinedAt")
                         .HasColumnType("datetime(6)");
@@ -505,7 +525,8 @@ namespace Backend.Migrations
 
                     b.Property<string>("Note")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -527,29 +548,40 @@ namespace Backend.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreateAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Department")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<int>("FailedLoginAttempts")
                         .HasColumnType("int");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
-                    b.Property<DateTime>("LastLoginAt")
+                    b.Property<string>("Icon")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("LockedUntil")
+                    b.Property<DateTime?>("LockedUntil")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<int>("Role")
                         .HasColumnType("int");
@@ -563,35 +595,68 @@ namespace Backend.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
-                });
 
-            modelBuilder.Entity("Backend.Models.Workflow", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("CreatedById")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedById");
-
-                    b.ToTable("Workflows");
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Department = "IT",
+                            Email = "admin@issuehub.com",
+                            FailedLoginAttempts = 0,
+                            FullName = "System Admin",
+                            PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                            Role = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Department = "Management",
+                            Email = "pm@issuehub.com",
+                            FailedLoginAttempts = 0,
+                            FullName = "Project Manager",
+                            PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                            Role = 1,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Department = "Engineering",
+                            Email = "dev1@issuehub.com",
+                            FailedLoginAttempts = 0,
+                            FullName = "Developer One",
+                            PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                            Role = 2,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Department = "Engineering",
+                            Email = "dev2@issuehub.com",
+                            FailedLoginAttempts = 0,
+                            FullName = "Developer Two",
+                            PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                            Role = 2,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Department = "Engineering",
+                            Email = "dev3@issuehub.com",
+                            FailedLoginAttempts = 0,
+                            FullName = "Developer Three",
+                            PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                            Role = 2,
+                            Status = 0
+                        });
                 });
 
             modelBuilder.Entity("Backend.Models.Announcement", b =>
@@ -771,15 +836,7 @@ namespace Backend.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Backend.Models.Workflow", "Workflow")
-                        .WithMany()
-                        .HasForeignKey("WorkflowId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Owner");
-
-                    b.Navigation("Workflow");
                 });
 
             modelBuilder.Entity("Backend.Models.ProjectMembers", b =>
@@ -818,17 +875,6 @@ namespace Backend.Migrations
                     b.Navigation("Issue");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Backend.Models.Workflow", b =>
-                {
-                    b.HasOne("Backend.Models.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CreatedBy");
                 });
 
             modelBuilder.Entity("Backend.Models.Comment", b =>

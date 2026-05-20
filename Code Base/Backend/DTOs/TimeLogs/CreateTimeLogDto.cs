@@ -1,19 +1,23 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Backend.DTOs.TimeLogs;
-
-public class CreateTimeLogDto
+namespace Backend.DTOs.TimeLogs
 {
-    [Required]
-    public int UserId { get; set; }
+    public class CreateTimeLogDto
+    {
+        [Range(1, int.MaxValue)]
+        public int IssueId { get; set; }
 
-    [Range(0.1, 24)]
-    public decimal Hours { get; set; }
+        [Range(1, int.MaxValue)]
+        public int UserId { get; set; }
 
-    public bool IsBillable { get; set; }
+        [Range(typeof(decimal), "0.01", "9999.99")]
+        public decimal Hours { get; set; }
 
-    [Required]
-    public DateTime LogDate { get; set; }
+        public bool IsBillable { get; set; }
 
-    public string Note { get; set; } = string.Empty;
+        public DateTime LogDate { get; set; }
+
+        [StringLength(1000)]
+        public string Note { get; set; } = string.Empty;
+    }
 }

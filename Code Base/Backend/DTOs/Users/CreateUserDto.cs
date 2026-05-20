@@ -1,23 +1,22 @@
 using System.ComponentModel.DataAnnotations;
-using Backend.Enum;
 
-namespace Backend.DTOs.Users;
-
-public class CreateUserDto
+namespace Backend.DTOs.Users
 {
-    [Required]
-    [MaxLength(150)]
-    public string FullName { get; set; } = string.Empty;
+    public class CreateUserDto
+    {
+        [Required, StringLength(100, MinimumLength = 1)]
+        public string FullName { get; set; } = string.Empty;
 
-    [Required]
-    [EmailAddress]
-    [MaxLength(200)]
-    public string Email { get; set; } = string.Empty;
+        [Required, EmailAddress, StringLength(150)]
+        public string Email { get; set; } = string.Empty;
 
-    [Required]
-    [MinLength(6)]
-    public string Password { get; set; } = string.Empty;
+        [StringLength(100)]
+        public string? Department { get; set; }
 
-    [Required]
-    public UserRole Role { get; set; }
+        [Required, StringLength(50)]
+        public string Role { get; set; } = string.Empty;
+
+        [Required, StringLength(100, MinimumLength = 6)]
+        public string Password { get; set; } = string.Empty;
+    }
 }
