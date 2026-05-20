@@ -5,6 +5,7 @@
         Bug,
         Feature,
         Task,
-        Improvement
+        Improvement,
+        Security
     }
 }

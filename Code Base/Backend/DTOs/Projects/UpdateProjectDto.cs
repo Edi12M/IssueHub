@@ -1,40 +1,16 @@
-using System.ComponentModel.DataAnnotations;
-using Backend.Enum;
-
-namespace Backend.DTOs.Projects;
-
-public class UpdateProjectDto
+namespace Backend.DTOs.Projects
 {
-    [Required]
-    [MaxLength(150)]
-    public string Name { get; set; } = string.Empty;
-
-    [Required]
-    public string Description { get; set; } = string.Empty;
-
-    [Required]
-    public ProjectType Type { get; set; }
-
-    [Required]
-    public Visibility Visibility { get; set; }
-
-    [Required]
-    public UserStatus Status { get; set; }
-
-    [Required]
-    public DateTime StartDate { get; set; }
-
-    [Required]
-    public DateTime EndDate { get; set; }
-
-    [Range(0, 100000)]
-    public decimal BudgetHours { get; set; }
-
-    [Required]
-    public int OwnerId { get; set; }
-
-    [Required]
-    public int WorkflowId { get; set; }
-
-    public bool IsArchived { get; set; }
+    public class UpdateProjectDto
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public string? Goals { get; set; }
+        public string? Methodology { get; set; }
+        public string? Type { get; set; }
+        public string? Visibility { get; set; }
+        public string? Status { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public decimal? BudgetHours { get; set; }
+    }
 }

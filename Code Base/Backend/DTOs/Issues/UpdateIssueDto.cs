@@ -1,35 +1,28 @@
 using System.ComponentModel.DataAnnotations;
-using Backend.Enum;
 
-namespace Backend.DTOs.Issues;
-
-public class UpdateIssueDto
+namespace Backend.DTOs.Issues
 {
-    public int? ParentId { get; set; }
+    public class UpdateIssueDto
+    {
+        [StringLength(200, MinimumLength = 1)]
+        public string? Title { get; set; }
 
-    [Required]
-    [MaxLength(200)]
-    public string Title { get; set; } = string.Empty;
+        [StringLength(5000)]
+        public string? Description { get; set; }
 
-    [Required]
-    public string Description { get; set; } = string.Empty;
+        [StringLength(5000)]
+        public string? AcceptanceCriteria { get; set; }
 
-    public string AcceptanceCriteria { get; set; } = string.Empty;
+        [StringLength(50)]
+        public string? Type { get; set; }
 
-    [Required]
-    public IssueType Type { get; set; }
+        [StringLength(50)]
+        public string? Status { get; set; }
 
-    [Required]
-    public IssueStatus Status { get; set; }
+        [StringLength(50)]
+        public string? Priority { get; set; }
 
-    [Required]
-    public IssuePriority Priority { get; set; }
-
-    [Required]
-    public DateTime StartDate { get; set; }
-
-    [Required]
-    public DateTime DueDate { get; set; }
-
-    public bool IsArchived { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? DueDate { get; set; }
+    }
 }

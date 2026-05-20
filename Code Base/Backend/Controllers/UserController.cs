@@ -1,169 +1,48 @@
 using Backend.Data;
 using Backend.DTOs.Users;
-using Backend.Enum;
-using Backend.Models;
+using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Text;
 
-namespace Backend.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class UsersController : ControllerBase
+namespace Backend.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public UsersController(AppDbContext context)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class UserController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly IUserService _service;
+        private readonly AppDbContext _context;
 
-    // GET: api/users
-    [HttpGet]
-    public async Task<ActionResult<List<UserResponseDto>>> GetUsers()
-    {
-        var users = await _context.Users
-            .OrderByDescending(u => u.CreateAt)
-            .Select(u => ToResponseDto(u))
-            .ToListAsync();
-
-        return Ok(users);
-    }
-
-    // GET: api/users/5
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<UserResponseDto>> GetUser(int id)
-    {
-        var user = await _context.Users.FindAsync(id);
-
-        if (user == null)
-            return NotFound("User not found.");
-
-        return Ok(ToResponseDto(user));
-    }
-
-    // POST: api/users
-    [HttpPost]
-    public async Task<ActionResult<UserResponseDto>> CreateUser(CreateUserDto dto)
-    {
-        var emailExists = await _context.Users
-            .AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower());
-
-        if (emailExists)
-            return BadRequest("A user with this email already exists.");
-
-        var user = new User
+        public UserController(IUserService service, AppDbContext context)
         {
-            FullName = dto.FullName.Trim(),
-            Email = dto.Email.Trim(),
-            PasswordHash = SimpleHash(dto.Password),
-            Role = dto.Role,
-            Status = UserStatus.PendingVerification,
-            FailedLoginAttempts = 0,
-            LockedUntil = DateTime.MinValue,
-            LastLoginAt = DateTime.MinValue,
-            CreateAt = DateTime.UtcNow
-        };
+            _service = service;
+            _context = context;
+        }
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        [HttpGet("search")]
+        public async Task<ActionResult<List<UserSearchResultDto>>> Search([FromQuery] string q = "")
+            => Ok(await _service.SearchUsersAsync(q));
 
-        var response = ToResponseDto(user);
+        [HttpPost]
+        public async Task<ActionResult<UserResponseDto>> Create([FromBody] CreateUserDto dto)
+            => Ok(await _service.CreateUserAsync(dto));
 
-        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, response);
-    }
+        [HttpPut("{userId:int}")]
+        public async Task<ActionResult<UserResponseDto>> Update(int userId, [FromBody] UpdateUserDto dto)
+            => Ok(await _service.UpdateUserAsync(userId, dto));
 
-    // PUT: api/users/5
-    [HttpPut("{id:int}")]
-    public async Task<ActionResult<UserResponseDto>> UpdateUser(int id, UpdateUserDto dto)
-    {
-        var user = await _context.Users.FindAsync(id);
-
-        if (user == null)
-            return NotFound("User not found.");
-
-        var emailTaken = await _context.Users
-            .AnyAsync(u => u.Id != id && u.Email.ToLower() == dto.Email.ToLower());
-
-        if (emailTaken)
-            return BadRequest("Another user already uses this email.");
-
-        user.FullName = dto.FullName.Trim();
-        user.Email = dto.Email.Trim();
-        user.Role = dto.Role;
-        user.Status = dto.Status;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(ToResponseDto(user));
-    }
-
-    // PATCH: api/users/5/role
-    [HttpPatch("{id:int}/role")]
-    public async Task<ActionResult<UserResponseDto>> ChangeUserRole(int id, ChangeUserRoleDto dto)
-    {
-        var user = await _context.Users.FindAsync(id);
-
-        if (user == null)
-            return NotFound("User not found.");
-
-        user.Role = dto.Role;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(ToResponseDto(user));
-    }
-
-    // PATCH: api/users/5/deactivate
-    [HttpPatch("{id:int}/deactivate")]
-    public async Task<ActionResult<UserResponseDto>> DeactivateUser(int id)
-    {
-        var user = await _context.Users.FindAsync(id);
-
-        if (user == null)
-            return NotFound("User not found.");
-
-        user.Status = UserStatus.Inactive;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(ToResponseDto(user));
-    }
-
-    // DELETE: api/users/5
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteUser(int id)
-    {
-        var user = await _context.Users.FindAsync(id);
-
-        if (user == null)
-            return NotFound("User not found.");
-
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    private static UserResponseDto ToResponseDto(User user)
-    {
-        return new UserResponseDto
+        [HttpDelete("{userId:int}")]
+        public async Task<IActionResult> Delete(int userId)
         {
-            Id = user.Id,
-            FullName = user.FullName,
-            Email = user.Email,
-            Role = user.Role,
-            Status = user.Status,
-            CreatedAt = user.CreateAt,
-            LastLoginAt = user.LastLoginAt
-        };
-    }
+            await _service.DeleteUserAsync(userId);
+            return NoContent();
+        }
 
-    // Simplified password hashing for university project/demo.
-    // In a real product, replace this with BCrypt/ASP.NET Identity.
-    private static string SimpleHash(string password)
-    {
-        return Convert.ToBase64String(Encoding.UTF8.GetBytes(password));
+        [HttpGet("counts-by-role")]
+        public async Task<ActionResult<UserCountsByRoleDto>> CountsByRole()
+            => Ok(await _service.GetUserCountsByRoleAsync());
+
+        [HttpGet("last-created")]
+        public async Task<ActionResult<LastCreatedUserDto?>> LastCreated()
+            => Ok(await _service.GetLastCreatedUserAsync());
     }
 }

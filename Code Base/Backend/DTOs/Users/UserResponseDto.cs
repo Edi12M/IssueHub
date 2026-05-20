@@ -1,20 +1,14 @@
-using Backend.Enum;
-
-namespace Backend.DTOs.Users;
-
-public class UserResponseDto
+namespace Backend.DTOs.Users
 {
-    public int Id { get; set; }
-
-    public string FullName { get; set; } = string.Empty;
-
-    public string Email { get; set; } = string.Empty;
-
-    public UserRole Role { get; set; }
-
-    public UserStatus Status { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime LastLoginAt { get; set; }
+    public class UserResponseDto
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? Department { get; set; }
+        public string? Icon { get; set; }
+        public string Role { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+    }
 }

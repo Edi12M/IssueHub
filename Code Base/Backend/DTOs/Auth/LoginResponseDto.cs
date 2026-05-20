@@ -1,10 +1,12 @@
-using Backend.DTOs.Users;
-
-namespace Backend.DTOs.Auth;
-
-public class LoginResponseDto
+namespace Backend.DTOs.Auth
 {
-    public string Message { get; set; } = string.Empty;
-
-    public UserResponseDto User { get; set; } = new();
+    public class LoginResponseDto
+    {
+        public string Token { get; set; } = string.Empty;
+        public int UserId { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public DateTime ExpiresAt { get; set; }
+    }
 }

@@ -13,7 +13,6 @@ public class AppDbContext : DbContext
     public DbSet<User>             Users             { get; set; }
     public DbSet<Project>          Projects          { get; set; }
     public DbSet<ProjectMembers>   ProjectMembers    { get; set; }
-    public DbSet<Workflow>         Workflows         { get; set; }
     public DbSet<Issue>            Issues            { get; set; }
     public DbSet<IssueAssignment>  IssueAssignments  { get; set; }
     public DbSet<IssueDependency>  IssueDependencies { get; set; }
@@ -30,23 +29,132 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // ── Column constraints ──────────────────────────────────
         // User
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Email)
-            .IsUnique();
+        // ── Column constraints ──────────────────────────────────
+        // User
+        modelBuilder.Entity<User>(b =>
+        {
+            b.Property(u => u.FullName).IsRequired().HasMaxLength(100);
+            b.Property(u => u.Email).IsRequired().HasMaxLength(150);
+            b.Property(u => u.PasswordHash).IsRequired().HasMaxLength(255);
+            b.Property(u => u.Department).HasMaxLength(100);
+            b.Property(u => u.Icon).HasMaxLength(255);
+            b.HasIndex(u => u.Email).IsUnique();
+
+            // ── SEED INITIAL TEST USERS ─────────────────────────
+            // Plaintext password for all accounts is: Testing123!
+            b.HasData(
+                new User
+                {
+                    Id = 1,
+                    FullName = "System Admin",
+                    Email = "admin@issuehub.com",
+                    PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                    Department = "IT",
+                    Role = UserRole.Admin
+                },
+                new User
+                {
+                    Id = 2,
+                    FullName = "Project Manager",
+                    Email = "pm@issuehub.com",
+                    PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                    Department = "Management",
+                    Role = UserRole.Manager
+                },
+                new User
+                {
+                    Id = 3,
+                    FullName = "Developer One",
+                    Email = "dev1@issuehub.com",
+                    PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                    Department = "Engineering",
+                    Role = UserRole.Developer
+                },
+                new User
+                {
+                    Id = 4,
+                    FullName = "Developer Two",
+                    Email = "dev2@issuehub.com",
+                    PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                    Department = "Engineering",
+                    Role = UserRole.Developer
+                },
+                new User
+                {
+                    Id = 5,
+                    FullName = "Developer Three",
+                    Email = "dev3@issuehub.com",
+                    PasswordHash = "$2a$11$s0WcEmNJBpZPDF6XRSY3yOeCilMqsvfg6Vttw6/saGouY92.oac62",
+                    Department = "Engineering",
+                    Role = UserRole.Developer
+                }
+            );
+            // ────────────────────────────────────────────────────
+        });
+
+        // Project
+        modelBuilder.Entity<Project>(b =>
+        {
+            b.Property(p => p.Name).IsRequired().HasMaxLength(150);
+            b.Property(p => p.ProjectCode).IsRequired().HasMaxLength(50);
+            b.Property(p => p.Description).IsRequired().HasMaxLength(2000);
+            b.Property(p => p.Goals).HasMaxLength(2000);
+            b.Property(p => p.Methodology).IsRequired().HasMaxLength(50);
+        });
+
+        // Issue
+        modelBuilder.Entity<Issue>(b =>
+        {
+            b.Property(i => i.IssueCode).IsRequired().HasMaxLength(50);
+            b.Property(i => i.Title).IsRequired().HasMaxLength(200);
+            b.Property(i => i.Description).IsRequired().HasMaxLength(5000);
+            b.Property(i => i.AcceptanceCriteria).HasMaxLength(5000);
+        });
+
+        // Comment
+        modelBuilder.Entity<Comment>(b =>
+        {
+            b.Property(c => c.Body).IsRequired().HasMaxLength(5000);
+        });
+
+        // IssueHistory
+        modelBuilder.Entity<IssueHistory>(b =>
+        {
+            b.Property(h => h.FieldName).IsRequired().HasMaxLength(100);
+            b.Property(h => h.OldValue).HasMaxLength(500);
+            b.Property(h => h.NewValue).HasMaxLength(500);
+            b.Property(h => h.TransitionNote).HasMaxLength(500);
+        });
+
+        // Attachment
+        modelBuilder.Entity<Attachment>(b =>
+        {
+            b.Property(a => a.FileName).IsRequired().HasMaxLength(255);
+            b.Property(a => a.FileType).IsRequired().HasMaxLength(100);
+            b.Property(a => a.StoragePath).IsRequired().HasMaxLength(500);
+        });
+
+        // Notification
+        modelBuilder.Entity<Notification>(b =>
+        {
+            b.Property(n => n.EntityType).IsRequired().HasMaxLength(50);
+        });
+
+        // TimeLog
+        modelBuilder.Entity<TimeLog>(b =>
+        {
+            b.Property(t => t.Note).HasMaxLength(1000);
+        });
+
+        // ── Relationships & indexes ─────────────────────────────
 
         // Project → Owner
         modelBuilder.Entity<Project>()
             .HasOne(p => p.Owner)
             .WithMany(u => u.OwnedProjects)
             .HasForeignKey(p => p.OwnerId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // Project → Workflow
-        modelBuilder.Entity<Project>()
-            .HasOne(p => p.Workflow)
-            .WithMany()
-            .HasForeignKey(p => p.WorkflowId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Project>()
@@ -215,13 +323,6 @@ public class AppDbContext : DbContext
             .HasForeignKey(t => t.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Workflow → CreatedBy
-        modelBuilder.Entity<Workflow>()
-            .HasOne(w => w.CreatedBy)
-            .WithMany()
-            .HasForeignKey(w => w.CreatedById)
-            .OnDelete(DeleteBehavior.Restrict);
-
         // Notification → User
         modelBuilder.Entity<Notification>()
             .HasOne(n => n.User)
@@ -233,5 +334,10 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<TimeLog>()
             .Property(t => t.Hours)
             .HasColumnType("decimal(8,2)");
+
+        // ProjectMembers HourlyRate precision
+        modelBuilder.Entity<ProjectMembers>()
+            .Property(pm => pm.HourlyRate)
+            .HasColumnType("decimal(10,2)");
     }
 }
