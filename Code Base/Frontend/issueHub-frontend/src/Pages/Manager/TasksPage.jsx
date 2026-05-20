@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Settings } from "lucide-react";
+import { Plus, Edit } from "lucide-react";
 import Button from "../../Components/Button/button.jsx";
 import CreateTaskModal from "../../Components/Modals/CreateTaskModal.jsx";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";

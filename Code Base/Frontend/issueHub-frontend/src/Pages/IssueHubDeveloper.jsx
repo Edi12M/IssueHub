@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { today, isOverdue } from "../data/mockIssues.js";
 
 /* ─────────────────────────────────────────────
    MOCK DATA
@@ -38,8 +39,20 @@ const MOCK_ISSUES = [
       },
     ],
     attachments: [
-      { id: "a1", name: "session-logs.txt", size: "12 KB", type: "txt", date: "2026-04-29" },
-      { id: "a2", name: "error-screenshot.png", size: "84 KB", type: "img", date: "2026-04-30" },
+      {
+        id: "a1",
+        name: "session-logs.txt",
+        size: "12 KB",
+        type: "txt",
+        date: "2026-04-29",
+      },
+      {
+        id: "a2",
+        name: "error-screenshot.png",
+        size: "84 KB",
+        type: "img",
+        date: "2026-04-30",
+      },
     ],
   },
   {
@@ -53,9 +66,19 @@ const MOCK_ISSUES = [
     project: "Frontend",
     assignee: "Alex Rivera",
     createdAt: "2026-05-01",
-    statusHistory: [{ status: "Open", date: "2026-05-01", by: "Maria Chen (PM)" }],
+    statusHistory: [
+      { status: "Open", date: "2026-05-01", by: "Maria Chen (PM)" },
+    ],
     comments: [],
-    attachments: [{ id: "a3", name: "figma-mockup.fig", size: "2.1 MB", type: "fig", date: "2026-05-01" }],
+    attachments: [
+      {
+        id: "a3",
+        name: "figma-mockup.fig",
+        size: "2.1 MB",
+        type: "fig",
+        date: "2026-05-01",
+      },
+    ],
   },
   {
     id: "ISS-003",
@@ -96,7 +119,9 @@ const MOCK_ISSUES = [
     project: "Payments",
     assignee: "Alex Rivera",
     createdAt: "2026-04-20",
-    statusHistory: [{ status: "Open", date: "2026-04-20", by: "Sam Torres (PM)" }],
+    statusHistory: [
+      { status: "Open", date: "2026-04-20", by: "Sam Torres (PM)" },
+    ],
     comments: [],
     attachments: [],
   },
@@ -135,13 +160,6 @@ const STATUS_META = {
   Completed: { color: "#22c55e", bg: "#f0fdf4" },
   Blocked: { color: "#ef4444", bg: "#fef2f2" },
 };
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
-function isOverdue(issue) {
-  return issue.deadline < today() && issue.status !== "Completed";
-}
 
 /* ─────────────────────────────────────────────
    STYLES (CSS-in-JS object)
@@ -226,7 +244,12 @@ const S = {
     userSelect: "none",
   }),
   main: { flex: 1, padding: "28px 32px", overflowY: "auto" },
-  pageTitle: { fontSize: 22, fontWeight: 700, marginBottom: 4, color: "#f1f5f9" },
+  pageTitle: {
+    fontSize: 22,
+    fontWeight: 700,
+    marginBottom: 4,
+    color: "#f1f5f9",
+  },
   pageSubtitle: { fontSize: 13, color: "#64748b", marginBottom: 24 },
   card: {
     background: "#161b27",
@@ -238,9 +261,24 @@ const S = {
     transition: "border-color .15s, transform .1s",
   },
   cardHover: { borderColor: "#7c8cf8", transform: "translateY(-1px)" },
-  issueRow: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 },
-  issueId: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#64748b", marginBottom: 4 },
-  issueTitle: { fontSize: 15, fontWeight: 600, color: "#f1f5f9", marginBottom: 8 },
+  issueRow: {
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 16,
+  },
+  issueId: {
+    fontFamily: "'DM Mono', monospace",
+    fontSize: 11,
+    color: "#64748b",
+    marginBottom: 4,
+  },
+  issueTitle: {
+    fontSize: 15,
+    fontWeight: 600,
+    color: "#f1f5f9",
+    marginBottom: 8,
+  },
   tag: (color, bg) => ({
     display: "inline-flex",
     alignItems: "center",
@@ -252,9 +290,23 @@ const S = {
     padding: "3px 9px",
     borderRadius: 99,
   }),
-  dot: (color) => ({ width: 6, height: 6, borderRadius: "50%", background: color }),
-  metaRow: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 10 },
-  deadlineText: (overdue) => ({ fontSize: 12, color: overdue ? "#ef4444" : "#64748b" }),
+  dot: (color) => ({
+    width: 6,
+    height: 6,
+    borderRadius: "50%",
+    background: color,
+  }),
+  metaRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap",
+    marginTop: 10,
+  },
+  deadlineText: (overdue) => ({
+    fontSize: 12,
+    color: overdue ? "#ef4444" : "#64748b",
+  }),
   pill: (color) => ({
     background: "#1e2535",
     color: color || "#94a3b8",
@@ -412,7 +464,8 @@ const S = {
     width: 32,
     height: 32,
     borderRadius: 6,
-    background: type === "img" ? "#1e3a5f" : type === "txt" ? "#1a3328" : "#2d1e4a",
+    background:
+      type === "img" ? "#1e3a5f" : type === "txt" ? "#1a3328" : "#2d1e4a",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -433,14 +486,24 @@ const S = {
     transition: "border-color .2s",
   },
   // Tasks page
-  statsGrid: { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 },
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4,1fr)",
+    gap: 14,
+    marginBottom: 24,
+  },
   statCard: (accent) => ({
     background: "#161b27",
     border: `1px solid ${accent}33`,
     borderRadius: 12,
     padding: "18px 20px",
   }),
-  statNum: (accent) => ({ fontSize: 28, fontWeight: 800, color: accent, lineHeight: 1 }),
+  statNum: (accent) => ({
+    fontSize: 28,
+    fontWeight: 800,
+    color: accent,
+    lineHeight: 1,
+  }),
   statLabel: { fontSize: 12, color: "#64748b", marginTop: 4 },
   taskRow: (overdue, done) => ({
     display: "flex",
@@ -509,7 +572,9 @@ function IssueCard({ issue, onClick }) {
     >
       <div style={S.issueRow}>
         <div style={{ flex: 1 }}>
-          <div style={S.issueId}>{issue.id} · {issue.project}</div>
+          <div style={S.issueId}>
+            {issue.id} · {issue.project}
+          </div>
           <div style={S.issueTitle}>{issue.title}</div>
           <div style={S.metaRow}>
             <Tag priority={issue.priority} />
@@ -531,21 +596,40 @@ function IssueCard({ issue, onClick }) {
 ───────────────────────────────────────────── */
 function AssignedIssuesView({ issues, onSelect }) {
   const [filter, setFilter] = useState("All");
-  const filters = ["All", "Open", "In Progress", "Review", "Completed", "Blocked"];
-  const shown = filter === "All" ? issues : issues.filter((i) => i.status === filter);
+  const filters = [
+    "All",
+    "Open",
+    "In Progress",
+    "Review",
+    "Completed",
+    "Blocked",
+  ];
+  const shown =
+    filter === "All" ? issues : issues.filter((i) => i.status === filter);
   return (
     <div>
       <div style={S.pageTitle}>My Assigned Issues</div>
       <div style={S.pageSubtitle}>{issues.length} issues assigned to you</div>
       <div style={S.filterBar}>
         {filters.map((f) => (
-          <button key={f} style={S.filterBtn(filter === f)} onClick={() => setFilter(f)}>
+          <button
+            key={f}
+            style={S.filterBtn(filter === f)}
+            onClick={() => setFilter(f)}
+          >
             {f}
           </button>
         ))}
       </div>
       {shown.length === 0 && (
-        <div style={{ color: "#475569", fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+        <div
+          style={{
+            color: "#475569",
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
           No issues match this filter.
         </div>
       )}
@@ -569,11 +653,17 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
 
   function handleStatusUpdate() {
     if (newStatus === issue.status) return;
-    const now = new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" });
+    const now = new Date().toLocaleString("en-GB", {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
     const updated = {
       ...issue,
       status: newStatus,
-      statusHistory: [...issue.statusHistory, { status: newStatus, date: now, by: "Alex Rivera" }],
+      statusHistory: [
+        ...issue.statusHistory,
+        { status: newStatus, date: now, by: "Alex Rivera" },
+      ],
     };
     setIssue(updated);
     onUpdate(updated);
@@ -581,7 +671,10 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
 
   function handleAddComment() {
     if (!commentText.trim()) return;
-    const now = new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" });
+    const now = new Date().toLocaleString("en-GB", {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
     const newComment = {
       id: "c" + Date.now(),
       author: "Alex Rivera",
@@ -604,7 +697,7 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
     const updated = {
       ...issue,
       comments: issue.comments.map((c) =>
-        c.id === editingComment.id ? { ...c, text: editingComment.text } : c
+        c.id === editingComment.id ? { ...c, text: editingComment.text } : c,
       ),
     };
     setIssue(updated);
@@ -612,7 +705,10 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
     setEditingComment(null);
   }
   function handleDeleteComment(id) {
-    const updated = { ...issue, comments: issue.comments.filter((c) => c.id !== id) };
+    const updated = {
+      ...issue,
+      comments: issue.comments.filter((c) => c.id !== id),
+    };
     setIssue(updated);
     onUpdate(updated);
   }
@@ -622,8 +718,15 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
     const newAtts = files.map((f) => ({
       id: "a" + Date.now() + Math.random(),
       name: f.name,
-      size: f.size > 1024 * 1024 ? (f.size / 1024 / 1024).toFixed(1) + " MB" : Math.round(f.size / 1024) + " KB",
-      type: f.name.match(/\.(png|jpg|jpeg|gif|webp)$/i) ? "img" : f.name.match(/\.txt$/i) ? "txt" : "fig",
+      size:
+        f.size > 1024 * 1024
+          ? (f.size / 1024 / 1024).toFixed(1) + " MB"
+          : Math.round(f.size / 1024) + " KB",
+      type: f.name.match(/\.(png|jpg|jpeg|gif|webp)$/i)
+        ? "img"
+        : f.name.match(/\.txt$/i)
+          ? "txt"
+          : "fig",
       date: today(),
     }));
     setAttachments((prev) => [...prev, ...newAtts]);
@@ -637,13 +740,26 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
         ← Back to Issues
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: "#64748b" }}>{issue.id}</span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 6,
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: 12,
+            color: "#64748b",
+          }}
+        >
+          {issue.id}
+        </span>
         <Tag priority={issue.priority} />
         <StatusTag status={issue.status} />
-        {overdue && (
-          <span style={S.tag("#ef4444", "#fef2f2")}>⚠ Overdue</span>
-        )}
+        {overdue && <span style={S.tag("#ef4444", "#fef2f2")}>⚠ Overdue</span>}
       </div>
       <div style={{ ...S.pageTitle, marginBottom: 20 }}>{issue.title}</div>
 
@@ -660,12 +776,16 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
           <div style={S.detailCard}>
             <div style={S.sectionLabel}>Comments ({issue.comments.length})</div>
             {issue.comments.length === 0 && (
-              <div style={{ color: "#475569", fontSize: 13, marginBottom: 12 }}>No comments yet.</div>
+              <div style={{ color: "#475569", fontSize: 13, marginBottom: 12 }}>
+                No comments yet.
+              </div>
             )}
             {issue.comments.map((c) => (
               <div key={c.id} style={S.commentBubble(c.mine)}>
                 <div style={S.commentHeader}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
                     <Avatar initials={c.avatar} size={24} />
                     <span style={S.commentAuthor}>{c.author}</span>
                   </div>
@@ -676,11 +796,23 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
                     <textarea
                       style={S.textarea}
                       value={editingComment.text}
-                      onChange={(e) => setEditingComment({ ...editingComment, text: e.target.value })}
+                      onChange={(e) =>
+                        setEditingComment({
+                          ...editingComment,
+                          text: e.target.value,
+                        })
+                      }
                     />
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button style={S.sendBtn} onClick={handleSaveEdit}>Save</button>
-                      <button style={{ ...S.sendBtn, background: "#1e2535" }} onClick={() => setEditingComment(null)}>Cancel</button>
+                      <button style={S.sendBtn} onClick={handleSaveEdit}>
+                        Save
+                      </button>
+                      <button
+                        style={{ ...S.sendBtn, background: "#1e2535" }}
+                        onClick={() => setEditingComment(null)}
+                      >
+                        Cancel
+                      </button>
                     </div>
                   </>
                 ) : (
@@ -688,8 +820,18 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
                     <div style={S.commentText}>{c.text}</div>
                     {c.mine && (
                       <div style={S.commentActions}>
-                        <button style={S.tinyBtn(false)} onClick={() => handleEditComment(c.id)}>Edit</button>
-                        <button style={S.tinyBtn(true)} onClick={() => handleDeleteComment(c.id)}>Delete</button>
+                        <button
+                          style={S.tinyBtn(false)}
+                          onClick={() => handleEditComment(c.id)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          style={S.tinyBtn(true)}
+                          onClick={() => handleDeleteComment(c.id)}
+                        >
+                          Delete
+                        </button>
                       </div>
                     )}
                   </>
@@ -704,7 +846,9 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
               />
-              <button style={S.sendBtn} onClick={handleAddComment}>Post Comment</button>
+              <button style={S.sendBtn} onClick={handleAddComment}>
+                Post Comment
+              </button>
             </div>
           </div>
 
@@ -712,31 +856,60 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
           <div style={S.detailCard}>
             <div style={S.sectionLabel}>Attachments ({attachments.length})</div>
             {attachments.length === 0 && (
-              <div style={{ color: "#475569", fontSize: 13 }}>No attachments yet.</div>
+              <div style={{ color: "#475569", fontSize: 13 }}>
+                No attachments yet.
+              </div>
             )}
             {attachments.map((att) => (
               <div key={att.id} style={S.attachRow}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={S.attachIcon(att.type)}>
-                    {att.type === "img" ? "IMG" : att.type === "txt" ? "TXT" : "FIG"}
+                    {att.type === "img"
+                      ? "IMG"
+                      : att.type === "txt"
+                        ? "TXT"
+                        : "FIG"}
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, color: "#e2e8f0", fontWeight: 500 }}>{att.name}</div>
-                    <div style={{ fontSize: 11, color: "#475569" }}>{att.size} · {att.date}</div>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: "#e2e8f0",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {att.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#475569" }}>
+                      {att.size} · {att.date}
+                    </div>
                   </div>
                 </div>
-                <button style={{ ...S.tinyBtn(false), fontSize: 12, color: "#7c8cf8" }}>↓ Download</button>
+                <button
+                  style={{
+                    ...S.tinyBtn(false),
+                    fontSize: 12,
+                    color: "#7c8cf8",
+                  }}
+                >
+                  ↓ Download
+                </button>
               </div>
             ))}
-            <div
-              style={S.uploadZone}
-              onClick={() => fileRef.current.click()}
-            >
+            <div style={S.uploadZone} onClick={() => fileRef.current.click()}>
               <div style={{ fontSize: 22, marginBottom: 4 }}>📎</div>
               <div>Click to upload a file</div>
-              <div style={{ fontSize: 11, marginTop: 4 }}>Any file type supported</div>
+              <div style={{ fontSize: 11, marginTop: 4 }}>
+                Any file type supported
+              </div>
             </div>
-            <input type="file" multiple ref={fileRef} style={{ display: "none" }} onChange={handleFileUpload} />
+            <input
+              type="file"
+              multiple
+              ref={fileRef}
+              style={{ display: "none" }}
+              onChange={handleFileUpload}
+            />
           </div>
         </div>
 
@@ -752,7 +925,15 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
               ["Created", issue.createdAt],
               ["Deadline", issue.deadline],
             ].map(([k, v]) => (
-              <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, fontSize: 13 }}>
+              <div
+                key={k}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 10,
+                  fontSize: 13,
+                }}
+              >
                 <span style={{ color: "#64748b" }}>{k}</span>
                 <span style={{ color: "#e2e8f0", fontWeight: 500 }}>{v}</span>
               </div>
@@ -768,7 +949,9 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
               onChange={(e) => setNewStatus(e.target.value)}
             >
               {STATUSES.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
             <button style={S.updateBtn} onClick={handleStatusUpdate}>
@@ -783,8 +966,14 @@ function IssueDetailView({ issue: initIssue, onBack, onUpdate }) {
               <div key={i} style={S.historyItem}>
                 <div style={S.historyDot} />
                 <div>
-                  <div style={{ fontWeight: 600, color: "#e2e8f0", fontSize: 13 }}>{h.status}</div>
-                  <div style={{ color: "#64748b", fontSize: 11 }}>{h.by} · {h.date}</div>
+                  <div
+                    style={{ fontWeight: 600, color: "#e2e8f0", fontSize: 13 }}
+                  >
+                    {h.status}
+                  </div>
+                  <div style={{ color: "#64748b", fontSize: 11 }}>
+                    {h.by} · {h.date}
+                  </div>
                 </div>
               </div>
             ))}
@@ -832,9 +1021,15 @@ function PersonalTasksView({ issues, onSelect }) {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <span style={{ fontSize: 13, color: "#64748b", alignSelf: "center" }}>Sort by:</span>
+        <span style={{ fontSize: 13, color: "#64748b", alignSelf: "center" }}>
+          Sort by:
+        </span>
         {["deadline", "priority"].map((s) => (
-          <button key={s} style={S.sortBtn(sort === s)} onClick={() => setSort(s)}>
+          <button
+            key={s}
+            style={S.sortBtn(sort === s)}
+            onClick={() => setSort(s)}
+          >
             {s.charAt(0).toUpperCase() + s.slice(1)}
           </button>
         ))}
@@ -844,7 +1039,11 @@ function PersonalTasksView({ issues, onSelect }) {
         const done = issue.status === "Completed";
         const od = isOverdue(issue);
         return (
-          <div key={issue.id} style={S.taskRow(od, done)} onClick={() => onSelect(issue)}>
+          <div
+            key={issue.id}
+            style={S.taskRow(od, done)}
+            onClick={() => onSelect(issue)}
+          >
             <div
               style={{
                 width: 14,
@@ -859,7 +1058,8 @@ function PersonalTasksView({ issues, onSelect }) {
             <Tag priority={issue.priority} />
             <StatusTag status={issue.status} />
             <span style={S.deadlineText(od)}>
-              {od && !done ? "⚠ " : ""}{issue.deadline}
+              {od && !done ? "⚠ " : ""}
+              {issue.deadline}
             </span>
           </div>
         );
@@ -911,7 +1111,9 @@ export default function IssueHubDeveloper() {
           {navItems.map((item) => (
             <div
               key={item.id}
-              style={S.navItem(nav === item.id || (nav === "detail" && item.id === "issues"))}
+              style={S.navItem(
+                nav === item.id || (nav === "detail" && item.id === "issues"),
+              )}
               onClick={() => {
                 setNav(item.id);
                 if (item.id !== "detail") setSelected(null);
@@ -928,7 +1130,10 @@ export default function IssueHubDeveloper() {
           {nav === "detail" && selected ? (
             <IssueDetailView
               issue={selected}
-              onBack={() => { setNav("issues"); setSelected(null); }}
+              onBack={() => {
+                setNav("issues");
+                setSelected(null);
+              }}
               onUpdate={handleUpdate}
             />
           ) : nav === "tasks" ? (

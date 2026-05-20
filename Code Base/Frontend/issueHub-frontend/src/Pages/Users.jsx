@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../Components/Button/button.jsx";
 import Sidebar from "../Components/SideBar/sideBar.jsx";
 import {
@@ -20,7 +20,8 @@ import { ADMIN_NAV_ITEMS } from "./Admin/adminConstants.js";
 import "../App.css";
 
 export default function Users() {
-  const [users, setUsers] = useState(() => getUsers());
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
@@ -33,18 +34,51 @@ export default function Users() {
   const [settingsUser, setSettingsUser] = useState(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
+  // Fetch users on component mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const fetchedUsers = await getUsers();
+        setUsers(fetchedUsers);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Helper function to refresh users
+  const refreshUsers = async () => {
+    try {
+      const fetchedUsers = await getUsers();
+      setUsers(fetchedUsers);
+    } catch (error) {
+      console.error("Failed to refresh users:", error);
+    }
+  };
+
   function handleChangeRole(value) {
     setSelectedRole(value);
   }
 
-  function handleChangeRoleConfirm() {
+  async function handleChangeRoleConfirm() {
     if (roleModalUser && selectedRole && selectedRole !== roleModalUser.role) {
-      const ok = updateUserRole(roleModalUser.id, selectedRole);
-      if (ok) {
-        setUsers(getUsers());
-        setRoleModalUser(null);
-        setSelectedRole("");
-      } else {
+      try {
+        const ok = await updateUserRole(roleModalUser.id, selectedRole);
+        if (ok) {
+          await refreshUsers();
+          setRoleModalUser(null);
+          setSelectedRole("");
+        } else {
+          alert("Failed to update user role");
+        }
+      } catch (error) {
+        console.error("Error updating user role:", error);
         alert("Failed to update user role");
       }
     }
@@ -55,13 +89,18 @@ export default function Users() {
     setSettingsUser(null);
   }
 
-  function confirmDeactivate() {
+  async function confirmDeactivate() {
     if (deactivateUserState) {
-      const ok = deactivateUser(deactivateUserState.id);
-      if (ok) {
-        setUsers(getUsers());
-        setDeactivateUserState(null);
-      } else {
+      try {
+        const ok = await deactivateUser(deactivateUserState.id);
+        if (ok) {
+          await refreshUsers();
+          setDeactivateUserState(null);
+        } else {
+          alert("Failed to deactivate user");
+        }
+      } catch (error) {
+        console.error("Error deactivating user:", error);
         alert("Failed to deactivate user");
       }
     }
@@ -72,13 +111,18 @@ export default function Users() {
     setSettingsUser(null);
   }
 
-  function confirmRemove() {
+  async function confirmRemove() {
     if (removeUserState) {
-      const ok = removeUser(removeUserState.id);
-      if (ok) {
-        setUsers(getUsers());
-        setRemoveUserState(null);
-      } else {
+      try {
+        const ok = await removeUser(removeUserState.id);
+        if (ok) {
+          await refreshUsers();
+          setRemoveUserState(null);
+        } else {
+          alert("Failed to remove user");
+        }
+      } catch (error) {
+        console.error("Error removing user:", error);
         alert("Failed to remove user");
       }
     }
@@ -88,18 +132,22 @@ export default function Users() {
     setSettingsUser(user);
   }
 
-  function handleSaveSettings(payload) {
-    setIsSavingSettings(true);
-    setTimeout(() => {
-      const ok = updateUser(payload);
-      setIsSavingSettings(false);
+  async function handleSaveSettings(payload) {
+    try {
+      setIsSavingSettings(true);
+      const ok = await updateUser(payload);
       if (ok) {
-        setUsers(getUsers());
+        await refreshUsers();
         setSettingsUser(null);
       } else {
         alert("Failed to update user");
       }
-    }, 500);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      alert("Failed to update user");
+    } finally {
+      setIsSavingSettings(false);
+    }
   }
 
   return (
@@ -142,18 +190,22 @@ export default function Users() {
           <CreateUserModal
             isOpen={showForm}
             isSending={sending}
-            onSubmit={(payload) => {
-              const newUser = {
-                ...payload,
-                id: Date.now().toString(),
-                status: "Pending Activation",
-                createdAt: new Date().toISOString(),
-              };
-              addUser(newUser);
-              setUsers(getUsers());
-              setShowForm(false);
-              setSending(true);
-              setTimeout(() => setSending(false), 800);
+            onSubmit={async (payload) => {
+              try {
+                setSending(true);
+                const newUser = {
+                  ...payload,
+                  password: payload.password,
+                };
+                await addUser(newUser);
+                await refreshUsers();
+                setShowForm(false);
+              } catch (error) {
+                console.error("Error adding user:", error);
+                alert("Failed to add user");
+              } finally {
+                setSending(false);
+              }
             }}
             onCancel={() => {
               setShowForm(false);
@@ -172,12 +224,17 @@ export default function Users() {
               <UserForm
                 initial={selectedUser}
                 submitLabel="Save"
-                onSubmit={(payload) => {
-                  const ok = updateUser(payload);
-                  if (ok) {
-                    setUsers(getUsers());
-                    setSelectedUser(null);
-                  } else alert("Failed to update user");
+                onSubmit={async (payload) => {
+                  try {
+                    const ok = await updateUser(payload);
+                    if (ok) {
+                      await refreshUsers();
+                      setSelectedUser(null);
+                    } else alert("Failed to update user");
+                  } catch (error) {
+                    console.error("Error updating user:", error);
+                    alert("Failed to update user");
+                  }
                 }}
                 onCancel={() => {
                   setSelectedUser(null);
@@ -192,7 +249,9 @@ export default function Users() {
         <section className="card" style={{ maxWidth: 920 }}>
           <h2 style={{ marginBottom: 16 }}>Users ({users.length})</h2>
 
-          {users.length === 0 ? (
+          {loading ? (
+            <p style={{ color: "#94a3b8" }}>Loading users...</p>
+          ) : users.length === 0 ? (
             <p style={{ color: "#94a3b8" }}>
               No users yet. Click "Add User" to get started.
             </p>

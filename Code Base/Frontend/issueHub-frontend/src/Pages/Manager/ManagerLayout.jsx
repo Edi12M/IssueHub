@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { LayoutDashboard, Settings } from "lucide-react";
 
 import Button from "../../Components/Button/button.jsx";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";

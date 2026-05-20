@@ -10,7 +10,7 @@ import { getTasks } from "../../data/tasks.js";
 import WorkloadCard from "../../Components/WorkloadCard.jsx";
 
 export default function CapacityPage() {
-  const [projects] = useState(() => {
+  useState(() => {
     try {
       const stored = localStorage.getItem(PROJECTS_KEY);
       return stored ? JSON.parse(stored) : INITIAL_PROJECTS;

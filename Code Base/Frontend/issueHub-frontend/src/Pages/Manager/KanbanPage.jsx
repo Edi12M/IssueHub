@@ -2,28 +2,56 @@ import { useState, useMemo, useEffect } from "react";
 import { Calendar, Flag, CheckCircle } from "lucide-react";
 
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
-import { MANAGER_NAV_ITEMS, PROJECTS_KEY, INITIAL_PROJECTS } from "./managerConstants.js";
+import {
+  MANAGER_NAV_ITEMS,
+  PROJECTS_KEY,
+  INITIAL_PROJECTS,
+} from "./managerConstants.js";
 import { getTasks, updateTaskStatus } from "../../data/tasks.js";
 import { getUsers } from "../../data/users.js";
-import { formatDate } from "../../utils/formatTime.js";
 import "../../App.css";
 import "./manager.css";
 
 // ── Column definitions ────────────────────────────────────────────────────────
 
 const COLUMNS = [
-  { status: "Backlog",     label: "Backlog",     color: "#64748b", overBg: "rgba(100,116,139,0.08)" },
-  { status: "To Do",       label: "To Do",       color: "#3b82f6", overBg: "rgba(59,130,246,0.08)"  },
-  { status: "In Progress", label: "In Progress", color: "#8b5cf6", overBg: "rgba(139,92,246,0.08)"  },
-  { status: "In Review",   label: "In Review",   color: "#f59e0b", overBg: "rgba(245,158,11,0.08)"  },
-  { status: "Done",        label: "Done",        color: "#22c55e", overBg: "rgba(34,197,94,0.08)"   },
+  {
+    status: "Backlog",
+    label: "Backlog",
+    color: "#64748b",
+    overBg: "rgba(100,116,139,0.08)",
+  },
+  {
+    status: "To Do",
+    label: "To Do",
+    color: "#3b82f6",
+    overBg: "rgba(59,130,246,0.08)",
+  },
+  {
+    status: "In Progress",
+    label: "In Progress",
+    color: "#8b5cf6",
+    overBg: "rgba(139,92,246,0.08)",
+  },
+  {
+    status: "In Review",
+    label: "In Review",
+    color: "#f59e0b",
+    overBg: "rgba(245,158,11,0.08)",
+  },
+  {
+    status: "Done",
+    label: "Done",
+    color: "#22c55e",
+    overBg: "rgba(34,197,94,0.08)",
+  },
 ];
 
 const PRIORITY = {
-  Critical: { color: "#ef4444", bg: "rgba(239,68,68,0.14)"  },
-  High:     { color: "#f97316", bg: "rgba(249,115,22,0.14)" },
-  Medium:   { color: "#eab308", bg: "rgba(234,179,8,0.14)"  },
-  Low:      { color: "#22c55e", bg: "rgba(34,197,94,0.14)"  },
+  Critical: { color: "#ef4444", bg: "rgba(239,68,68,0.14)" },
+  High: { color: "#f97316", bg: "rgba(249,115,22,0.14)" },
+  Medium: { color: "#eab308", bg: "rgba(234,179,8,0.14)" },
+  Low: { color: "#22c55e", bg: "rgba(34,197,94,0.14)" },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -67,7 +95,9 @@ function Toast({ message, onDismiss }) {
 function KanbanCard({ task, usersById, isDragging, onDragStart, onDragEnd }) {
   const pConf = PRIORITY[task.priority] ?? PRIORITY.Medium;
   const overdue = isOverdue(task.dueDate) && task.status !== "Done";
-  const assigneeUsers = (task.assignees ?? []).map((id) => usersById[id]).filter(Boolean);
+  const assigneeUsers = (task.assignees ?? [])
+    .map((id) => usersById[id])
+    .filter(Boolean);
 
   return (
     <div
@@ -193,7 +223,9 @@ export default function KanbanPage() {
 
   const usersById = useMemo(() => {
     const map = {};
-    users.forEach((u) => { map[u.id] = u; });
+    users.forEach((u) => {
+      map[u.id] = u;
+    });
     return map;
   }, [users]);
 
@@ -230,7 +262,10 @@ export default function KanbanPage() {
     if (task && task.status !== colStatus) {
       const updated = updateTaskStatus(draggingId, colStatus);
       setTasks(updated);
-      setToast({ id: Date.now(), message: `"${task.title}" moved to ${colStatus}` });
+      setToast({
+        id: Date.now(),
+        message: `"${task.title}" moved to ${colStatus}`,
+      });
       // Simulate team notification (PM_12 step 5)
       console.log(
         `[IssueHub] PM moved task "${task.title}" (${task.id}) → ${colStatus}. Team members notified.`,
@@ -267,7 +302,10 @@ export default function KanbanPage() {
             saved instantly and team members are notified.
           </p>
 
-          <div className="preview-actions kanban-toolbar" style={{ marginTop: 16 }}>
+          <div
+            className="preview-actions kanban-toolbar"
+            style={{ marginTop: 16 }}
+          >
             <select
               className="pm-select"
               value={selectedProjectId}

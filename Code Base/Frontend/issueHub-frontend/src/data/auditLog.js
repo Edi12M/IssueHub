@@ -1,3 +1,7 @@
+// Audit log data - currently using seed data
+// In the future, this will connect to the backend API
+// API endpoint: GET /api/auditlog
+
 const auditLogStore = [
   {
     id: "log-001",
@@ -13,7 +17,8 @@ const auditLogStore = [
     timestamp: "2026-05-09T08:15:00Z",
     category: "User Management",
     eventType: "ROLE_CHANGED",
-    description: "Changed role for john.doe@issuehub.local from Developer to Project Manager",
+    description:
+      "Changed role for john.doe@issuehub.local from Developer to Project Manager",
     performedBy: "Admin",
     target: "John Doe",
   },
@@ -22,7 +27,8 @@ const auditLogStore = [
     timestamp: "2026-05-08T16:30:00Z",
     category: "Project Management",
     eventType: "PROJECT_CREATED",
-    description: 'Created project "Mobile App MVP" and assigned David Park as manager',
+    description:
+      'Created project "Mobile App MVP" and assigned David Park as manager',
     performedBy: "Admin",
     target: "Mobile App MVP",
   },
@@ -40,7 +46,8 @@ const auditLogStore = [
     timestamp: "2026-05-08T11:05:00Z",
     category: "User Management",
     eventType: "USER_DEACTIVATED",
-    description: "Deactivated account robert.kim@issuehub.local — account inactive for 90+ days",
+    description:
+      "Deactivated account robert.kim@issuehub.local — account inactive for 90+ days",
     performedBy: "Admin",
     target: "Robert Kim",
   },
@@ -58,7 +65,8 @@ const auditLogStore = [
     timestamp: "2026-05-07T15:20:00Z",
     category: "System",
     eventType: "SETTINGS_CHANGED",
-    description: "Updated MFA enforcement policy — MFA now required for all Project Manager accounts",
+    description:
+      "Updated MFA enforcement policy — MFA now required for all Project Manager accounts",
     performedBy: "Admin",
     target: "Security Policy",
   },
@@ -67,7 +75,8 @@ const auditLogStore = [
     timestamp: "2026-05-07T09:10:00Z",
     category: "User Management",
     eventType: "USER_CREATED",
-    description: "Created user account alex.morgan@issuehub.local with role Developer",
+    description:
+      "Created user account alex.morgan@issuehub.local with role Developer",
     performedBy: "Admin",
     target: "Alex Morgan",
   },
@@ -76,7 +85,8 @@ const auditLogStore = [
     timestamp: "2026-05-07T08:44:00Z",
     category: "Security",
     eventType: "FAILED_LOGIN",
-    description: "3 consecutive failed login attempts for alex.morgan@issuehub.local — account temporarily locked",
+    description:
+      "3 consecutive failed login attempts for alex.morgan@issuehub.local — account temporarily locked",
     performedBy: "System",
     target: "Alex Morgan",
   },
@@ -103,7 +113,8 @@ const auditLogStore = [
     timestamp: "2026-05-05T09:00:00Z",
     category: "User Management",
     eventType: "USER_CREATED",
-    description: "Created user account david.park@issuehub.local with role Project Manager",
+    description:
+      "Created user account david.park@issuehub.local with role Project Manager",
     performedBy: "Admin",
     target: "David Park",
   },
@@ -112,7 +123,8 @@ const auditLogStore = [
     timestamp: "2026-05-04T16:45:00Z",
     category: "Project Management",
     eventType: "PROJECT_CLOSED",
-    description: 'Closed project "Payment Gateway Integration" — all deliverables accepted',
+    description:
+      'Closed project "Payment Gateway Integration" — all deliverables accepted',
     performedBy: "Admin",
     target: "Payment Gateway Integration",
   },
@@ -121,7 +133,8 @@ const auditLogStore = [
     timestamp: "2026-05-04T10:20:00Z",
     category: "User Management",
     eventType: "ROLE_CHANGED",
-    description: "Changed role for maria.torres@issuehub.local from Developer to Project Manager",
+    description:
+      "Changed role for maria.torres@issuehub.local from Developer to Project Manager",
     performedBy: "Admin",
     target: "Maria Torres",
   },
@@ -130,7 +143,8 @@ const auditLogStore = [
     timestamp: "2026-05-03T14:05:00Z",
     category: "System",
     eventType: "SETTINGS_CHANGED",
-    description: "Updated session timeout — Admin sessions now expire after 15 minutes of inactivity",
+    description:
+      "Updated session timeout — Admin sessions now expire after 15 minutes of inactivity",
     performedBy: "Admin",
     target: "Session Policy",
   },
@@ -139,7 +153,8 @@ const auditLogStore = [
     timestamp: "2026-05-02T09:30:00Z",
     category: "User Management",
     eventType: "USER_CREATED",
-    description: "Created user account lin.wei@issuehub.local with role Project Manager",
+    description:
+      "Created user account lin.wei@issuehub.local with role Project Manager",
     performedBy: "Admin",
     target: "Lin Wei",
   },
@@ -148,7 +163,8 @@ const auditLogStore = [
     timestamp: "2026-05-01T15:00:00Z",
     category: "Project Management",
     eventType: "PROJECT_CREATED",
-    description: 'Created project "Analytics Dashboard" and assigned David Park as manager',
+    description:
+      'Created project "Analytics Dashboard" and assigned David Park as manager',
     performedBy: "Admin",
     target: "Analytics Dashboard",
   },
@@ -157,7 +173,8 @@ const auditLogStore = [
     timestamp: "2026-04-30T10:00:00Z",
     category: "Security",
     eventType: "MFA_ENABLED",
-    description: "Multi-factor authentication enabled and enforced for admin account",
+    description:
+      "Multi-factor authentication enabled and enforced for admin account",
     performedBy: "Admin",
     target: "Admin Account",
   },
@@ -166,7 +183,8 @@ const auditLogStore = [
     timestamp: "2026-04-28T09:00:00Z",
     category: "User Management",
     eventType: "USER_CREATED",
-    description: "Created user account sarah.chen@issuehub.local with role Project Manager",
+    description:
+      "Created user account sarah.chen@issuehub.local with role Project Manager",
     performedBy: "Admin",
     target: "Sarah Chen",
   },
@@ -175,19 +193,34 @@ const auditLogStore = [
     timestamp: "2026-04-25T11:00:00Z",
     category: "Project Management",
     eventType: "PROJECT_CREATED",
-    description: 'Created project "IssueHub Backend API" and assigned Sarah Chen as manager',
+    description:
+      'Created project "IssueHub Backend API" and assigned Sarah Chen as manager',
     performedBy: "Admin",
     target: "IssueHub Backend API",
   },
 ];
 
+/**
+ * Get audit log entries
+ * Currently using seed data; will integrate with backend API when endpoint is available
+ */
 export function getAuditLog() {
   return [...auditLogStore].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );
 }
 
-export function addAuditEvent({ category, eventType, description, performedBy, target }) {
+/**
+ * Add an audit log entry
+ * Currently using local storage; will integrate with backend API when endpoint is available
+ */
+export function addAuditEvent({
+  category,
+  eventType,
+  description,
+  performedBy,
+  target,
+}) {
   auditLogStore.push({
     id: `log-${Date.now()}`,
     timestamp: new Date().toISOString(),

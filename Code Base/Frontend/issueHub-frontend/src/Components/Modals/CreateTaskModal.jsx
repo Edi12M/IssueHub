@@ -122,9 +122,6 @@ export default function CreateTaskModal({
     if (!projectId) return true;
     return task.projectId === projectId;
   });
-  const selectedDependencyTask = availableDependencyTasks.find(
-    (task) => task.id === selectedDependencyTaskId,
-  );
 
   if (!isOpen) return null;
 

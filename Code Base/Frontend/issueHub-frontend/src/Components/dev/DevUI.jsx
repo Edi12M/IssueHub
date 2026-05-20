@@ -17,6 +17,7 @@ const DEV_NAV_ITEMS = [
 ];
 
 /* ── Design tokens ──────────────────────────── */
+// eslint-disable-next-line react-refresh/only-export-components
 export const C = {
   bg: "#0f1117",
   surface: "#161b27",
@@ -150,13 +151,18 @@ export function PageHeader({ title, subtitle }) {
       }}
     >
       <div>
-        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, color: C.textHi }}>
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            marginBottom: 4,
+            color: C.textHi,
+          }}
+        >
           {title}
         </div>
         {subtitle && (
-          <div style={{ fontSize: 13, color: C.muted }}>
-            {subtitle}
-          </div>
+          <div style={{ fontSize: 13, color: C.muted }}>{subtitle}</div>
         )}
       </div>
       <div
