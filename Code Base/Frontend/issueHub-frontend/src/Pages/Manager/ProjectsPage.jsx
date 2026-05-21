@@ -4,6 +4,8 @@ import { Plus } from "lucide-react";
 import Button from "../../Components/Button/button.jsx";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
+import { getProjectsApi, createProjectApi, isBackendUser } from "../../api/index.js";
+import { getSession } from "../../data/users.js";
 
 import CreateProjectModal from "../../Components/Modals/CreateProjectModal.jsx";
 import AddMemberModal from "../../Components/Modals/AddMemberModal.jsx";
@@ -12,7 +14,6 @@ import NotificationModal from "../../Components/Modals/NotificationModal.jsx";
 import ProjectCard from "../../Components/ProjectCard.jsx";
 
 import { getUsers } from "../../data/users.js";
-
 import "../../App.css";
 
 const PROJECTS_KEY = "issuehub_projects";
@@ -45,7 +46,11 @@ const INITIAL_PROJECTS = [
 ];
 
 export default function ProjectsPage() {
+  const session = getSession();
+  const backendUser = isBackendUser(session);
+
   const [activeKey, setActiveKey] = useState("projects");
+  const [apiError, setApiError] = useState(false);
 
   const [projects, setProjects] = useState(() => {
     try {
@@ -58,16 +63,24 @@ export default function ProjectsPage() {
 
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
 
+  // Load from API when backend user is logged in
   useEffect(() => {
-    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
-  }, [projects]);
+    if (!backendUser) return;
+    getProjectsApi()
+      .then((fetched) => { setProjects(fetched); setApiError(false); })
+      .catch(() => setApiError(true));
+  }, [backendUser]);
+
+  // Persist to localStorage for non-API users
+  useEffect(() => {
+    if (!backendUser) {
+      localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+    }
+  }, [projects, backendUser]);
 
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
-
   const [selectedProject, setSelectedProject] = useState(null);
-
   const [availableUsers] = useState(getUsers());
-
   const [notification, setNotification] = useState({
     isOpen: false,
     type: "success",
@@ -89,49 +102,30 @@ export default function ProjectsPage() {
     [activeKey],
   );
 
-  // PM_01 Create Project
-  const handleCreateProject = (newProject) => {
+  const handleCreateProject = async (newProject) => {
+    if (backendUser && !apiError) {
+      try {
+        const created = await createProjectApi(newProject, session.backendId);
+        setProjects((prev) => [created, ...prev]);
+        setNotification({ isOpen: true, type: "success", title: "Project Created", message: `Project "${created.name}" has been created successfully.` });
+        return;
+      } catch (e) {
+        console.warn("API create failed, saving locally:", e.message);
+      }
+    }
     setProjects((prev) => [...prev, newProject]);
-
-    console.log(
-      `Project "${newProject.name}" created with ID: ${newProject.id}`,
-    );
-
-    console.log(`Methodology template applied: ${newProject.methodology}`);
-
-    setNotification({
-      isOpen: true,
-      type: "success",
-      title: "Project Created",
-      message: `Project "${newProject.name}" has been created successfully.`,
-    });
+    setNotification({ isOpen: true, type: "success", title: "Project Created", message: `Project "${newProject.name}" has been created successfully.` });
   };
 
-  // PM_02 Add Team Members
   const handleAddMembers = (projectId, newMembers) => {
-    const updatedProjects = projects.map((project) =>
-      project.id === projectId
-        ? {
-            ...project,
-            members: [...project.members, ...newMembers],
-          }
-        : project,
+    setProjects((prev) =>
+      prev.map((project) =>
+        project.id === projectId
+          ? { ...project, members: [...(project.members ?? []), ...newMembers] }
+          : project
+      )
     );
-
-    setProjects(updatedProjects);
-
-    newMembers.forEach((member) => {
-      console.log(`In-app notification sent to ${member.email}`);
-
-      console.log(`Email notification sent to ${member.email}`);
-    });
-
-    setNotification({
-      isOpen: true,
-      type: "success",
-      title: "Members Added",
-      message: `${newMembers.length} member(s) added successfully.`,
-    });
+    setNotification({ isOpen: true, type: "success", title: "Members Added", message: `${newMembers.length} member(s) added successfully.` });
   };
 
   const handleManageMembers = (project) => {
@@ -159,6 +153,12 @@ export default function ProjectsPage() {
             Manage active projects, create new workspaces, and organize your
             project teams.
           </p>
+
+          {apiError && (
+            <div style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 8, padding: "8px 14px", fontSize: 13, color: "#fbbf24", marginBottom: 12 }}>
+              Could not reach the server — showing cached data.
+            </div>
+          )}
 
           <div className="preview-actions users-actions">
             <Button

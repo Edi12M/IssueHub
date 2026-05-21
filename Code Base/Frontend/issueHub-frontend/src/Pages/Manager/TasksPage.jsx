@@ -5,6 +5,8 @@ import CreateTaskModal from "../../Components/Modals/CreateTaskModal.jsx";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
 import { getTasks, saveTasks } from "../../data/tasks.js";
+import { getUsersApi } from "../../api/index.js";
+import { getUsers } from "../../data/users.js";
 
 const PROJECTS_KEY = "issuehub_projects";
 
@@ -57,8 +59,15 @@ export default function TasksPage() {
     }
   });
 
+  const [availableUsers, setAvailableUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+
+  useEffect(() => {
+    getUsersApi()
+      .then(setAvailableUsers)
+      .catch(() => setAvailableUsers(getUsers()));
+  }, []);
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterPriority, setFilterPriority] = useState("All");
   const [activeKey, setActiveKey] = useState("tasks");
@@ -405,6 +414,7 @@ export default function TasksPage() {
           projects={projects}
           tasks={tasks}
           editTask={editingTask}
+          availableUsers={availableUsers}
         />
       </main>
     </div>

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
   getDevIssueById,
@@ -8,6 +8,7 @@ import {
 } from "../../data/mockIssues";
 import { updateTaskStatus } from "../../data/tasks";
 import { getSession } from "../../data/users.js";
+import { getIssueDetailApi, updateIssueStatusApi } from "../../api/index.js";
 import {
   DevShell,
   PageHeader,
@@ -24,9 +25,35 @@ import Button from "../../Components/Button/button";
 
 export default function IssueDetailPage() {
   const { id } = useParams();
-  const source = getDevIssueById(id);
+  const isBackendId = id.startsWith("BE-");
+  const numericId = isBackendId ? id.replace("BE-", "") : null;
 
-  if (!source) {
+  const [source, setSource] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    if (isBackendId) {
+      getIssueDetailApi(numericId)
+        .then(setSource)
+        .catch(() => setLoadError(true));
+    } else {
+      const found = getDevIssueById(id);
+      if (found) setSource(found);
+      else setLoadError(true);
+    }
+  }, [id]);
+
+  if (!source && !loadError) {
+    return (
+      <DevShell>
+        <div style={{ color: C.muted, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+          Loading issue…
+        </div>
+      </DevShell>
+    );
+  }
+
+  if (loadError || !source) {
     return (
       <DevShell>
         <div style={{ color: C.muted, fontSize: 14 }}>Issue not found.</div>
@@ -34,10 +61,10 @@ export default function IssueDetailPage() {
     );
   }
 
-  return <IssueDetail source={source} />;
+  return <IssueDetail source={source} isBackend={isBackendId} numericId={numericId} />;
 }
 
-function IssueDetail({ source }) {
+function IssueDetail({ source, isBackend, numericId }) {
   const session = getSession();
   const authorName = session?.name || "Developer";
   const authorInitials = authorName
@@ -56,14 +83,21 @@ function IssueDetail({ source }) {
 
   const overdue = isOverdue(issue);
 
-  /* ── Status ──────────────────────────────── */
-  function handleStatusUpdate() {
+  async function handleStatusUpdate() {
     if (newStatus === issue.status) return;
     const now = new Date().toLocaleString("en-GB", {
       dateStyle: "short",
       timeStyle: "short",
     });
-    updateTaskStatus(issue.id, newStatus);
+    if (isBackend) {
+      try {
+        await updateIssueStatusApi(numericId, newStatus);
+      } catch (e) {
+        console.warn("Status update failed:", e.message);
+      }
+    } else {
+      updateTaskStatus(issue.id, newStatus);
+    }
     setIssue((prev) => ({
       ...prev,
       status: newStatus,
@@ -74,7 +108,6 @@ function IssueDetail({ source }) {
     }));
   }
 
-  /* ── Comments ────────────────────────────── */
   function handleAddComment() {
     if (!commentText.trim()) return;
     const now = new Date().toLocaleString("en-GB", {
@@ -102,7 +135,7 @@ function IssueDetail({ source }) {
     setIssue((prev) => ({
       ...prev,
       comments: prev.comments.map((c) =>
-        c.id === editingComment.id ? { ...c, text: editingComment.text } : c,
+        c.id === editingComment.id ? { ...c, text: editingComment.text } : c
       ),
     }));
     setEditingComment(null);
@@ -115,7 +148,6 @@ function IssueDetail({ source }) {
     }));
   }
 
-  /* ── Attachments ─────────────────────────── */
   function handleFileUpload(e) {
     const files = Array.from(e.target.files);
     setAttachments((prev) => [
@@ -169,9 +201,8 @@ function IssueDetail({ source }) {
     <DevShell>
       <BackLink to="/dev/assigned-issues" label="Back to Assigned Issues" />
 
-      <PageHeader title={issue.title} subtitle={issue.id} />
+      <PageHeader title={issue.title} subtitle={issue.issueCode ?? issue.id} />
 
-      {/* Meta tags */}
       <div
         style={{
           display: "flex",
@@ -201,27 +232,16 @@ function IssueDetail({ source }) {
         )}
       </div>
 
-      <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24 }}
-      >
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24 }}>
         {/* ── LEFT ── */}
         <div>
-          {/* Description */}
           <Card>
             <SectionLabel>Description</SectionLabel>
-            <p
-              style={{
-                fontSize: 14,
-                color: "#cbd5e1",
-                lineHeight: 1.7,
-                margin: 0,
-              }}
-            >
+            <p style={{ fontSize: 14, color: "#cbd5e1", lineHeight: 1.7, margin: 0 }}>
               {issue.description || "No description provided."}
             </p>
           </Card>
 
-          {/* Comments */}
           <Card>
             <SectionLabel>Comments ({issue.comments.length})</SectionLabel>
             {issue.comments.length === 0 && (
@@ -248,23 +268,13 @@ function IssueDetail({ source }) {
                     marginBottom: 6,
                   }}
                 >
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <Avatar initials={c.avatar} size={24} />
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: "#a78bfa",
-                      }}
-                    >
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#a78bfa" }}>
                       {c.author}
                     </span>
                   </div>
-                  <span style={{ fontSize: 11, color: C.subtle }}>
-                    {c.date}
-                  </span>
+                  <span style={{ fontSize: 11, color: C.subtle }}>{c.date}</span>
                 </div>
 
                 {editingComment?.id === c.id ? (
@@ -272,10 +282,7 @@ function IssueDetail({ source }) {
                     <textarea
                       value={editingComment.text}
                       onChange={(e) =>
-                        setEditingComment({
-                          ...editingComment,
-                          text: e.target.value,
-                        })
+                        setEditingComment({ ...editingComment, text: e.target.value })
                       }
                       style={{
                         width: "100%",
@@ -293,46 +300,21 @@ function IssueDetail({ source }) {
                       }}
                     />
                     <div style={{ display: "flex", gap: 8 }}>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={handleSaveEdit}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setEditingComment(null)}
-                      >
-                        Cancel
-                      </Button>
+                      <Button variant="primary" size="sm" onClick={handleSaveEdit}>Save</Button>
+                      <Button variant="secondary" size="sm" onClick={() => setEditingComment(null)}>Cancel</Button>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div
-                      style={{
-                        fontSize: 13.5,
-                        color: "#cbd5e1",
-                        lineHeight: 1.6,
-                      }}
-                    >
+                    <div style={{ fontSize: 13.5, color: "#cbd5e1", lineHeight: 1.6 }}>
                       {c.text}
                     </div>
                     {c.mine && (
                       <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                        <TinyBtn
-                          onClick={() =>
-                            setEditingComment({ id: c.id, text: c.text })
-                          }
-                        >
+                        <TinyBtn onClick={() => setEditingComment({ id: c.id, text: c.text })}>
                           Edit
                         </TinyBtn>
-                        <TinyBtn
-                          danger
-                          onClick={() => handleDeleteComment(c.id)}
-                        >
+                        <TinyBtn danger onClick={() => handleDeleteComment(c.id)}>
                           Delete
                         </TinyBtn>
                       </div>
@@ -368,13 +350,10 @@ function IssueDetail({ source }) {
             </div>
           </Card>
 
-          {/* Attachments */}
           <Card>
             <SectionLabel>Attachments ({attachments.length})</SectionLabel>
             {attachments.length === 0 && (
-              <div style={{ color: C.subtle, fontSize: 13 }}>
-                No attachments yet.
-              </div>
+              <div style={{ color: C.subtle, fontSize: 13 }}>No attachments yet.</div>
             )}
             {attachments.map((att) => (
               <div
@@ -390,19 +369,11 @@ function IssueDetail({ source }) {
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <AttachIcon type={att.type} />
                   <div>
-                    <div
-                      style={{ fontSize: 13, color: C.text, fontWeight: 500 }}
-                    >
-                      {att.name}
-                    </div>
-                    <div style={{ fontSize: 11, color: C.subtle }}>
-                      {att.size} · {att.date}
-                    </div>
+                    <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{att.name}</div>
+                    <div style={{ fontSize: 11, color: C.subtle }}>{att.size} · {att.date}</div>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => {}}>
-                  ↓ Download
-                </Button>
+                <Button variant="ghost" size="sm" onClick={() => {}}>↓ Download</Button>
               </div>
             ))}
             <div
@@ -420,9 +391,7 @@ function IssueDetail({ source }) {
             >
               <div style={{ fontSize: 22, marginBottom: 4 }}>📎</div>
               <div>Click to upload a file</div>
-              <div style={{ fontSize: 11, marginTop: 4 }}>
-                Any file type supported
-              </div>
+              <div style={{ fontSize: 11, marginTop: 4 }}>Any file type supported</div>
             </div>
             <input
               type="file"
@@ -436,7 +405,6 @@ function IssueDetail({ source }) {
 
         {/* ── RIGHT ── */}
         <div>
-          {/* Meta */}
           <Card>
             <SectionLabel>Details</SectionLabel>
             {[
@@ -460,7 +428,6 @@ function IssueDetail({ source }) {
             ))}
           </Card>
 
-          {/* Update status */}
           <Card>
             <SectionLabel>Update Status</SectionLabel>
             <select
@@ -479,28 +446,18 @@ function IssueDetail({ source }) {
               }}
             >
               {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
+                <option key={s} value={s}>{s}</option>
               ))}
             </select>
-            <Button
-              variant="primary"
-              size="md"
-              fullWidth
-              onClick={handleStatusUpdate}
-            >
+            <Button variant="primary" size="md" fullWidth onClick={handleStatusUpdate}>
               Apply Status Change
             </Button>
           </Card>
 
-          {/* Status history */}
           <Card>
             <SectionLabel>Status History</SectionLabel>
             {issue.statusHistory.length === 0 && (
-              <div style={{ color: C.subtle, fontSize: 13 }}>
-                No history yet.
-              </div>
+              <div style={{ color: C.subtle, fontSize: 13 }}>No history yet.</div>
             )}
             {issue.statusHistory.map((h, i) => (
               <div
@@ -524,12 +481,8 @@ function IssueDetail({ source }) {
                   }}
                 />
                 <div>
-                  <div style={{ fontWeight: 600, color: C.text }}>
-                    {h.status}
-                  </div>
-                  <div style={{ color: C.muted, fontSize: 11 }}>
-                    {h.by} · {h.date}
-                  </div>
+                  <div style={{ fontWeight: 600, color: C.text }}>{h.status}</div>
+                  <div style={{ color: C.muted, fontSize: 11 }}>{h.by} · {h.date}</div>
                 </div>
               </div>
             ))}

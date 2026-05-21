@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Users as UsersIcon,
   FolderKanban,
@@ -16,14 +16,14 @@ import { ADMIN_NAV_ITEMS } from "./adminConstants.js";
 import { getAuditLog } from "../../data/auditLog.js";
 import { getProjects } from "../../data/projects.js";
 import { formatTimeAgo, formatDate } from "../../utils/formatTime.js";
+import {
+  getUserCountsByRoleApi,
+  getProjectCountsApi,
+  getLastCreatedUserApi,
+  getLastCreatedProjectApi,
+} from "../../api/index.js";
 import "../../App.css";
 import "./admin.css";
-
-const ROLE_DIST = [
-  { key: "admin", label: "System Admin", count: 2, total: 24, color: "#6366f1", barColor: "#6366f1" },
-  { key: "pm", label: "Project Manager", count: 5, total: 24, color: "#f9a8d4", barColor: "#ec4899" },
-  { key: "dev", label: "Developer", count: 17, total: 24, color: "#7dd3fc", barColor: "#38bdf8" },
-];
 
 function catKey(category) {
   if (!category) return "system";
@@ -35,13 +35,38 @@ function catKey(category) {
 }
 
 export function AdminDashboardPage() {
-  const projects = useMemo(() => getProjects(), []);
+  const localProjects = useMemo(() => getProjects(), []);
   const recentEvents = useMemo(() => getAuditLog().slice(0, 8), []);
 
-  const activeProjects = projects.filter((p) => p.status === "Active").length;
-  const archivedProjects = projects.filter((p) => p.status === "Archived").length;
-  const closedProjects = projects.filter((p) => p.status === "Closed").length;
-  const openIssues = projects.reduce((sum, p) => sum + p.openIssues, 0);
+  const [userCounts, setUserCounts] = useState(null);
+  const [projectCounts, setProjectCounts] = useState(null);
+  const [lastUser, setLastUser] = useState(null);
+  const [lastProject, setLastProject] = useState(null);
+
+  useEffect(() => {
+    getUserCountsByRoleApi().then(setUserCounts).catch(() => {});
+    getProjectCountsApi().then(setProjectCounts).catch(() => {});
+    getLastCreatedUserApi().then(setLastUser).catch(() => {});
+    getLastCreatedProjectApi().then(setLastProject).catch(() => {});
+  }, []);
+
+  // Use API counts when available, fall back to localStorage
+  const totalUsers = userCounts?.total ?? 24;
+  const adminCount = userCounts?.admin ?? 2;
+  const managerCount = userCounts?.manager ?? 5;
+  const devCount = userCounts?.developer ?? 17;
+  const activeUsers = totalUsers - (userCounts ? 0 : 4);
+
+  const activeProjects = projectCounts?.active ?? localProjects.filter((p) => p.status === "Active").length;
+  const archivedProjects = projectCounts?.archived ?? localProjects.filter((p) => p.status === "Archived").length;
+  const closedProjects = projectCounts?.closed ?? localProjects.filter((p) => p.status === "Closed").length;
+  const openIssues = localProjects.reduce((sum, p) => sum + p.openIssues, 0);
+
+  const roleDist = [
+    { key: "admin", label: "System Admin", count: adminCount, color: "#6366f1", barColor: "#6366f1" },
+    { key: "pm", label: "Project Manager", count: managerCount, color: "#f9a8d4", barColor: "#ec4899" },
+    { key: "dev", label: "Developer", count: devCount, color: "#7dd3fc", barColor: "#38bdf8" },
+  ];
 
   return (
     <div className="preview-shell">
@@ -58,19 +83,12 @@ export function AdminDashboardPage() {
           <p className="eyebrow">System Administrator</p>
           <h1 style={{ marginTop: 10, marginBottom: 12 }}>Dashboard</h1>
           <p className="lead">
-            Monitor and manage the IssueHub platform from one place. Review system
-            activity, manage users, and track project health.
+            Monitor and manage the IssueHub platform from one place.
           </p>
           <div className="preview-actions">
-            <Button to="/admin/users" variant="primary" size="sm">
-              Add User
-            </Button>
-            <Button to="/admin/projects" variant="secondary" size="sm">
-              View Projects
-            </Button>
-            <Button to="/admin/audit" variant="secondary" size="sm">
-              Audit Log
-            </Button>
+            <Button to="/admin/users" variant="primary" size="sm">Add User</Button>
+            <Button to="/admin/projects" variant="secondary" size="sm">View Projects</Button>
+            <Button to="/admin/audit" variant="secondary" size="sm">Audit Log</Button>
           </div>
         </section>
 
@@ -79,8 +97,8 @@ export function AdminDashboardPage() {
           <StatCard
             icon={UsersIcon}
             label="Total Users"
-            value="24"
-            sub="18 active · 4 deactivated · 2 pending"
+            value={String(totalUsers)}
+            sub={`${activeUsers} active · ${userCounts ? totalUsers - activeUsers : 4} inactive`}
             color="#6366f1"
           />
           <StatCard
@@ -112,11 +130,8 @@ export function AdminDashboardPage() {
           <div className="card admin-activity">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <h2 style={{ margin: 0 }}>Recent Activity</h2>
-              <Button to="/admin/audit" variant="ghost" size="sm">
-                View all
-              </Button>
+              <Button to="/admin/audit" variant="ghost" size="sm">View all</Button>
             </div>
-
             <ul className="admin-activity-list">
               {recentEvents.map((event) => {
                 const ck = catKey(event.category);
@@ -140,17 +155,17 @@ export function AdminDashboardPage() {
           <div className="card" style={{ alignSelf: "start" }}>
             <h2 style={{ margin: 0 }}>User Roles</h2>
             <p style={{ fontSize: 12.5, color: "#64748b", marginTop: 4 }}>
-              24 total platform users
+              {totalUsers} total platform users
             </p>
             <div className="admin-role-list">
-              {ROLE_DIST.map((r) => (
+              {roleDist.map((r) => (
                 <div key={r.key} className="admin-role-row">
                   <span className={`role-label role-${r.key}`}>{r.label}</span>
                   <div className="role-bar-wrap">
                     <div
                       className="role-bar"
                       style={{
-                        width: `${(r.count / r.total) * 100}%`,
+                        width: totalUsers > 0 ? `${(r.count / totalUsers) * 100}%` : "0%",
                         background: r.barColor,
                       }}
                     />
@@ -160,7 +175,6 @@ export function AdminDashboardPage() {
               ))}
             </div>
 
-            {/* Quick links */}
             <div
               style={{
                 marginTop: 24,
@@ -205,14 +219,14 @@ export function AdminDashboardPage() {
             {
               icon: <UsersIcon size={16} color="#a5b4fc" />,
               label: "Last User Created",
-              value: "Maya Patel",
-              sub: formatDate("2026-05-09T09:42:00Z"),
+              value: lastUser?.fullName ?? "—",
+              sub: lastUser?.createdAt ? formatDate(lastUser.createdAt) : "—",
             },
             {
               icon: <FolderKanban size={16} color="#ff7aa2" />,
               label: "Last Project Created",
-              value: "Analytics Dashboard",
-              sub: formatDate("2026-05-01T15:00:00Z"),
+              value: lastProject?.title ?? "—",
+              sub: lastProject?.createdAt ? formatDate(lastProject.createdAt) : "—",
             },
             {
               icon: <Shield size={16} color="#fbbf24" />,

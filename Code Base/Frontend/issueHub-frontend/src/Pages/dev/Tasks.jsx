@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDevIssues, isOverdue } from "../../data/mockIssues";
 import { getSession } from "../../data/users.js";
+import { getDevTasksApi, isBackendUser } from "../../api/index.js";
 import {
   DevShell,
   PageHeader,
@@ -14,9 +15,31 @@ import Button from "../../Components/Button/button";
 export default function DevTasksPage() {
   const navigate = useNavigate();
   const session = getSession();
+  const backendUser = isBackendUser(session);
   const [sort, setSort] = useState("deadline");
+  const [issues, setIssues] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const issues = getDevIssues(session?.id);
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      try {
+        if (backendUser) {
+          const data = await getDevTasksApi(session.backendId);
+          if (!cancelled) setIssues(data);
+        } else {
+          if (!cancelled) setIssues(getDevIssues(session?.id));
+        }
+      } catch {
+        if (!cancelled) setIssues(getDevIssues(session?.id));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   const sorted = [...issues].sort((a, b) => {
     if (sort === "deadline") {
@@ -32,6 +55,16 @@ export default function DevTasksPage() {
   const completed = issues.filter((i) => i.status === "Done").length;
   const overdueCt = issues.filter((i) => isOverdue(i)).length;
   const inProgress = issues.filter((i) => i.status === "In Progress").length;
+
+  if (loading) {
+    return (
+      <DevShell>
+        <div style={{ color: C.muted, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+          Loading tasks…
+        </div>
+      </DevShell>
+    );
+  }
 
   return (
     <DevShell>
@@ -147,20 +180,25 @@ export default function DevTasksPage() {
                 background: done ? "#22c55e" : "transparent",
               }}
             />
-            <div
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                flex: 1,
-                minWidth: 0,
-                color: done ? C.subtle : C.textHi,
-                textDecoration: done ? "line-through" : "none",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {issue.title}
+            <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+              {issue.issueCode && (
+                <div style={{ fontSize: 11, color: C.muted, fontFamily: "'DM Mono',monospace", marginBottom: 2 }}>
+                  {issue.issueCode}
+                </div>
+              )}
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: done ? C.subtle : C.textHi,
+                  textDecoration: done ? "line-through" : "none",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {issue.title}
+              </div>
             </div>
             <PriorityTag priority={issue.priority} />
             <StatusTag status={issue.status} />

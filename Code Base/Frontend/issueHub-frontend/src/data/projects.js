@@ -1,125 +1,78 @@
-import { projectsAPI } from "../services/api.js";
+// Local seed projects — used as fallback when the backend API is unavailable.
+let SEED_PROJECTS = [
+  {
+    id: "p1",
+    backendId: null,
+    name: "Website Redesign",
+    description: "Redesign the company website UI.",
+    goals: "Improve UX and accessibility.",
+    status: "Active",
+    manager: "Paula Manager",
+    membersCount: 3,
+    openIssues: 4,
+    completedIssues: 2,
+    budget: 10000,
+    spent: 4200,
+    createdAt: "2025-09-01T00:00:00.000Z",
+    deadline: "2025-10-15T00:00:00.000Z",
+    tags: ["UI", "Frontend"],
+    startDate: "2025-09-01",
+    endDate: "2025-10-15",
+    visibility: "Team",
+    methodology: "Scrum",
+  },
+  {
+    id: "p2",
+    backendId: null,
+    name: "Mobile App",
+    description: "Build a cross-platform mobile app.",
+    goals: "Launch MVP for beta users.",
+    status: "Active",
+    manager: "Paula Manager",
+    membersCount: 2,
+    openIssues: 6,
+    completedIssues: 1,
+    budget: 20000,
+    spent: 3000,
+    createdAt: "2025-10-01T00:00:00.000Z",
+    deadline: "2025-12-20T00:00:00.000Z",
+    tags: ["Mobile", "React Native"],
+    startDate: "2025-10-01",
+    endDate: "2025-12-20",
+    visibility: "Private",
+    methodology: "Kanban",
+  },
+];
 
-// Cache for projects
-let projectsCache = null;
-let cacheTimestamp = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-// Helper function to check if cache is still valid
-function isCacheValid() {
-  return projectsCache && Date.now() - cacheTimestamp < CACHE_DURATION;
+export function getProjects() {
+  return [...SEED_PROJECTS];
 }
 
-/**
- * Get all projects from the API
- * Results are cached for 5 minutes
- */
-export async function getProjects() {
-  try {
-    // Return cached data if still valid
-    if (isCacheValid()) {
-      return [...projectsCache];
-    }
-
-    const projects = await projectsAPI.getAll();
-
-    // Cache the results
-    projectsCache = projects;
-    cacheTimestamp = Date.now();
-
-    return [...projects];
-  } catch (error) {
-    console.error("Failed to fetch projects:", error);
-    // Return cached data if available, even if expired
-    if (projectsCache) {
-      return [...projectsCache];
-    }
-    // Return empty array as fallback
-    return [];
-  }
+export function updateProjectStatus(id, newStatus) {
+  SEED_PROJECTS = SEED_PROJECTS.map((p) =>
+    p.id === id ? { ...p, status: newStatus } : p
+  );
+  return true;
 }
 
-/**
- * Get a project by ID
- */
-export async function getProjectById(id) {
-  try {
-    return await projectsAPI.getById(id);
-  } catch (error) {
-    console.error("Failed to fetch project:", error);
-    return null;
-  }
+export function createProject(projectData) {
+  const newProject = {
+    ...projectData,
+    id: "p" + Date.now(),
+    backendId: null,
+    createdAt: new Date().toISOString(),
+    membersCount: 0,
+    openIssues: 0,
+    completedIssues: 0,
+    budget: 0,
+    spent: 0,
+    tags: [],
+  };
+  SEED_PROJECTS = [...SEED_PROJECTS, newProject];
+  return newProject;
 }
 
-/**
- * Get projects by status
- */
-export async function getProjectsByStatus(status) {
-  try {
-    const projects = await getProjects();
-    return projects.filter((p) => p.status === status);
-  } catch (error) {
-    console.error("Failed to fetch projects by status:", error);
-    return [];
-  }
-}
-
-/**
- * Create a new project
- */
-export async function createProject(projectData) {
-  try {
-    const result = await projectsAPI.create(projectData);
-    // Invalidate cache
-    projectsCache = null;
-    return result;
-  } catch (error) {
-    console.error("Failed to create project:", error);
-    throw error;
-  }
-}
-
-/**
- * Update a project
- */
-export async function updateProject(id, projectData) {
-  try {
-    const result = await projectsAPI.update(id, projectData);
-    // Invalidate cache
-    projectsCache = null;
-    return result;
-  } catch (error) {
-    console.error("Failed to update project:", error);
-    throw error;
-  }
-}
-
-/**
- * Update project status
- */
-export async function updateProjectStatus(id, newStatus) {
-  try {
-    await projectsAPI.update(id, { status: newStatus });
-    // Invalidate cache
-    projectsCache = null;
-    return true;
-  } catch (error) {
-    console.error("Failed to update project status:", error);
-    return false;
-  }
-}
-
-/**
- * Delete a project
- */
-export async function deleteProject(id) {
-  try {
-    await projectsAPI.delete(id);
-    // Invalidate cache
-    projectsCache = null;
-    return true;
-  } catch (error) {
-    console.error("Failed to delete project:", error);
-    return false;
-  }
+export function deleteProject(id) {
+  SEED_PROJECTS = SEED_PROJECTS.filter((p) => p.id !== id);
+  return true;
 }

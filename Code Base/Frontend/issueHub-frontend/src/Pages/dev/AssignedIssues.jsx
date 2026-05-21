@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDevIssues, STATUS_TO_SLUG, isOverdue } from "../../data/mockIssues";
 import { getSession } from "../../data/users.js";
+import { getDevTasksApi, isBackendUser } from "../../api/index.js";
 import {
   DevShell,
   PageHeader,
@@ -15,18 +16,44 @@ const FILTERS = ["All", "Backlog", "To Do", "In Progress", "In Review", "Done"];
 
 export default function AssignedIssuesPage() {
   const session = getSession();
-  const issues = getDevIssues(session?.id);
+  const backendUser = isBackendUser(session);
+
+  const [issues, setIssues] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      try {
+        if (backendUser) {
+          const data = await getDevTasksApi(session.backendId);
+          if (!cancelled) setIssues(data);
+        } else {
+          if (!cancelled) setIssues(getDevIssues(session?.id));
+        }
+      } catch {
+        if (!cancelled) setIssues(getDevIssues(session?.id));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <DevShell>
       <PageHeader
         title="My Assigned Issues"
-        subtitle={`${issues.length} issue${issues.length !== 1 ? "s" : ""} assigned to you`}
+        subtitle={
+          loading
+            ? "Loading…"
+            : `${issues.length} issue${issues.length !== 1 ? "s" : ""} assigned to you`
+        }
       />
 
-      <div
-        style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}
-      >
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
         {FILTERS.map((f) => {
           const to =
             f === "All"
@@ -38,20 +65,19 @@ export default function AssignedIssuesPage() {
         })}
       </div>
 
-      {issues.length === 0 && (
-        <div
-          style={{
-            color: C.subtle,
-            fontSize: 14,
-            padding: "40px 0",
-            textAlign: "center",
-          }}
-        >
+      {loading && (
+        <div style={{ color: C.muted, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+          Loading issues…
+        </div>
+      )}
+
+      {!loading && issues.length === 0 && (
+        <div style={{ color: C.subtle, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
           No issues assigned to you yet.
         </div>
       )}
 
-      {issues.map((issue) => (
+      {!loading && issues.map((issue) => (
         <IssueCard key={issue.id} issue={issue} />
       ))}
     </DevShell>
@@ -97,7 +123,7 @@ function IssueCard({ issue }) {
               marginBottom: 4,
             }}
           >
-            {issue.id} · {issue.project}
+            {issue.issueCode ?? issue.id} · {issue.project}
           </div>
           <div
             style={{
@@ -120,9 +146,7 @@ function IssueCard({ issue }) {
             <PriorityTag priority={issue.priority} />
             <StatusTag status={issue.status} />
             {issue.deadline && (
-              <span
-                style={{ fontSize: 12, color: overdue ? "#ef4444" : C.muted }}
-              >
+              <span style={{ fontSize: 12, color: overdue ? "#ef4444" : C.muted }}>
                 {overdue ? "⚠ Overdue · " : "Due: "}
                 {issue.deadline}
               </span>

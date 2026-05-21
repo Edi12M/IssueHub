@@ -25,6 +25,7 @@ export default function CreateTaskModal({
   projects = [],
   tasks = [],
   editTask = null,
+  availableUsers = [],
 }) {
   const [title, setTitle] = useState(editTask?.title || "");
   const [description, setDescription] = useState(editTask?.description || "");
@@ -115,8 +116,9 @@ export default function CreateTaskModal({
     reset();
   }
 
-  const projectMembers =
-    projects.find((p) => p.id === projectId)?.members || [];
+  const projectMembers = availableUsers.length > 0
+    ? availableUsers
+    : (projects.find((p) => p.id === projectId)?.members || []);
   const availableDependencyTasks = tasks.filter((task) => {
     if (task.id === editTask?.id) return false;
     if (!projectId) return true;
@@ -295,14 +297,13 @@ export default function CreateTaskModal({
               </div>
 
               {/* Assignees */}
-              {projectId && (
-                <div>
-                  <label className="form-label">Assignees</label>
-                  {projectMembers.length === 0 ? (
-                    <p style={{ color: "#94a3b8", fontSize: "13px" }}>
-                      No members in this project yet
-                    </p>
-                  ) : (
+              <div>
+                <label className="form-label">Assignees</label>
+                {projectMembers.length === 0 ? (
+                  <p style={{ color: "#94a3b8", fontSize: "13px" }}>
+                    No users available
+                  </p>
+                ) : (
                     <div
                       style={{
                         display: "flex",
@@ -362,8 +363,7 @@ export default function CreateTaskModal({
                       })}
                     </div>
                   )}
-                </div>
-              )}
+              </div>
             </div>
           </div>
 

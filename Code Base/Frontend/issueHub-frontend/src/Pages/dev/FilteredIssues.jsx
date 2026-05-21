@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getDevIssues,
@@ -7,6 +7,7 @@ import {
   isOverdue,
 } from "../../data/mockIssues";
 import { getSession } from "../../data/users.js";
+import { getDevTasksApi, isBackendUser } from "../../api/index.js";
 import {
   DevShell,
   PageHeader,
@@ -23,17 +24,46 @@ export default function FilteredIssuesPage() {
   const activeFilter = STATUS_SLUG[statusSlug] || "All";
 
   const session = getSession();
-  const issues = getDevIssues(session?.id);
+  const backendUser = isBackendUser(session);
+
+  const [allIssues, setAllIssues] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      try {
+        if (backendUser) {
+          const data = await getDevTasksApi(session.backendId);
+          if (!cancelled) setAllIssues(data);
+        } else {
+          if (!cancelled) setAllIssues(getDevIssues(session?.id));
+        }
+      } catch {
+        if (!cancelled) setAllIssues(getDevIssues(session?.id));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
   const shown =
     activeFilter === "All"
-      ? issues
-      : issues.filter((i) => i.status === activeFilter);
+      ? allIssues
+      : allIssues.filter((i) => i.status === activeFilter);
 
   return (
     <DevShell>
       <PageHeader
         title="My Assigned Issues"
-        subtitle={`${shown.length} issue${shown.length !== 1 ? "s" : ""} · filtered by status`}
+        subtitle={
+          loading
+            ? "Loading…"
+            : `${shown.length} issue${shown.length !== 1 ? "s" : ""} · filtered by status`
+        }
       />
 
       <div style={{ marginBottom: 20, color: C.muted, fontSize: 13 }}>
@@ -41,39 +71,31 @@ export default function FilteredIssuesPage() {
         <span style={{ color: C.accent, fontWeight: 600 }}>{activeFilter}</span>
       </div>
 
-      <div
-        style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}
-      >
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
         {FILTERS.map((f) => {
           const to =
             f === "All"
               ? "/dev/assigned-issues"
               : `/dev/assigned-issues/${STATUS_TO_SLUG[f]}`;
           return (
-            <FilterButton
-              key={f}
-              label={f}
-              active={f === activeFilter}
-              to={to}
-            />
+            <FilterButton key={f} label={f} active={f === activeFilter} to={to} />
           );
         })}
       </div>
 
-      {shown.length === 0 && (
-        <div
-          style={{
-            color: C.subtle,
-            fontSize: 14,
-            padding: "40px 0",
-            textAlign: "center",
-          }}
-        >
+      {loading && (
+        <div style={{ color: C.muted, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+          Loading issues…
+        </div>
+      )}
+
+      {!loading && shown.length === 0 && (
+        <div style={{ color: C.subtle, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
           No issues with status <strong>{activeFilter}</strong>.
         </div>
       )}
 
-      {shown.map((issue) => (
+      {!loading && shown.map((issue) => (
         <IssueCard key={issue.id} issue={issue} />
       ))}
     </DevShell>
@@ -119,7 +141,7 @@ function IssueCard({ issue }) {
               marginBottom: 4,
             }}
           >
-            {issue.id} · {issue.project}
+            {issue.issueCode ?? issue.id} · {issue.project}
           </div>
           <div
             style={{
@@ -142,9 +164,7 @@ function IssueCard({ issue }) {
             <PriorityTag priority={issue.priority} />
             <StatusTag status={issue.status} />
             {issue.deadline && (
-              <span
-                style={{ fontSize: 12, color: overdue ? "#ef4444" : C.muted }}
-              >
+              <span style={{ fontSize: 12, color: overdue ? "#ef4444" : C.muted }}>
                 {overdue ? "⚠ Overdue · " : "Due: "}
                 {issue.deadline}
               </span>

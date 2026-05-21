@@ -260,8 +260,8 @@ export default function KanbanPage() {
 
     const task = tasks.find((t) => t.id === draggingId);
     if (task && task.status !== colStatus) {
-      const updated = updateTaskStatus(draggingId, colStatus);
-      setTasks(updated);
+      updateTaskStatus(draggingId, colStatus);
+      setTasks((prev) => prev.map((t) => t.id === draggingId ? { ...t, status: colStatus } : t));
       setToast({
         id: Date.now(),
         message: `"${task.title}" moved to ${colStatus}`,
