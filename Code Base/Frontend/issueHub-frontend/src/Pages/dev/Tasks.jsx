@@ -11,7 +11,10 @@ import {
   C,
 } from "../../Components/dev/DevUI";
 import { SearchBar } from "../../Components/dev/SearchBar";
-import { FilterPanel, AVAILABLE_LABELS } from "../../Components/dev/FilterPanel";
+import {
+  FilterPanel,
+  AVAILABLE_LABELS,
+} from "../../Components/dev/FilterPanel";
 import Button from "../../Components/Button/button";
 
 export default function DevTasksPage() {
@@ -19,13 +22,10 @@ export default function DevTasksPage() {
   const session = getSession();
   const backendUser = isBackendUser(session);
   const [sort, setSort] = useState("deadline");
-<<<<<<< HEAD
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
-=======
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ labels: [], dateRange: {} });
->>>>>>> US-DEV-04
 
   useEffect(() => {
     let cancelled = false;
@@ -45,8 +45,10 @@ export default function DevTasksPage() {
       }
     }
     load();
-    return () => { cancelled = true; };
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [backendUser, session]);
 
   const sorted = [...issues].sort((a, b) => {
     if (sort === "deadline") {
@@ -74,7 +76,7 @@ export default function DevTasksPage() {
     // Label filter - issue must have ALL selected labels
     if (filters.labels.length > 0) {
       const matchesAllLabels = filters.labels.every((labelId) =>
-        issue.labels?.includes(labelId)
+        issue.labels?.includes(labelId),
       );
       if (!matchesAllLabels) return false;
     }
@@ -99,7 +101,14 @@ export default function DevTasksPage() {
   if (loading) {
     return (
       <DevShell>
-        <div style={{ color: C.muted, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+        <div
+          style={{
+            color: C.muted,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
           Loading tasks…
         </div>
       </DevShell>
@@ -247,7 +256,14 @@ export default function DevTasksPage() {
             />
             <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
               {issue.issueCode && (
-                <div style={{ fontSize: 11, color: C.muted, fontFamily: "'DM Mono',monospace", marginBottom: 2 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: C.muted,
+                    fontFamily: "'DM Mono',monospace",
+                    marginBottom: 2,
+                  }}
+                >
                   {issue.issueCode}
                 </div>
               )}
@@ -270,7 +286,9 @@ export default function DevTasksPage() {
             {issue.labels && issue.labels.length > 0 && (
               <div style={{ display: "flex", gap: 4 }}>
                 {issue.labels.slice(0, 2).map((labelId) => {
-                  const labelMeta = AVAILABLE_LABELS.find((l) => l.id === labelId);
+                  const labelMeta = AVAILABLE_LABELS.find(
+                    (l) => l.id === labelId,
+                  );
                   if (!labelMeta) return null;
                   return (
                     <span

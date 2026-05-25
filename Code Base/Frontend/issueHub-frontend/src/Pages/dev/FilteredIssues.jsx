@@ -17,7 +17,10 @@ import {
   C,
 } from "../../Components/dev/DevUI";
 import { SearchBar } from "../../Components/dev/SearchBar";
-import { FilterPanel, AVAILABLE_LABELS } from "../../Components/dev/FilterPanel";
+import {
+  FilterPanel,
+  AVAILABLE_LABELS,
+} from "../../Components/dev/FilterPanel";
 
 const FILTERS = ["All", "Backlog", "To Do", "In Progress", "In Review", "Done"];
 
@@ -52,7 +55,9 @@ export default function FilteredIssuesPage() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [backendUser, session]);
 
   const statusFiltered =
@@ -74,7 +79,7 @@ export default function FilteredIssuesPage() {
 
     if (filters.labels && filters.labels.length > 0) {
       const matchesAllLabels = filters.labels.every((labelId) =>
-        (issue.labels || []).includes(labelId)
+        (issue.labels || []).includes(labelId),
       );
       if (!matchesAllLabels) return false;
     }
@@ -120,39 +125,66 @@ export default function FilteredIssuesPage() {
         dateRange={filters.dateRange}
       />
 
-      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+      <div
+        style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}
+      >
         {FILTERS.map((f) => {
           const to =
             f === "All"
               ? "/dev/assigned-issues"
               : `/dev/assigned-issues/${STATUS_TO_SLUG[f]}`;
           return (
-            <FilterButton key={f} label={f} active={f === activeFilter} to={to} />
+            <FilterButton
+              key={f}
+              label={f}
+              active={f === activeFilter}
+              to={to}
+            />
           );
         })}
       </div>
 
       {loading && (
-        <div style={{ color: C.muted, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+        <div
+          style={{
+            color: C.muted,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
           Loading issues…
         </div>
       )}
 
       {!loading && shown.length === 0 && statusFiltered.length > 0 && (
-        <div style={{ color: C.subtle, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+        <div
+          style={{
+            color: C.subtle,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
           No issues match your search or filters.
         </div>
       )}
 
       {!loading && statusFiltered.length === 0 && (
-        <div style={{ color: C.subtle, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+        <div
+          style={{
+            color: C.subtle,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
           No issues with status <strong>{activeFilter}</strong>.
         </div>
       )}
 
-      {!loading && shown.map((issue) => (
-        <IssueCard key={issue.id} issue={issue} />
-      ))}
+      {!loading &&
+        shown.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
     </DevShell>
   );
 }
@@ -221,7 +253,9 @@ function IssueCard({ issue }) {
             {issue.labels && issue.labels.length > 0 && (
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {issue.labels.map((labelId) => {
-                  const labelMeta = AVAILABLE_LABELS.find((l) => l.id === labelId);
+                  const labelMeta = AVAILABLE_LABELS.find(
+                    (l) => l.id === labelId,
+                  );
                   if (!labelMeta) return null;
                   return (
                     <span
@@ -245,7 +279,9 @@ function IssueCard({ issue }) {
               </div>
             )}
             {issue.deadline && (
-              <span style={{ fontSize: 12, color: overdue ? "#ef4444" : C.muted }}>
+              <span
+                style={{ fontSize: 12, color: overdue ? "#ef4444" : C.muted }}
+              >
                 {overdue ? "⚠ Overdue · " : "Due: "}
                 {issue.deadline}
               </span>
