@@ -340,7 +340,9 @@ namespace Backend.Services
         {
             var projectIds = await _context.ProjectMembers
                 .Where(pm => pm.UserId == userId &&
-                             (pm.Role == ProjectMemberRole.Developer || pm.Role == ProjectMemberRole.Admin))
+                            (pm.Role == ProjectMemberRole.Owner ||
+                             pm.Role == ProjectMemberRole.Admin ||
+                             pm.Role == ProjectMemberRole.Developer))
                 .Select(pm => pm.ProjectId)
                 .ToListAsync();
 

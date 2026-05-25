@@ -54,11 +54,11 @@ namespace Backend.Controllers
         public async Task<ActionResult<LastSecurityIssueDto?>> LastSecurity()
             => Ok(await _service.GetLastCreatedSecurityIssueAsync());
 
-        [HttpGet("tasks/{userId:int}")]
+        [HttpGet("tasks/filtered")]
         public async Task<ActionResult<List<TaskDto>>> Tasks(
-            int userId,
-            [FromQuery] string? status,
-            [FromQuery] string? priority)
-            => Ok(await _service.GetTasksFilteredAsync(userId, status, priority));
+          [FromQuery] int userId,
+          [FromQuery] string? status,
+          [FromQuery] string? priority)
+          => Ok(await _service.GetTasksFilteredAsync(userId, status, priority));
     }
 }
