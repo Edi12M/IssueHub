@@ -17,6 +17,8 @@ let SEED_TASKS = [
     subtasks: [],
     acceptanceCriteria: "",
     dependencies: [],
+    storyPoints: 5,
+    lastUpdated: "2025-09-28T00:00:00.000Z",
   },
   {
     id: "t2",
@@ -32,7 +34,9 @@ let SEED_TASKS = [
     createdAt: "2025-09-20T00:00:00.000Z",
     subtasks: [],
     acceptanceCriteria: "",
-    dependencies: [],
+    dependencies: ["t1"],
+    storyPoints: 8,
+    lastUpdated: "2025-09-20T00:00:00.000Z",
   },
   {
     id: "t3",
@@ -49,6 +53,8 @@ let SEED_TASKS = [
     subtasks: [],
     acceptanceCriteria: "",
     dependencies: [],
+    storyPoints: 13,
+    lastUpdated: "2025-10-08T00:00:00.000Z",
   },
 ];
 
@@ -56,7 +62,7 @@ let taskOverrides = {};
 
 export function getTasks() {
   return SEED_TASKS.map((t) =>
-    taskOverrides[t.id] ? { ...t, status: taskOverrides[t.id] } : t
+    taskOverrides[t.id] ? { ...t, ...taskOverrides[t.id] } : t,
   );
 }
 
@@ -66,13 +72,46 @@ export function saveTasks(tasks) {
 }
 
 export function updateTaskStatus(taskId, newStatus) {
-  taskOverrides[taskId] = newStatus;
-  SEED_TASKS = SEED_TASKS.map((t) =>
-    t.id === taskId ? { ...t, status: newStatus } : t
-  );
+  updateTask(taskId, { status: newStatus });
   return true;
 }
 
+export function updateTask(taskId, updates) {
+  taskOverrides[taskId] = { ...(taskOverrides[taskId] || {}), ...updates };
+  SEED_TASKS = SEED_TASKS.map((t) =>
+    t.id === taskId ? { ...t, ...updates, lastUpdated: new Date().toISOString() } : t,
+  );
+  return SEED_TASKS.find((t) => t.id === taskId);
+}
+
+export function updateTaskAssignees(taskId, assignees) {
+  return updateTask(taskId, { assignees });
+}
+
+export function updateTaskDates(taskId, startDate, dueDate) {
+  return updateTask(taskId, { startDate, dueDate });
+}
+
 export function getTaskStatus(taskId) {
-  return taskOverrides[taskId] ?? null;
+  const o = taskOverrides[taskId];
+  return o?.status ?? null;
+}
+
+export function getOverdueTasks(tasks = getTasks()) {
+  const now = new Date();
+  return tasks.filter(
+    (t) =>
+      t.dueDate &&
+      t.status !== "Done" &&
+      new Date(t.dueDate) < now,
+  );
+}
+
+export function getAtRiskTasks(tasks = getTasks()) {
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  return tasks.filter((t) => {
+    if (t.status === "Done") return false;
+    const updated = t.lastUpdated ? new Date(t.lastUpdated).getTime() : 0;
+    return updated < weekAgo && t.status === "In Progress";
+  });
 }

@@ -1,78 +1,111 @@
 import { useState, useMemo } from "react";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
-import {
-  MANAGER_NAV_ITEMS,
-  PROJECTS_KEY,
-  INITIAL_PROJECTS,
-} from "./managerConstants.js";
+import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
 import { getUsers } from "../../data/users.js";
-import { getTasks } from "../../data/tasks.js";
+import { getTasks, updateTaskAssignees } from "../../data/tasks.js";
+import { getSprints } from "../../data/sprints.js";
 import WorkloadCard from "../../Components/WorkloadCard.jsx";
+import "../../App.css";
+import "./manager.css";
+
+function hoursForTask(task) {
+  switch (task.status) {
+    case "In Progress":
+      return 16;
+    case "To Do":
+      return 6;
+    case "In Review":
+      return 4;
+    case "Backlog":
+      return 2;
+    default:
+      return 0;
+  }
+}
 
 export default function CapacityPage() {
-  useState(() => {
-    try {
-      const stored = localStorage.getItem(PROJECTS_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
-    } catch {
-      return INITIAL_PROJECTS;
-    }
-  });
+  const [sprintFilter, setSprintFilter] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [tasks, setTasks] = useState(() => getTasks());
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const users = useMemo(
     () => getUsers().filter((u) => u.role !== "System Administrator"),
     [],
   );
-  const tasks = useMemo(() => getTasks(), []);
+  const sprints = useMemo(() => getSprints(), []);
 
-  // Simple heuristic for allocated hours per task status
-  function hoursForTask(task) {
-    switch (task.status) {
-      case "In Progress":
-        return 16;
-      case "To Do":
-        return 6;
-      case "In Review":
-        return 4;
-      case "Backlog":
-        return 2;
-      default:
-        return 0;
+  const filteredTasks = useMemo(() => {
+    let list = [...tasks];
+    if (sprintFilter !== "all") {
+      const sprint = sprints.find((s) => s.id === sprintFilter);
+      if (sprint) {
+        list = list.filter((t) => sprint.taskIds.includes(t.id));
+      }
     }
-  }
+    if (dateFrom) {
+      list = list.filter((t) => !t.dueDate || t.dueDate >= dateFrom);
+    }
+    if (dateTo) {
+      list = list.filter((t) => !t.startDate || t.startDate <= dateTo);
+    }
+    return list;
+  }, [tasks, sprintFilter, dateFrom, dateTo, sprints]);
 
   const rows = users.map((user) => {
-    const assigned = tasks.filter(
+    const assigned = filteredTasks.filter(
       (t) => Array.isArray(t.assignees) && t.assignees.includes(user.id),
     );
     const allocated = assigned.reduce((s, t) => s + hoursForTask(t), 0);
-    // default available hours per week, could be made editable later
     const available = 40;
-    return { user, allocated, available };
+    return { user, allocated, available, assigned };
   });
 
   const totalAllocated = rows.reduce((s, r) => s + r.allocated, 0);
   const totalAvailable = rows.reduce((s, r) => s + r.available, 0);
+
+  function handleReassign(taskId, newUserId) {
+    updateTaskAssignees(taskId, [newUserId]);
+    setTasks(getTasks());
+    setRefreshKey((k) => k + 1);
+  }
 
   return (
     <div className="preview-shell">
       <Sidebar
         brandSub="Manager Dashboard"
         navItems={MANAGER_NAV_ITEMS}
-        enableNavigation={true}
         activeKey="capacity"
       />
 
-      <main className="preview-main">
+      <main className="preview-main" key={refreshKey}>
         <section className="preview-hero card">
-          <p className="eyebrow">Team Capacity</p>
+          <p className="eyebrow">PM_15 · Team Workload</p>
           <h1>Capacity & Availability</h1>
           <p className="lead">
-            Overview of weekly availability and allocated hours per team member.
+            Monitor each member&apos;s load with color-coded bars. Rebalance by
+            reassigning tasks and filter by sprint or date range.
           </p>
         </section>
 
-        <section className="card" style={{ marginTop: 16 }}>
+        <section className="card" style={{ marginBottom: 16 }}>
+          <div className="pm-table-toolbar">
+            <span style={{ fontWeight: 600 }}>Filters</span>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <select className="pm-select" value={sprintFilter} onChange={(e) => setSprintFilter(e.target.value)}>
+                <option value="all">All sprints</option>
+                {sprints.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+              <input type="date" className="gantt-date-input" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} placeholder="From" />
+              <input type="date" className="gantt-date-input" value={dateTo} onChange={(e) => setDateTo(e.target.value)} placeholder="To" />
+            </div>
+          </div>
+        </section>
+
+        <section className="card">
           <div
             style={{
               display: "flex",
@@ -88,13 +121,34 @@ export default function CapacityPage() {
           </div>
 
           <div style={{ display: "grid", gap: 10 }}>
-            {rows.map(({ user, allocated, available }) => (
-              <WorkloadCard
-                key={user.id}
-                user={user}
-                allocatedHours={allocated}
-                availableHours={available}
-              />
+            {rows.map(({ user, allocated, available, assigned }) => (
+              <div key={user.id}>
+                <WorkloadCard
+                  user={user}
+                  allocatedHours={allocated}
+                  availableHours={available}
+                />
+                {assigned.length > 0 && (
+                  <div className="pm-reassign-list">
+                    {assigned.map((t) => (
+                      <div key={t.id} className="pm-reassign-row">
+                        <span className="pm-reassign-task">{t.title}</span>
+                        <select
+                          className="pm-select"
+                          style={{ minWidth: 140 }}
+                          value={t.assignees[0]}
+                          onChange={(e) => handleReassign(t.id, e.target.value)}
+                          aria-label={`Reassign ${t.title}`}
+                        >
+                          {users.map((u) => (
+                            <option key={u.id} value={u.id}>{u.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </section>

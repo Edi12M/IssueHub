@@ -1,4 +1,4 @@
-import { LayoutDashboard, Settings, Mic } from "lucide-react";
+import { LayoutDashboard, Settings, Mic, CalendarRange, Zap } from "lucide-react";
 import { GoProject } from "react-icons/go";
 import { TbLayoutKanban } from "react-icons/tb";
 import { SiGoogletasks } from "react-icons/si";
@@ -25,10 +25,22 @@ export const MANAGER_NAV_ITEMS = [
     to: "/manager/kanban",
   },
   {
+    key: "timeline",
+    label: "Timeline",
+    icon: CalendarRange,
+    to: "/manager/timeline",
+  },
+  {
     key: "capacity",
     label: "Capacity",
     icon: CiTimer,
     to: "/manager/capacity",
+  },
+  {
+    key: "sprints",
+    label: "Sprints",
+    icon: Zap,
+    to: "/manager/sprints",
   },
   { key: "tasks", label: "Tasks", icon: SiGoogletasks, to: "/manager/tasks" },
   {

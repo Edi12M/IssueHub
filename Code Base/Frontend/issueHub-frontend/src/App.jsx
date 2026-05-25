@@ -18,6 +18,8 @@ import CapacityPage from "./Pages/Manager/CapacityPage.jsx";
 import MeetingCapturePage from "./Pages/Manager/MeetingCapturePage.jsx";
 import PMSettingsPage from "./Pages/Manager/PMSettingsPage.jsx";
 import TimeTrackingPage from "./Pages/Manager/TimeTrackingPage.jsx";
+import TimelinePage from "./Pages/Manager/TimelinePage.jsx";
+import SprintPage from "./Pages/Manager/SprintPage.jsx";
 import AssignedIssuesPage from "./Pages/dev/AssignedIssues.jsx";
 import FilteredIssuesPage from "./Pages/dev/FilteredIssues.jsx";
 import IssueDetailPage from "./Pages/dev/IssueDetail.jsx";
@@ -39,7 +41,9 @@ export default function App() {
       <Route path="/manager" element={<ManagerDashboardPage />} />
       <Route path="/manager/projects" element={<ProjectsPage />} />
       <Route path="/manager/kanban" element={<KanbanPage />} />
+      <Route path="/manager/timeline" element={<TimelinePage />} />
       <Route path="/manager/capacity" element={<CapacityPage />} />
+      <Route path="/manager/sprints" element={<SprintPage />} />
       <Route path="/manager/meetings" element={<MeetingCapturePage />} />
       <Route path="/manager/analytics" element={<AnalyticsPage />} />
       <Route path="/manager/timetracking" element={<TimeTrackingPage />} />
