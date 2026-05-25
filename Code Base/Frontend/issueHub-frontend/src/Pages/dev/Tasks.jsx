@@ -10,6 +10,11 @@ import {
   StatusTag,
   C,
 } from "../../Components/dev/DevUI";
+import { SearchBar } from "../../Components/dev/SearchBar";
+import {
+  FilterPanel,
+  AVAILABLE_LABELS,
+} from "../../Components/dev/FilterPanel";
 import Button from "../../Components/Button/button";
 
 export default function DevTasksPage() {
@@ -19,6 +24,8 @@ export default function DevTasksPage() {
   const [sort, setSort] = useState("deadline");
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState({ labels: [], dateRange: {} });
 
   useEffect(() => {
     let cancelled = false;
@@ -38,8 +45,10 @@ export default function DevTasksPage() {
       }
     }
     load();
-    return () => { cancelled = true; };
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [backendUser, session]);
 
   const sorted = [...issues].sort((a, b) => {
     if (sort === "deadline") {
@@ -51,6 +60,39 @@ export default function DevTasksPage() {
     return (po[a.priority] ?? 4) - (po[b.priority] ?? 4);
   });
 
+  // Apply search and label/date filters
+  const filtered = sorted.filter((issue) => {
+    // Search filter
+    const query = searchQuery.toLowerCase();
+    const matchesSearch =
+      issue.id.toLowerCase().includes(query) ||
+      issue.title.toLowerCase().includes(query) ||
+      issue.description?.toLowerCase().includes(query) ||
+      issue.priority.toLowerCase().includes(query) ||
+      issue.status.toLowerCase().includes(query);
+
+    if (!matchesSearch) return false;
+
+    // Label filter - issue must have ALL selected labels
+    if (filters.labels.length > 0) {
+      const matchesAllLabels = filters.labels.every((labelId) =>
+        issue.labels?.includes(labelId),
+      );
+      if (!matchesAllLabels) return false;
+    }
+
+    // Date range filter
+    const createdDate = issue.createdAt;
+    if (filters.dateRange.from && createdDate < filters.dateRange.from) {
+      return false;
+    }
+    if (filters.dateRange.to && createdDate > filters.dateRange.to) {
+      return false;
+    }
+
+    return true;
+  });
+
   const total = issues.length;
   const completed = issues.filter((i) => i.status === "Done").length;
   const overdueCt = issues.filter((i) => isOverdue(i)).length;
@@ -59,7 +101,14 @@ export default function DevTasksPage() {
   if (loading) {
     return (
       <DevShell>
-        <div style={{ color: C.muted, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+        <div
+          style={{
+            color: C.muted,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
           Loading tasks…
         </div>
       </DevShell>
@@ -109,6 +158,18 @@ export default function DevTasksPage() {
         ))}
       </div>
 
+      <SearchBar
+        placeholder="Search tasks by title, ID, priority..."
+        value={searchQuery}
+        onSearch={setSearchQuery}
+      />
+
+      <FilterPanel
+        onFilterChange={setFilters}
+        selectedLabels={filters.labels}
+        dateRange={filters.dateRange}
+      />
+
       {/* Sort controls */}
       <div
         style={{
@@ -135,6 +196,19 @@ export default function DevTasksPage() {
         </Button>
       </div>
 
+      {filtered.length === 0 && sorted.length > 0 && (
+        <div
+          style={{
+            color: C.subtle,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
+          No tasks match your search or filters.
+        </div>
+      )}
+
       {sorted.length === 0 && (
         <div
           style={{
@@ -149,7 +223,7 @@ export default function DevTasksPage() {
       )}
 
       {/* Task rows */}
-      {sorted.map((issue) => {
+      {filtered.map((issue) => {
         const done = issue.status === "Done";
         const od = isOverdue(issue);
         return (
@@ -182,7 +256,14 @@ export default function DevTasksPage() {
             />
             <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
               {issue.issueCode && (
-                <div style={{ fontSize: 11, color: C.muted, fontFamily: "'DM Mono',monospace", marginBottom: 2 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: C.muted,
+                    fontFamily: "'DM Mono',monospace",
+                    marginBottom: 2,
+                  }}
+                >
                   {issue.issueCode}
                 </div>
               )}
@@ -202,6 +283,45 @@ export default function DevTasksPage() {
             </div>
             <PriorityTag priority={issue.priority} />
             <StatusTag status={issue.status} />
+            {issue.labels && issue.labels.length > 0 && (
+              <div style={{ display: "flex", gap: 4 }}>
+                {issue.labels.slice(0, 2).map((labelId) => {
+                  const labelMeta = AVAILABLE_LABELS.find(
+                    (l) => l.id === labelId,
+                  );
+                  if (!labelMeta) return null;
+                  return (
+                    <span
+                      key={labelId}
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: "2px 6px",
+                        background: labelMeta.bg,
+                        color: labelMeta.color,
+                        borderRadius: 3,
+                      }}
+                    >
+                      {labelMeta.label}
+                    </span>
+                  );
+                })}
+                {issue.labels.length > 2 && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      padding: "2px 6px",
+                      background: C.border,
+                      color: C.muted,
+                      borderRadius: 3,
+                    }}
+                  >
+                    +{issue.labels.length - 2}
+                  </span>
+                )}
+              </div>
+            )}
             {issue.deadline && (
               <span
                 style={{
