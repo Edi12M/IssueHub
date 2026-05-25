@@ -1,27 +1,34 @@
 // Local task state — used as fallback for seed/localStorage users.
 // Backend users get their tasks from /api/issue/tasks/{userId} via api/index.js.
 
+const TASKS_KEY = "issuehub_tasks";
+
+const DEV = {
+  ALEX: "seed-dev",
+  MAYA: "seed-dev-2",
+  JORDAN: "seed-dev-3",
+};
+
 let SEED_TASKS = [
   {
-<<<<<<< HEAD
-    id: "t1",
-    title: "Fix login page layout",
-    description: "The login form breaks on mobile screens.",
-=======
     id: "TASK-001",
     title: "Design system component audit",
-    description: "Review all existing UI components for style inconsistencies and accessibility gaps.",
+    description:
+      "Review all existing UI components for style inconsistencies and accessibility gaps.",
     type: "Research",
     priority: "Medium",
     status: "Backlog",
     projectId: "p1",
     assignees: [DEV.MAYA],
-    dueDate: "2026-06-20T17:00:00Z",
-    startDate: "2026-05-20T09:00:00Z",
-    createdAt: "2026-05-01T08:00:00Z",
+    dueDate: "2026-06-20",
+    startDate: "2026-05-20",
+    createdAt: "2026-05-01T08:00:00.000Z",
     labels: ["frontend", "docs"],
     subtasks: [],
     acceptanceCriteria: "",
+    dependencies: [],
+    storyPoints: 3,
+    lastUpdated: "2026-05-01T08:00:00.000Z",
   },
   {
     id: "TASK-002",
@@ -32,12 +39,15 @@ let SEED_TASKS = [
     status: "Backlog",
     projectId: "p2",
     assignees: [DEV.JORDAN],
-    dueDate: "2026-07-01T17:00:00Z",
-    startDate: "2026-06-01T09:00:00Z",
-    createdAt: "2026-05-02T08:00:00Z",
+    dueDate: "2026-07-01",
+    startDate: "2026-06-01",
+    createdAt: "2026-05-02T08:00:00.000Z",
     labels: ["feature", "backend"],
     subtasks: [],
     acceptanceCriteria: "",
+    dependencies: [],
+    storyPoints: 5,
+    lastUpdated: "2026-05-02T08:00:00.000Z",
   },
   {
     id: "TASK-003",
@@ -48,54 +58,35 @@ let SEED_TASKS = [
     status: "To Do",
     projectId: "p1",
     assignees: [DEV.ALEX],
-    dueDate: "2026-05-28T17:00:00Z",
-    startDate: "2026-05-14T09:00:00Z",
-    createdAt: "2026-05-03T08:00:00Z",
+    dueDate: "2026-05-28",
+    startDate: "2026-05-14",
+    createdAt: "2026-05-03T08:00:00.000Z",
     labels: ["feature", "frontend"],
     subtasks: [],
     acceptanceCriteria: "",
+    dependencies: [],
+    storyPoints: 5,
+    lastUpdated: "2026-05-03T08:00:00.000Z",
   },
   {
     id: "TASK-004",
     title: "Fix auth crash on iOS 17",
-    description: "App crashes on token refresh for iOS 17+ devices during the sign-in flow.",
->>>>>>> US-DEV-04
+    description:
+      "App crashes on token refresh for iOS 17+ devices during the sign-in flow.",
     type: "Bug",
     priority: "High",
     status: "In Progress",
     projectId: "p1",
-    assignees: ["seed-dev"],
+    assignees: [DEV.ALEX],
     dueDate: "2025-10-10",
     startDate: "2025-09-20",
     createdAt: "2025-09-15T00:00:00.000Z",
+    labels: ["bug", "urgent"],
     subtasks: [],
     acceptanceCriteria: "",
     dependencies: [],
     storyPoints: 5,
     lastUpdated: "2025-09-28T00:00:00.000Z",
-  },
-  {
-    id: "t2",
-    title: "Implement dashboard analytics",
-    description: "Add charts to the admin dashboard.",
-    type: "Feature",
-    priority: "Medium",
-    status: "To Do",
-<<<<<<< HEAD
-    projectId: "p1",
-    assignees: ["seed-dev-2"],
-    dueDate: "2025-10-15",
-    startDate: "2025-10-01",
-    createdAt: "2025-09-20T00:00:00.000Z",
-=======
-    projectId: "p2",
-    assignees: [DEV.ALEX],
-    dueDate: "2026-05-22T17:00:00Z",
-    startDate: "2026-05-12T09:00:00Z",
-    createdAt: "2026-05-04T08:00:00Z",
-    labels: ["bug", "urgent"],
-    subtasks: [],
-    acceptanceCriteria: "",
   },
   {
     id: "TASK-005",
@@ -106,125 +97,120 @@ let SEED_TASKS = [
     status: "In Progress",
     projectId: "p1",
     assignees: [DEV.MAYA],
-    dueDate: "2026-05-30T17:00:00Z",
-    startDate: "2026-05-08T09:00:00Z",
-    createdAt: "2026-05-05T08:00:00Z",
+    dueDate: "2026-05-30",
+    startDate: "2026-05-08",
+    createdAt: "2026-05-05T08:00:00.000Z",
     labels: ["frontend", "urgent"],
->>>>>>> US-DEV-04
     subtasks: [],
     acceptanceCriteria: "",
-    dependencies: ["t1"],
+    dependencies: ["TASK-004"],
     storyPoints: 8,
-    lastUpdated: "2025-09-20T00:00:00.000Z",
+    lastUpdated: "2026-05-10T08:00:00.000Z",
   },
   {
-<<<<<<< HEAD
-    id: "t3",
-    title: "Set up CI/CD pipeline",
-    description: "Configure GitHub Actions for automated testing.",
-    type: "Task",
-    priority: "Low",
-    status: "Done",
-    projectId: "p2",
-    assignees: ["seed-dev-3"],
-    dueDate: "2025-11-01",
-    startDate: "2025-10-01",
-    createdAt: "2025-09-25T00:00:00.000Z",
-=======
     id: "TASK-006",
     title: "Analytics API integration",
-    description: "Connect dashboard charts to live API endpoints and handle loading states.",
+    description:
+      "Connect dashboard charts to live API endpoints and handle loading states.",
     type: "Feature",
     priority: "Medium",
     status: "In Progress",
     projectId: "p1",
     assignees: [DEV.JORDAN],
-    dueDate: "2026-06-05T17:00:00Z",
-    startDate: "2026-05-10T09:00:00Z",
-    createdAt: "2026-05-06T08:00:00Z",
+    dueDate: "2026-06-05",
+    startDate: "2026-05-10",
+    createdAt: "2026-05-06T08:00:00.000Z",
     labels: ["feature", "backend", "performance"],
     subtasks: [],
     acceptanceCriteria: "",
+    dependencies: [],
+    storyPoints: 8,
+    lastUpdated: "2026-05-12T08:00:00.000Z",
   },
   {
     id: "TASK-007",
     title: "User profile settings page",
-    description: "Build the profile settings UI with avatar upload and password change.",
+    description:
+      "Build the profile settings UI with avatar upload and password change.",
     type: "Feature",
     priority: "Medium",
     status: "In Review",
     projectId: "p1",
     assignees: [DEV.MAYA],
-    dueDate: "2026-05-20T17:00:00Z",
-    startDate: "2026-05-01T09:00:00Z",
-    createdAt: "2026-05-07T08:00:00Z",
+    dueDate: "2026-05-20",
+    startDate: "2026-05-01",
+    createdAt: "2026-05-07T08:00:00.000Z",
     labels: ["feature", "frontend", "testing"],
     subtasks: [],
     acceptanceCriteria: "",
+    dependencies: [],
+    storyPoints: 5,
+    lastUpdated: "2026-05-15T08:00:00.000Z",
   },
   {
     id: "TASK-008",
     title: "Performance audit — bundle size",
-    description: "Analyse and reduce JS bundle size, targeting < 200 kB initial load.",
+    description:
+      "Analyse and reduce JS bundle size, targeting < 200 kB initial load.",
     type: "Research",
     priority: "High",
     status: "In Review",
     projectId: "p2",
     assignees: [DEV.ALEX],
-    dueDate: "2026-05-18T17:00:00Z",
-    startDate: "2026-04-28T09:00:00Z",
-    createdAt: "2026-05-08T08:00:00Z",
+    dueDate: "2026-05-18",
+    startDate: "2026-04-28",
+    createdAt: "2026-05-08T08:00:00.000Z",
     labels: ["performance", "docs"],
     subtasks: [],
     acceptanceCriteria: "",
+    dependencies: [],
+    storyPoints: 3,
+    lastUpdated: "2026-05-14T08:00:00.000Z",
   },
   {
     id: "TASK-009",
     title: "Project creation wizard",
-    description: "Implement the full project creation flow with team member assignment.",
+    description:
+      "Implement the full project creation flow with team member assignment.",
     type: "Feature",
     priority: "High",
     status: "Done",
     projectId: "p1",
     assignees: [DEV.JORDAN],
-    dueDate: "2026-05-10T17:00:00Z",
-    startDate: "2026-04-20T09:00:00Z",
-    createdAt: "2026-04-20T08:00:00Z",
+    dueDate: "2026-05-10",
+    startDate: "2026-04-20",
+    createdAt: "2026-04-20T08:00:00.000Z",
     labels: ["feature", "frontend"],
     subtasks: [],
     acceptanceCriteria: "",
+    dependencies: [],
+    storyPoints: 8,
+    lastUpdated: "2026-05-10T08:00:00.000Z",
   },
   {
     id: "TASK-010",
     title: "Initial database schema design",
-    description: "Define entity relationships and write migration scripts for the v1 schema.",
+    description:
+      "Define entity relationships and write migration scripts for the v1 schema.",
     type: "Feature",
     priority: "Critical",
     status: "Done",
     projectId: "p1",
     assignees: [DEV.ALEX],
-    dueDate: "2026-05-05T17:00:00Z",
-    startDate: "2026-04-15T09:00:00Z",
-    createdAt: "2026-04-15T08:00:00Z",
+    dueDate: "2026-05-05",
+    startDate: "2026-04-15",
+    createdAt: "2026-04-15T08:00:00.000Z",
     labels: ["feature", "backend", "docs"],
->>>>>>> US-DEV-04
     subtasks: [],
     acceptanceCriteria: "",
     dependencies: [],
     storyPoints: 13,
-    lastUpdated: "2025-10-08T00:00:00.000Z",
+    lastUpdated: "2026-05-05T08:00:00.000Z",
   },
 ];
 
-<<<<<<< HEAD
 let taskOverrides = {};
 
-export function getTasks() {
-  return SEED_TASKS.map((t) =>
-    taskOverrides[t.id] ? { ...t, ...taskOverrides[t.id] } : t,
-  );
-=======
-// Migrate assignees and labels from seed definitions into stored tasks
 function migrateAssignees(stored) {
   const seedMap = Object.fromEntries(SEED_TASKS.map((t) => [t.id, t]));
   let changed = false;
@@ -232,17 +218,15 @@ function migrateAssignees(stored) {
     const seed = seedMap[task.id];
     let updatedTask = { ...task };
 
-    // Migrate assignees
     if (
       seed &&
       (!Array.isArray(task.assignees) || task.assignees.length === 0) &&
-      seed.assignees.length > 0
+      seed.assignees?.length > 0
     ) {
       changed = true;
       updatedTask.assignees = seed.assignees;
     }
 
-    // Migrate labels
     if (seed && (!task.labels || task.labels.length === 0) && seed.labels) {
       changed = true;
       updatedTask.labels = seed.labels;
@@ -256,33 +240,37 @@ function migrateAssignees(stored) {
   return migrated;
 }
 
+function applyOverrides(tasks) {
+  return tasks.map((t) =>
+    taskOverrides[t.id] ? { ...t, ...taskOverrides[t.id] } : t,
+  );
+}
+
 export function getTasks() {
   try {
     const stored = localStorage.getItem(TASKS_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Check if stored tasks have the labels field - if not, reset to ensure labels are present
         const allHaveLabels = parsed.every((task) => Array.isArray(task.labels));
         if (!allHaveLabels) {
-          // Reset to seed to ensure all tasks have labels
           localStorage.setItem(TASKS_KEY, JSON.stringify(SEED_TASKS));
-          return SEED_TASKS;
+          return applyOverrides(SEED_TASKS);
         }
-        return migrateAssignees(parsed);
+        return applyOverrides(migrateAssignees(parsed));
       }
     }
     localStorage.setItem(TASKS_KEY, JSON.stringify(SEED_TASKS));
-    return SEED_TASKS;
+    return applyOverrides(SEED_TASKS);
   } catch {
-    return SEED_TASKS;
+    return applyOverrides(SEED_TASKS);
   }
->>>>>>> US-DEV-04
 }
 
 export function saveTasks(tasks) {
   SEED_TASKS = tasks;
   taskOverrides = {};
+  localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
 }
 
 export function updateTaskStatus(taskId, newStatus) {
@@ -292,10 +280,14 @@ export function updateTaskStatus(taskId, newStatus) {
 
 export function updateTask(taskId, updates) {
   taskOverrides[taskId] = { ...(taskOverrides[taskId] || {}), ...updates };
-  SEED_TASKS = SEED_TASKS.map((t) =>
-    t.id === taskId ? { ...t, ...updates, lastUpdated: new Date().toISOString() } : t,
+  const current = getTasks();
+  const updated = current.map((t) =>
+    t.id === taskId
+      ? { ...t, ...updates, lastUpdated: new Date().toISOString() }
+      : t,
   );
-  return SEED_TASKS.find((t) => t.id === taskId);
+  saveTasks(updated);
+  return updated.find((t) => t.id === taskId);
 }
 
 export function updateTaskAssignees(taskId, assignees) {
@@ -315,9 +307,7 @@ export function getOverdueTasks(tasks = getTasks()) {
   const now = new Date();
   return tasks.filter(
     (t) =>
-      t.dueDate &&
-      t.status !== "Done" &&
-      new Date(t.dueDate) < now,
+      t.dueDate && t.status !== "Done" && new Date(t.dueDate) < now,
   );
 }
 

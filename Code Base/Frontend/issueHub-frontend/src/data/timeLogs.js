@@ -3,7 +3,7 @@ const STORAGE_KEY = "issuehub_time_logs";
 const SEED_TIME_LOGS = [
   {
     id: "tl1",
-    taskId: "t1",
+    taskId: "TASK-004",
     projectId: "p1",
     userId: "seed-dev",
     hours: 2.5,
@@ -14,7 +14,7 @@ const SEED_TIME_LOGS = [
   },
   {
     id: "tl2",
-    taskId: "t2",
+    taskId: "TASK-006",
     projectId: "p1",
     userId: "seed-dev-2",
     hours: 4,
@@ -25,7 +25,7 @@ const SEED_TIME_LOGS = [
   },
   {
     id: "tl3",
-    taskId: "t3",
+    taskId: "TASK-009",
     projectId: "p2",
     userId: "seed-dev-3",
     hours: 6,

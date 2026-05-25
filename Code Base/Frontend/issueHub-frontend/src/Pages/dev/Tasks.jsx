@@ -19,13 +19,10 @@ export default function DevTasksPage() {
   const session = getSession();
   const backendUser = isBackendUser(session);
   const [sort, setSort] = useState("deadline");
-<<<<<<< HEAD
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
-=======
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ labels: [], dateRange: {} });
->>>>>>> US-DEV-04
 
   useEffect(() => {
     let cancelled = false;

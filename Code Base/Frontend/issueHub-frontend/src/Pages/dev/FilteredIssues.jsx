@@ -21,6 +21,37 @@ import { FilterPanel, AVAILABLE_LABELS } from "../../Components/dev/FilterPanel"
 
 const FILTERS = ["All", "Backlog", "To Do", "In Progress", "In Review", "Done"];
 
+function applySearchAndFilters(issues, searchQuery, filters) {
+  return issues.filter((issue) => {
+    const query = searchQuery.toLowerCase();
+    const matchesSearch =
+      issue.id.toLowerCase().includes(query) ||
+      issue.title.toLowerCase().includes(query) ||
+      issue.description?.toLowerCase().includes(query) ||
+      issue.project.toLowerCase().includes(query) ||
+      issue.priority.toLowerCase().includes(query);
+
+    if (!matchesSearch) return false;
+
+    if (filters.labels.length > 0) {
+      const matchesAllLabels = filters.labels.every((labelId) =>
+        issue.labels?.includes(labelId),
+      );
+      if (!matchesAllLabels) return false;
+    }
+
+    const createdDate = issue.createdAt;
+    if (filters.dateRange.from && createdDate < filters.dateRange.from) {
+      return false;
+    }
+    if (filters.dateRange.to && createdDate > filters.dateRange.to) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
 export default function FilteredIssuesPage() {
   const { status: statusSlug } = useParams();
   const activeFilter = STATUS_SLUG[statusSlug] || "All";
@@ -28,7 +59,6 @@ export default function FilteredIssuesPage() {
   const [filters, setFilters] = useState({ labels: [], dateRange: {} });
 
   const session = getSession();
-<<<<<<< HEAD
   const backendUser = isBackendUser(session);
 
   const [allIssues, setAllIssues] = useState([]);
@@ -52,66 +82,29 @@ export default function FilteredIssuesPage() {
       }
     }
     load();
-    return () => { cancelled = true; };
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [backendUser, session?.id, session?.backendId]);
 
-  const shown =
-=======
-  const issues = getDevIssues(session?.id);
   const statusFiltered =
->>>>>>> US-DEV-04
     activeFilter === "All"
       ? allIssues
       : allIssues.filter((i) => i.status === activeFilter);
 
-  // Apply search and label/date filters on top of status filter
-  const shown = statusFiltered.filter((issue) => {
-    // Search filter
-    const query = searchQuery.toLowerCase();
-    const matchesSearch =
-      issue.id.toLowerCase().includes(query) ||
-      issue.title.toLowerCase().includes(query) ||
-      issue.description?.toLowerCase().includes(query) ||
-      issue.project.toLowerCase().includes(query) ||
-      issue.priority.toLowerCase().includes(query);
-
-    if (!matchesSearch) return false;
-
-    // Label filter - issue must have ALL selected labels
-    if (filters.labels.length > 0) {
-      const matchesAllLabels = filters.labels.every((labelId) =>
-        issue.labels?.includes(labelId)
-      );
-      if (!matchesAllLabels) return false;
-    }
-
-    // Date range filter
-    const createdDate = issue.createdAt;
-    if (filters.dateRange.from && createdDate < filters.dateRange.from) {
-      return false;
-    }
-    if (filters.dateRange.to && createdDate > filters.dateRange.to) {
-      return false;
-    }
-
-    return true;
-  });
+  const shown = applySearchAndFilters(statusFiltered, searchQuery, filters);
 
   return (
     <DevShell>
       <PageHeader
         title="My Assigned Issues"
-<<<<<<< HEAD
         subtitle={
           loading
             ? "Loading…"
-            : `${shown.length} issue${shown.length !== 1 ? "s" : ""} · filtered by status`
+            : `${shown.length} of ${statusFiltered.length} issue${
+                statusFiltered.length !== 1 ? "s" : ""
+              } · filtered by status`
         }
-=======
-        subtitle={`${shown.length} of ${statusFiltered.length} issue${
-          statusFiltered.length !== 1 ? "s" : ""
-        } · filtered by status`}
->>>>>>> US-DEV-04
       />
 
       <div style={{ marginBottom: 20, color: C.muted, fontSize: 13 }}>
@@ -119,9 +112,6 @@ export default function FilteredIssuesPage() {
         <span style={{ color: C.accent, fontWeight: 600 }}>{activeFilter}</span>
       </div>
 
-<<<<<<< HEAD
-      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
-=======
       <SearchBar
         placeholder="Search issues by title, ID, priority..."
         value={searchQuery}
@@ -134,10 +124,7 @@ export default function FilteredIssuesPage() {
         dateRange={filters.dateRange}
       />
 
-      <div
-        style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}
-      >
->>>>>>> US-DEV-04
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
         {FILTERS.map((f) => {
           const to =
             f === "All"
@@ -149,17 +136,20 @@ export default function FilteredIssuesPage() {
         })}
       </div>
 
-<<<<<<< HEAD
       {loading && (
-        <div style={{ color: C.muted, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+        <div
+          style={{
+            color: C.muted,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
           Loading issues…
         </div>
       )}
 
-      {!loading && shown.length === 0 && (
-        <div style={{ color: C.subtle, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
-=======
-      {shown.length === 0 && statusFiltered.length > 0 && (
+      {!loading && shown.length === 0 && statusFiltered.length > 0 && (
         <div
           style={{
             color: C.subtle,
@@ -172,7 +162,7 @@ export default function FilteredIssuesPage() {
         </div>
       )}
 
-      {statusFiltered.length === 0 && (
+      {!loading && statusFiltered.length === 0 && (
         <div
           style={{
             color: C.subtle,
@@ -181,14 +171,14 @@ export default function FilteredIssuesPage() {
             textAlign: "center",
           }}
         >
->>>>>>> US-DEV-04
           No issues with status <strong>{activeFilter}</strong>.
         </div>
       )}
 
-      {!loading && shown.map((issue) => (
-        <IssueCard key={issue.id} issue={issue} />
-      ))}
+      {!loading &&
+        shown.map((issue) => (
+          <IssueCard key={issue.id} issue={issue} />
+        ))}
     </DevShell>
   );
 }
