@@ -73,6 +73,7 @@ function taskToIssue(task) {
         ? task.assignees[0]
         : "Unassigned",
     createdAt: task.createdAt ? task.createdAt.slice(0, 10) : "",
+    labels: task.labels || [],
     statusHistory: [],
     comments: [],
     attachments: [],

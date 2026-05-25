@@ -20,6 +20,7 @@ const SEED_TASKS = [
     dueDate: "2026-06-20T17:00:00Z",
     startDate: "2026-05-20T09:00:00Z",
     createdAt: "2026-05-01T08:00:00Z",
+    labels: ["frontend", "docs"],
     subtasks: [],
     acceptanceCriteria: "",
   },
@@ -35,6 +36,7 @@ const SEED_TASKS = [
     dueDate: "2026-07-01T17:00:00Z",
     startDate: "2026-06-01T09:00:00Z",
     createdAt: "2026-05-02T08:00:00Z",
+    labels: ["feature", "backend"],
     subtasks: [],
     acceptanceCriteria: "",
   },
@@ -50,6 +52,7 @@ const SEED_TASKS = [
     dueDate: "2026-05-28T17:00:00Z",
     startDate: "2026-05-14T09:00:00Z",
     createdAt: "2026-05-03T08:00:00Z",
+    labels: ["feature", "frontend"],
     subtasks: [],
     acceptanceCriteria: "",
   },
@@ -65,6 +68,7 @@ const SEED_TASKS = [
     dueDate: "2026-05-22T17:00:00Z",
     startDate: "2026-05-12T09:00:00Z",
     createdAt: "2026-05-04T08:00:00Z",
+    labels: ["bug", "urgent"],
     subtasks: [],
     acceptanceCriteria: "",
   },
@@ -80,6 +84,7 @@ const SEED_TASKS = [
     dueDate: "2026-05-30T17:00:00Z",
     startDate: "2026-05-08T09:00:00Z",
     createdAt: "2026-05-05T08:00:00Z",
+    labels: ["frontend", "urgent"],
     subtasks: [],
     acceptanceCriteria: "",
   },
@@ -95,6 +100,7 @@ const SEED_TASKS = [
     dueDate: "2026-06-05T17:00:00Z",
     startDate: "2026-05-10T09:00:00Z",
     createdAt: "2026-05-06T08:00:00Z",
+    labels: ["feature", "backend", "performance"],
     subtasks: [],
     acceptanceCriteria: "",
   },
@@ -110,6 +116,7 @@ const SEED_TASKS = [
     dueDate: "2026-05-20T17:00:00Z",
     startDate: "2026-05-01T09:00:00Z",
     createdAt: "2026-05-07T08:00:00Z",
+    labels: ["feature", "frontend", "testing"],
     subtasks: [],
     acceptanceCriteria: "",
   },
@@ -125,6 +132,7 @@ const SEED_TASKS = [
     dueDate: "2026-05-18T17:00:00Z",
     startDate: "2026-04-28T09:00:00Z",
     createdAt: "2026-05-08T08:00:00Z",
+    labels: ["performance", "docs"],
     subtasks: [],
     acceptanceCriteria: "",
   },
@@ -140,6 +148,7 @@ const SEED_TASKS = [
     dueDate: "2026-05-10T17:00:00Z",
     startDate: "2026-04-20T09:00:00Z",
     createdAt: "2026-04-20T08:00:00Z",
+    labels: ["feature", "frontend"],
     subtasks: [],
     acceptanceCriteria: "",
   },
@@ -155,27 +164,37 @@ const SEED_TASKS = [
     dueDate: "2026-05-05T17:00:00Z",
     startDate: "2026-04-15T09:00:00Z",
     createdAt: "2026-04-15T08:00:00Z",
+    labels: ["feature", "backend", "docs"],
     subtasks: [],
     acceptanceCriteria: "",
   },
 ];
 
-// Migrate assignees from seed definitions into stored tasks that still have
-// empty assignees. Runs once the first time tasks are loaded after this update.
+// Migrate assignees and labels from seed definitions into stored tasks
 function migrateAssignees(stored) {
   const seedMap = Object.fromEntries(SEED_TASKS.map((t) => [t.id, t]));
   let changed = false;
   const migrated = stored.map((task) => {
     const seed = seedMap[task.id];
+    let updatedTask = { ...task };
+
+    // Migrate assignees
     if (
       seed &&
       (!Array.isArray(task.assignees) || task.assignees.length === 0) &&
       seed.assignees.length > 0
     ) {
       changed = true;
-      return { ...task, assignees: seed.assignees };
+      updatedTask.assignees = seed.assignees;
     }
-    return task;
+
+    // Migrate labels
+    if (seed && (!task.labels || task.labels.length === 0) && seed.labels) {
+      changed = true;
+      updatedTask.labels = seed.labels;
+    }
+
+    return updatedTask;
   });
   if (changed) {
     localStorage.setItem(TASKS_KEY, JSON.stringify(migrated));
@@ -189,6 +208,13 @@ export function getTasks() {
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        // Check if stored tasks have the labels field - if not, reset to ensure labels are present
+        const allHaveLabels = parsed.every((task) => Array.isArray(task.labels));
+        if (!allHaveLabels) {
+          // Reset to seed to ensure all tasks have labels
+          localStorage.setItem(TASKS_KEY, JSON.stringify(SEED_TASKS));
+          return SEED_TASKS;
+        }
         return migrateAssignees(parsed);
       }
     }
