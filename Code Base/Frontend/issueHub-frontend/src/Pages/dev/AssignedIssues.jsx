@@ -19,12 +19,46 @@ import {
 
 const FILTERS = ["All", "Backlog", "To Do", "In Progress", "In Review", "Done"];
 
+function applySearchAndFilters(issues, searchQuery, filters) {
+  return issues.filter((issue) => {
+    const query = searchQuery.toLowerCase();
+    const matchesSearch =
+      issue.id.toLowerCase().includes(query) ||
+      issue.title.toLowerCase().includes(query) ||
+      issue.description?.toLowerCase().includes(query) ||
+      issue.project.toLowerCase().includes(query) ||
+      issue.priority.toLowerCase().includes(query) ||
+      issue.status.toLowerCase().includes(query);
+
+    if (!matchesSearch) return false;
+
+    if (filters.labels.length > 0) {
+      const matchesAllLabels = filters.labels.every((labelId) =>
+        issue.labels?.includes(labelId),
+      );
+      if (!matchesAllLabels) return false;
+    }
+
+    const createdDate = issue.createdAt;
+    if (filters.dateRange.from && createdDate < filters.dateRange.from) {
+      return false;
+    }
+    if (filters.dateRange.to && createdDate > filters.dateRange.to) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
 export default function AssignedIssuesPage() {
   const session = getSession();
   const backendUser = isBackendUser(session);
 
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState({ labels: [], dateRange: {} });
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +81,15 @@ export default function AssignedIssuesPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [backendUser, session?.id, session?.backendId]);
+
+  const filteredIssues = applySearchAndFilters(issues, searchQuery, filters);
+
+  const hasActiveFilters =
+    searchQuery ||
+    filters.labels.length > 0 ||
+    filters.dateRange.from ||
+    filters.dateRange.to;
 
   return (
     <DevShell>
@@ -56,13 +98,25 @@ export default function AssignedIssuesPage() {
         subtitle={
           loading
             ? "Loading…"
-            : `${issues.length} issue${issues.length !== 1 ? "s" : ""} assigned to you`
+            : `${filteredIssues.length} of ${issues.length} issue${
+                issues.length !== 1 ? "s" : ""
+              } ${hasActiveFilters ? "matching" : "assigned to you"}`
         }
       />
 
-      <div
-        style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}
-      >
+      <SearchBar
+        placeholder="Search issues by title, ID, priority..."
+        value={searchQuery}
+        onSearch={setSearchQuery}
+      />
+
+      <FilterPanel
+        onFilterChange={setFilters}
+        selectedLabels={filters.labels}
+        dateRange={filters.dateRange}
+      />
+
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
         {FILTERS.map((f) => {
           const to =
             f === "All"
@@ -87,6 +141,19 @@ export default function AssignedIssuesPage() {
         </div>
       )}
 
+      {!loading && filteredIssues.length === 0 && issues.length > 0 && (
+        <div
+          style={{
+            color: C.subtle,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
+          No issues match your search or filters.
+        </div>
+      )}
+
       {!loading && issues.length === 0 && (
         <div
           style={{
@@ -101,7 +168,9 @@ export default function AssignedIssuesPage() {
       )}
 
       {!loading &&
-        issues.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
+        filteredIssues.map((issue) => (
+          <IssueCard key={issue.id} issue={issue} />
+        ))}
     </DevShell>
   );
 }

@@ -8,7 +8,7 @@ const SEED_SPRINTS = [
     startDate: "2025-09-15",
     endDate: "2025-09-28",
     status: "completed",
-    taskIds: ["t1", "t2"],
+    taskIds: ["TASK-004", "TASK-005"],
     velocity: 13,
   },
   {
@@ -18,7 +18,7 @@ const SEED_SPRINTS = [
     startDate: "2025-09-29",
     endDate: "2025-10-12",
     status: "active",
-    taskIds: ["t1"],
+    taskIds: ["TASK-004"],
     velocity: null,
   },
 ];

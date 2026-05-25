@@ -24,6 +24,37 @@ import {
 
 const FILTERS = ["All", "Backlog", "To Do", "In Progress", "In Review", "Done"];
 
+function applySearchAndFilters(issues, searchQuery, filters) {
+  return issues.filter((issue) => {
+    const query = searchQuery.toLowerCase();
+    const matchesSearch =
+      issue.id.toLowerCase().includes(query) ||
+      issue.title.toLowerCase().includes(query) ||
+      issue.description?.toLowerCase().includes(query) ||
+      issue.project.toLowerCase().includes(query) ||
+      issue.priority.toLowerCase().includes(query);
+
+    if (!matchesSearch) return false;
+
+    if (filters.labels.length > 0) {
+      const matchesAllLabels = filters.labels.every((labelId) =>
+        issue.labels?.includes(labelId),
+      );
+      if (!matchesAllLabels) return false;
+    }
+
+    const createdDate = issue.createdAt;
+    if (filters.dateRange.from && createdDate < filters.dateRange.from) {
+      return false;
+    }
+    if (filters.dateRange.to && createdDate > filters.dateRange.to) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
 export default function FilteredIssuesPage() {
   const { status: statusSlug } = useParams();
   const activeFilter = STATUS_SLUG[statusSlug] || "All";
@@ -58,42 +89,14 @@ export default function FilteredIssuesPage() {
     return () => {
       cancelled = true;
     };
-  }, [backendUser, session]);
+  }, [backendUser, session?.id, session?.backendId]);
 
   const statusFiltered =
     activeFilter === "All"
       ? allIssues
       : allIssues.filter((i) => i.status === activeFilter);
 
-  // Apply search and label/date filters on top of status filter
-  const shown = statusFiltered.filter((issue) => {
-    const query = (searchQuery || "").toLowerCase();
-    const matchesSearch =
-      issue.id.toLowerCase().includes(query) ||
-      issue.title.toLowerCase().includes(query) ||
-      (issue.description || "").toLowerCase().includes(query) ||
-      (issue.project || "").toLowerCase().includes(query) ||
-      (issue.priority || "").toLowerCase().includes(query);
-
-    if (!matchesSearch) return false;
-
-    if (filters.labels && filters.labels.length > 0) {
-      const matchesAllLabels = filters.labels.every((labelId) =>
-        (issue.labels || []).includes(labelId),
-      );
-      if (!matchesAllLabels) return false;
-    }
-
-    const createdDate = issue.createdAt;
-    if (filters.dateRange?.from && createdDate < filters.dateRange.from) {
-      return false;
-    }
-    if (filters.dateRange?.to && createdDate > filters.dateRange.to) {
-      return false;
-    }
-
-    return true;
-  });
+  const shown = applySearchAndFilters(statusFiltered, searchQuery, filters);
 
   return (
     <DevShell>
@@ -125,9 +128,7 @@ export default function FilteredIssuesPage() {
         dateRange={filters.dateRange}
       />
 
-      <div
-        style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}
-      >
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
         {FILTERS.map((f) => {
           const to =
             f === "All"
@@ -184,7 +185,9 @@ export default function FilteredIssuesPage() {
       )}
 
       {!loading &&
-        shown.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
+        shown.map((issue) => (
+          <IssueCard key={issue.id} issue={issue} />
+        ))}
     </DevShell>
   );
 }
