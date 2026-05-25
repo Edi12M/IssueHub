@@ -1,12 +1,24 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { CalendarRange } from "lucide-react";
 
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
 import { getTasks, updateTaskDates } from "../../data/tasks.js";
-import { getUsers } from "../../data/users.js";
+import { getUsers, getSession } from "../../data/users.js";
+import {
+  getProjectsApi,
+  getProjectIssuesApi,
+  getUsersApi,
+  isBackendUser,
+} from "../../api/index.js";
 import "../../App.css";
 import "./manager.css";
+
+const PROJECTS_KEY = "issuehub_projects";
+const INITIAL_PROJECTS = [
+  { id: "p1", name: "Website Redesign" },
+  { id: "p2", name: "Mobile App" },
+];
 
 function parseDate(iso) {
   return iso ? new Date(iso + "T12:00:00") : null;
@@ -17,19 +29,64 @@ function daysBetween(a, b) {
 }
 
 export default function TimelinePage() {
+  const session = getSession();
+  const useBackend = isBackendUser(session);
+
+  const [projects, setProjects] = useState(() => {
+    try {
+      const stored = localStorage.getItem(PROJECTS_KEY);
+      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
+    } catch {
+      return INITIAL_PROJECTS;
+    }
+  });
   const [projectId, setProjectId] = useState("p1");
   const [tasks, setTasks] = useState(() => getTasks());
-  const users = useMemo(() => getUsers(), []);
+  const [users, setUsers] = useState(() => getUsers());
+  const [loading, setLoading] = useState(useBackend);
+
+  useEffect(() => {
+    if (!useBackend) {
+      setLoading(false);
+      return;
+    }
+
+    const loadData = async () => {
+      try {
+        const projectsData = await getProjectsApi();
+        setProjects(projectsData);
+
+        const usersData = await getUsersApi();
+        setUsers(usersData);
+        const tasksData = await getProjectIssuesApi(projectId);
+        setTasks(tasksData);
+      } catch (e) {
+        console.error("Failed to load timeline data:", e.message);
+        setTasks(getTasks());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [useBackend, projectId]);
 
   const projectTasks = useMemo(
-    () => tasks.filter((t) => t.projectId === projectId && t.startDate && t.dueDate),
+    () =>
+      tasks.filter(
+        (t) => t.projectId === projectId && t.startDate && t.dueDate,
+      ),
     [tasks, projectId],
   );
 
   const { rangeStart, rangeEnd, totalDays } = useMemo(() => {
     if (!projectTasks.length) {
       const now = new Date();
-      return { rangeStart: now, rangeEnd: new Date(now.getTime() + 30 * 86400000), totalDays: 30 };
+      return {
+        rangeStart: now,
+        rangeEnd: new Date(now.getTime() + 30 * 86400000),
+        totalDays: 30,
+      };
     }
     const starts = projectTasks.map((t) => parseDate(t.startDate).getTime());
     const ends = projectTasks.map((t) => parseDate(t.dueDate).getTime());
@@ -76,7 +133,9 @@ export default function TimelinePage() {
     const labels = [];
     const d = new Date(rangeStart);
     while (d <= rangeEnd) {
-      labels.push(d.toLocaleDateString("en-US", { month: "short", day: "numeric" }));
+      labels.push(
+        d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      );
       d.setDate(d.getDate() + Math.ceil(totalDays / 6));
     }
     return labels;
@@ -84,82 +143,130 @@ export default function TimelinePage() {
 
   return (
     <div className="preview-shell">
-      <Sidebar brandSub="Manager Dashboard" navItems={MANAGER_NAV_ITEMS} activeKey="timeline" />
+      <Sidebar
+        brandSub="Manager Dashboard"
+        navItems={MANAGER_NAV_ITEMS}
+        activeKey="timeline"
+      />
 
       <main className="preview-main">
-        <section className="preview-hero card">
-          <p className="eyebrow">PM_13 · Timeline / Gantt</p>
-          <h1>Timeline View</h1>
-          <p className="lead">
-            Tasks as horizontal bars on a calendar axis. Adjust dates inline; critical
-            path tasks are highlighted.
-          </p>
-          <select className="pm-select" style={{ marginTop: 12 }} value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-            <option value="p1">Website Redesign</option>
-            <option value="p2">Mobile App</option>
-          </select>
-        </section>
-
-        <section className="card gantt-card">
-          <div className="gantt-axis">
-            {monthLabels.map((l) => (
-              <span key={l} className="gantt-axis-label">{l}</span>
-            ))}
+        {loading ? (
+          <div
+            style={{
+              color: "#94a3b8",
+              fontSize: 14,
+              padding: "40px",
+              textAlign: "center",
+            }}
+          >
+            Loading timeline...
           </div>
+        ) : (
+          <>
+            <section className="preview-hero card">
+              <p className="eyebrow">PM_13 · Timeline / Gantt</p>
+              <h1>Timeline View</h1>
+              <p className="lead">
+                Tasks as horizontal bars on a calendar axis. Adjust dates
+                inline; critical path tasks are highlighted.
+              </p>
+              <select
+                className="pm-select"
+                style={{ marginTop: 12 }}
+                value={projectId}
+                onChange={(e) => setProjectId(e.target.value)}
+              >
+                {projects.map((p) => (
+                  <option
+                    key={p.backendId || p.id}
+                    value={String(p.backendId || p.id)}
+                  >
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </section>
 
-          <div className="gantt-rows">
-            {projectTasks.map((task) => {
-              const assignee = users.find((u) => task.assignees?.includes(u.id));
-              const isCritical = criticalIds.has(task.id);
-              return (
-                <div key={task.id} className="gantt-row">
-                  <div className="gantt-row-label">
-                    <span className="gantt-task-title">{task.title}</span>
-                    <span className="gantt-task-meta">{assignee?.name?.split(" ")[0] || "—"}</span>
-                  </div>
-                  <div className="gantt-track">
-                    <div
-                      className={`gantt-bar${isCritical ? " gantt-bar--critical" : ""}`}
-                      style={barStyle(task)}
-                      title={`${task.startDate} → ${task.dueDate}`}
-                    />
-                    {task.dependencies?.map((depId) => {
-                      const dep = projectTasks.find((x) => x.id === depId);
-                      if (!dep) return null;
-                      return (
-                        <span key={depId} className="gantt-dep" title={`Depends on ${dep.title}`}>
-                          ↳ {dep.title.slice(0, 12)}…
+            <section className="card gantt-card">
+              <div className="gantt-axis">
+                {monthLabels.map((l) => (
+                  <span key={l} className="gantt-axis-label">
+                    {l}
+                  </span>
+                ))}
+              </div>
+
+              <div className="gantt-rows">
+                {projectTasks.map((task) => {
+                  const assignee = users.find((u) =>
+                    task.assignees?.includes(u.id),
+                  );
+                  const isCritical = criticalIds.has(task.id);
+                  return (
+                    <div key={task.id} className="gantt-row">
+                      <div className="gantt-row-label">
+                        <span className="gantt-task-title">{task.title}</span>
+                        <span className="gantt-task-meta">
+                          {assignee?.name?.split(" ")[0] || "—"}
                         </span>
-                      );
-                    })}
-                  </div>
-                  <div className="gantt-dates">
-                    <input
-                      type="date"
-                      className="gantt-date-input"
-                      value={task.startDate}
-                      onChange={(e) => handleDateChange(task.id, "startDate", e.target.value)}
-                    />
-                    <input
-                      type="date"
-                      className="gantt-date-input"
-                      value={task.dueDate}
-                      onChange={(e) => handleDateChange(task.id, "dueDate", e.target.value)}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                      </div>
+                      <div className="gantt-track">
+                        <div
+                          className={`gantt-bar${isCritical ? " gantt-bar--critical" : ""}`}
+                          style={barStyle(task)}
+                          title={`${task.startDate} → ${task.dueDate}`}
+                        />
+                        {task.dependencies?.map((depId) => {
+                          const dep = projectTasks.find((x) => x.id === depId);
+                          if (!dep) return null;
+                          return (
+                            <span
+                              key={depId}
+                              className="gantt-dep"
+                              title={`Depends on ${dep.title}`}
+                            >
+                              ↳ {dep.title.slice(0, 12)}…
+                            </span>
+                          );
+                        })}
+                      </div>
+                      <div className="gantt-dates">
+                        <input
+                          type="date"
+                          className="gantt-date-input"
+                          value={task.startDate}
+                          onChange={(e) =>
+                            handleDateChange(
+                              task.id,
+                              "startDate",
+                              e.target.value,
+                            )
+                          }
+                        />
+                        <input
+                          type="date"
+                          className="gantt-date-input"
+                          value={task.dueDate}
+                          onChange={(e) =>
+                            handleDateChange(task.id, "dueDate", e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-          <p className="gantt-legend">
-            <CalendarRange size={14} />
-            <span className="gantt-legend-critical" /> Critical path
-            <span style={{ marginLeft: 16, color: "#64748b" }}>
-              Drag bar edges via date inputs to reschedule (PM_13).
-            </span>
-          </p>
-        </section>
+              <p className="gantt-legend">
+                <CalendarRange size={14} />
+                <span className="gantt-legend-critical" /> Critical path
+                <span style={{ marginLeft: 16, color: "#64748b" }}>
+                  Drag bar edges via date inputs to reschedule (PM_13).
+                </span>
+              </p>
+            </section>
+          </>
+        )}
       </main>
     </div>
   );

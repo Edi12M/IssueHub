@@ -8,7 +8,17 @@ import {
 } from "../../data/mockIssues";
 import { updateTaskStatus } from "../../data/tasks";
 import { getSession } from "../../data/users.js";
-import { getIssueDetailApi, updateIssueStatusApi } from "../../api/index.js";
+import {
+  getIssueDetailApi,
+  updateIssueStatusApi,
+  createCommentApi,
+  getIssueCommentsApi,
+  updateCommentApi,
+  deleteCommentApi,
+  uploadAttachmentApi,
+  getIssueAttachmentsApi,
+  deleteAttachmentApi,
+} from "../../api/index.js";
 import {
   DevShell,
   PageHeader,
@@ -46,7 +56,14 @@ export default function IssueDetailPage() {
   if (!source && !loadError) {
     return (
       <DevShell>
-        <div style={{ color: C.muted, fontSize: 14, padding: "40px 0", textAlign: "center" }}>
+        <div
+          style={{
+            color: C.muted,
+            fontSize: 14,
+            padding: "40px 0",
+            textAlign: "center",
+          }}
+        >
           Loading issue…
         </div>
       </DevShell>
@@ -61,7 +78,13 @@ export default function IssueDetailPage() {
     );
   }
 
-  return <IssueDetail source={source} isBackend={isBackendId} numericId={numericId} />;
+  return (
+    <IssueDetail
+      source={source}
+      isBackend={isBackendId}
+      numericId={numericId}
+    />
+  );
 }
 
 function IssueDetail({ source, isBackend, numericId }) {
@@ -79,7 +102,45 @@ function IssueDetail({ source, isBackend, numericId }) {
   const [commentText, setCommentText] = useState("");
   const [editingComment, setEditingComment] = useState(null);
   const [attachments, setAttachments] = useState(source.attachments);
+  const [isLoadingComments, setIsLoadingComments] = useState(isBackend);
+  const [isLoadingAttachments, setIsLoadingAttachments] = useState(isBackend);
   const fileRef = useRef();
+
+  // Load comments and attachments from backend when issue is backend-sourced
+  useEffect(() => {
+    if (!isBackend || !numericId) {
+      setIsLoadingComments(false);
+      setIsLoadingAttachments(false);
+      return;
+    }
+
+    const loadBackendData = async () => {
+      try {
+        // Load comments
+        const comments = await getIssueCommentsApi(numericId);
+        setIssue((prev) => ({
+          ...prev,
+          comments: comments,
+        }));
+      } catch (e) {
+        console.warn("Failed to load comments:", e.message);
+      } finally {
+        setIsLoadingComments(false);
+      }
+
+      try {
+        // Load attachments
+        const attachs = await getIssueAttachmentsApi(numericId);
+        setAttachments(attachs);
+      } catch (e) {
+        console.warn("Failed to load attachments:", e.message);
+      } finally {
+        setIsLoadingAttachments(false);
+      }
+    };
+
+    loadBackendData();
+  }, [isBackend, numericId]);
 
   const overdue = isOverdue(issue);
 
@@ -108,65 +169,159 @@ function IssueDetail({ source, isBackend, numericId }) {
     }));
   }
 
-  function handleAddComment() {
+  async function handleAddComment() {
     if (!commentText.trim()) return;
-    const now = new Date().toLocaleString("en-GB", {
-      dateStyle: "short",
-      timeStyle: "short",
-    });
-    setIssue((prev) => ({
-      ...prev,
-      comments: [
-        ...prev.comments,
-        {
-          id: "c" + Date.now(),
-          author: authorName,
-          avatar: authorInitials,
-          text: commentText.trim(),
-          date: now,
-          mine: true,
-        },
-      ],
-    }));
-    setCommentText("");
+
+    if (isBackend && numericId) {
+      try {
+        const newComment = await createCommentApi(
+          numericId,
+          commentText.trim(),
+        );
+        setIssue((prev) => ({
+          ...prev,
+          comments: [
+            ...prev.comments,
+            {
+              id: String(newComment.id),
+              author: newComment.authorName,
+              avatar: authorInitials,
+              text: newComment.body,
+              date: newComment.createdAt
+                ? new Date(newComment.createdAt).toLocaleDateString("en-GB")
+                : today(),
+              mine: true,
+              authorId: newComment.authorId,
+            },
+          ],
+        }));
+        setCommentText("");
+      } catch (e) {
+        console.error("Failed to add comment:", e.message);
+        alert("Failed to add comment: " + e.message);
+      }
+    } else {
+      const now = new Date().toLocaleString("en-GB", {
+        dateStyle: "short",
+        timeStyle: "short",
+      });
+      setIssue((prev) => ({
+        ...prev,
+        comments: [
+          ...prev.comments,
+          {
+            id: "c" + Date.now(),
+            author: authorName,
+            avatar: authorInitials,
+            text: commentText.trim(),
+            date: now,
+            mine: true,
+          },
+        ],
+      }));
+      setCommentText("");
+    }
   }
 
-  function handleSaveEdit() {
-    setIssue((prev) => ({
-      ...prev,
-      comments: prev.comments.map((c) =>
-        c.id === editingComment.id ? { ...c, text: editingComment.text } : c
-      ),
-    }));
+  async function handleSaveEdit() {
+    if (isBackend && numericId && editingComment) {
+      try {
+        await updateCommentApi(editingComment.id, editingComment.text);
+        setIssue((prev) => ({
+          ...prev,
+          comments: prev.comments.map((c) =>
+            c.id === editingComment.id
+              ? { ...c, text: editingComment.text }
+              : c,
+          ),
+        }));
+      } catch (e) {
+        console.error("Failed to update comment:", e.message);
+        alert("Failed to update comment: " + e.message);
+      }
+    } else {
+      setIssue((prev) => ({
+        ...prev,
+        comments: prev.comments.map((c) =>
+          c.id === editingComment.id ? { ...c, text: editingComment.text } : c,
+        ),
+      }));
+    }
     setEditingComment(null);
   }
 
-  function handleDeleteComment(commentId) {
-    setIssue((prev) => ({
-      ...prev,
-      comments: prev.comments.filter((c) => c.id !== commentId),
-    }));
+  async function handleDeleteComment(commentId) {
+    if (isBackend && numericId) {
+      try {
+        await deleteCommentApi(commentId);
+        setIssue((prev) => ({
+          ...prev,
+          comments: prev.comments.filter((c) => c.id !== commentId),
+        }));
+      } catch (e) {
+        console.error("Failed to delete comment:", e.message);
+        alert("Failed to delete comment: " + e.message);
+      }
+    } else {
+      setIssue((prev) => ({
+        ...prev,
+        comments: prev.comments.filter((c) => c.id !== commentId),
+      }));
+    }
   }
 
-  function handleFileUpload(e) {
+  async function handleFileUpload(e) {
     const files = Array.from(e.target.files);
-    setAttachments((prev) => [
-      ...prev,
-      ...files.map((f) => ({
-        id: "a" + Date.now() + Math.random(),
-        name: f.name,
-        size:
-          f.size > 1024 * 1024
-            ? (f.size / 1024 / 1024).toFixed(1) + " MB"
-            : Math.round(f.size / 1024) + " KB",
-        type: f.name.match(/\.(png|jpg|jpeg|gif|webp)$/i)
-          ? "img"
-          : f.name.match(/\.txt$/i)
-            ? "txt"
-            : "fig",
-        date: today(),
-      })),
-    ]);
+
+    if (isBackend && numericId) {
+      // Upload to backend
+      for (const file of files) {
+        try {
+          const attachment = await uploadAttachmentApi(numericId, file);
+          setAttachments((prev) => [
+            ...prev,
+            {
+              id: String(attachment.id),
+              name: attachment.fileName ?? file.name,
+              size: attachment.fileSize
+                ? `${Math.round(attachment.fileSize / 1024)} KB`
+                : `${Math.round(file.size / 1024)} KB`,
+              type: file.name.match(/\.(png|jpg|jpeg|gif|webp)$/i)
+                ? "img"
+                : file.name.match(/\.txt$/i)
+                  ? "txt"
+                  : "fig",
+              date: new Date().toLocaleDateString("en-GB"),
+              fileName: attachment.fileName,
+              mimeType: attachment.mimeType,
+              fileSize: attachment.fileSize,
+            },
+          ]);
+        } catch (err) {
+          console.error("Failed to upload file:", err.message);
+          alert(`Failed to upload ${file.name}: ${err.message}`);
+        }
+      }
+    } else {
+      // Local file handling
+      setAttachments((prev) => [
+        ...prev,
+        ...files.map((f) => ({
+          id: "a" + Date.now() + Math.random(),
+          name: f.name,
+          size:
+            f.size > 1024 * 1024
+              ? (f.size / 1024 / 1024).toFixed(1) + " MB"
+              : Math.round(f.size / 1024) + " KB",
+          type: f.name.match(/\.(png|jpg|jpeg|gif|webp)$/i)
+            ? "img"
+            : f.name.match(/\.txt$/i)
+              ? "txt"
+              : "fig",
+          date: today(),
+        })),
+      ]);
+    }
   }
 
   function AttachIcon({ type }) {
@@ -232,12 +387,21 @@ function IssueDetail({ source, isBackend, numericId }) {
         )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24 }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24 }}
+      >
         {/* ── LEFT ── */}
         <div>
           <Card>
             <SectionLabel>Description</SectionLabel>
-            <p style={{ fontSize: 14, color: "#cbd5e1", lineHeight: 1.7, margin: 0 }}>
+            <p
+              style={{
+                fontSize: 14,
+                color: "#cbd5e1",
+                lineHeight: 1.7,
+                margin: 0,
+              }}
+            >
               {issue.description || "No description provided."}
             </p>
           </Card>
@@ -268,13 +432,23 @@ function IssueDetail({ source, isBackend, numericId }) {
                     marginBottom: 6,
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
                     <Avatar initials={c.avatar} size={24} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#a78bfa" }}>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: "#a78bfa",
+                      }}
+                    >
                       {c.author}
                     </span>
                   </div>
-                  <span style={{ fontSize: 11, color: C.subtle }}>{c.date}</span>
+                  <span style={{ fontSize: 11, color: C.subtle }}>
+                    {c.date}
+                  </span>
                 </div>
 
                 {editingComment?.id === c.id ? (
@@ -282,7 +456,10 @@ function IssueDetail({ source, isBackend, numericId }) {
                     <textarea
                       value={editingComment.text}
                       onChange={(e) =>
-                        setEditingComment({ ...editingComment, text: e.target.value })
+                        setEditingComment({
+                          ...editingComment,
+                          text: e.target.value,
+                        })
                       }
                       style={{
                         width: "100%",
@@ -300,21 +477,46 @@ function IssueDetail({ source, isBackend, numericId }) {
                       }}
                     />
                     <div style={{ display: "flex", gap: 8 }}>
-                      <Button variant="primary" size="sm" onClick={handleSaveEdit}>Save</Button>
-                      <Button variant="secondary" size="sm" onClick={() => setEditingComment(null)}>Cancel</Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleSaveEdit}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setEditingComment(null)}
+                      >
+                        Cancel
+                      </Button>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div style={{ fontSize: 13.5, color: "#cbd5e1", lineHeight: 1.6 }}>
+                    <div
+                      style={{
+                        fontSize: 13.5,
+                        color: "#cbd5e1",
+                        lineHeight: 1.6,
+                      }}
+                    >
                       {c.text}
                     </div>
                     {c.mine && (
                       <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                        <TinyBtn onClick={() => setEditingComment({ id: c.id, text: c.text })}>
+                        <TinyBtn
+                          onClick={() =>
+                            setEditingComment({ id: c.id, text: c.text })
+                          }
+                        >
                           Edit
                         </TinyBtn>
-                        <TinyBtn danger onClick={() => handleDeleteComment(c.id)}>
+                        <TinyBtn
+                          danger
+                          onClick={() => handleDeleteComment(c.id)}
+                        >
                           Delete
                         </TinyBtn>
                       </div>
@@ -353,7 +555,9 @@ function IssueDetail({ source, isBackend, numericId }) {
           <Card>
             <SectionLabel>Attachments ({attachments.length})</SectionLabel>
             {attachments.length === 0 && (
-              <div style={{ color: C.subtle, fontSize: 13 }}>No attachments yet.</div>
+              <div style={{ color: C.subtle, fontSize: 13 }}>
+                No attachments yet.
+              </div>
             )}
             {attachments.map((att) => (
               <div
@@ -369,11 +573,19 @@ function IssueDetail({ source, isBackend, numericId }) {
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <AttachIcon type={att.type} />
                   <div>
-                    <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{att.name}</div>
-                    <div style={{ fontSize: 11, color: C.subtle }}>{att.size} · {att.date}</div>
+                    <div
+                      style={{ fontSize: 13, color: C.text, fontWeight: 500 }}
+                    >
+                      {att.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: C.subtle }}>
+                      {att.size} · {att.date}
+                    </div>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => {}}>↓ Download</Button>
+                <Button variant="ghost" size="sm" onClick={() => {}}>
+                  ↓ Download
+                </Button>
               </div>
             ))}
             <div
@@ -391,7 +603,9 @@ function IssueDetail({ source, isBackend, numericId }) {
             >
               <div style={{ fontSize: 22, marginBottom: 4 }}>📎</div>
               <div>Click to upload a file</div>
-              <div style={{ fontSize: 11, marginTop: 4 }}>Any file type supported</div>
+              <div style={{ fontSize: 11, marginTop: 4 }}>
+                Any file type supported
+              </div>
             </div>
             <input
               type="file"
@@ -446,10 +660,17 @@ function IssueDetail({ source, isBackend, numericId }) {
               }}
             >
               {STATUSES.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
-            <Button variant="primary" size="md" fullWidth onClick={handleStatusUpdate}>
+            <Button
+              variant="primary"
+              size="md"
+              fullWidth
+              onClick={handleStatusUpdate}
+            >
               Apply Status Change
             </Button>
           </Card>
@@ -457,7 +678,9 @@ function IssueDetail({ source, isBackend, numericId }) {
           <Card>
             <SectionLabel>Status History</SectionLabel>
             {issue.statusHistory.length === 0 && (
-              <div style={{ color: C.subtle, fontSize: 13 }}>No history yet.</div>
+              <div style={{ color: C.subtle, fontSize: 13 }}>
+                No history yet.
+              </div>
             )}
             {issue.statusHistory.map((h, i) => (
               <div
@@ -481,8 +704,12 @@ function IssueDetail({ source, isBackend, numericId }) {
                   }}
                 />
                 <div>
-                  <div style={{ fontWeight: 600, color: C.text }}>{h.status}</div>
-                  <div style={{ color: C.muted, fontSize: 11 }}>{h.by} · {h.date}</div>
+                  <div style={{ fontWeight: 600, color: C.text }}>
+                    {h.status}
+                  </div>
+                  <div style={{ color: C.muted, fontSize: 11 }}>
+                    {h.by} · {h.date}
+                  </div>
                 </div>
               </div>
             ))}

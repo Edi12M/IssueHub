@@ -8,7 +8,14 @@ import {
   INITIAL_PROJECTS,
 } from "./managerConstants.js";
 import { getTasks, updateTaskStatus } from "../../data/tasks.js";
-import { getUsers } from "../../data/users.js";
+import { getUsers, getSession } from "../../data/users.js";
+import {
+  getProjectsApi,
+  getProjectIssuesApi,
+  getUsersApi,
+  updateIssueStatusApi,
+  isBackendUser,
+} from "../../api/index.js";
 import "../../App.css";
 import "./manager.css";
 
@@ -204,9 +211,11 @@ function KanbanColumn({
 // ── KanbanPage ────────────────────────────────────────────────────────────────
 
 export default function KanbanPage() {
-  const [tasks, setTasks] = useState(() => getTasks());
+  const session = getSession();
+  const useBackend = isBackendUser(session);
 
-  const [projects] = useState(() => {
+  const [tasks, setTasks] = useState(() => getTasks());
+  const [projects, setProjects] = useState(() => {
     try {
       const stored = localStorage.getItem(PROJECTS_KEY);
       return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
@@ -215,11 +224,62 @@ export default function KanbanPage() {
     }
   });
 
-  const [users] = useState(() => getUsers());
+  const [users, setUsers] = useState(() => getUsers());
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [draggingId, setDraggingId] = useState(null);
   const [dragOverCol, setDragOverCol] = useState(null);
-  const [toast, setToast] = useState(null); // { id, message }
+  const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(useBackend);
+
+  // Load data from backend if user is authenticated
+  useEffect(() => {
+    if (!useBackend) {
+      setLoading(false);
+      return;
+    }
+
+    const loadBackendData = async () => {
+      try {
+        const projectsData = await getProjectsApi();
+        setProjects(projectsData);
+
+        const usersData = await getUsersApi();
+        setUsers(usersData);
+
+        // Load tasks for first project if available
+        if (projectsData.length > 0) {
+          setSelectedProjectId(String(projectsData[0].backendId));
+          const tasksData = await getProjectIssuesApi(
+            String(projectsData[0].backendId),
+          );
+          setTasks(tasksData);
+        }
+      } catch (e) {
+        console.error("Failed to load kanban data:", e.message);
+        setLoading(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBackendData();
+  }, [useBackend]);
+
+  // Reload tasks when project changes
+  useEffect(() => {
+    if (!useBackend || !selectedProjectId) return;
+
+    const loadProjectTasks = async () => {
+      try {
+        const tasksData = await getProjectIssuesApi(selectedProjectId);
+        setTasks(tasksData);
+      } catch (e) {
+        console.error("Failed to load project tasks:", e.message);
+      }
+    };
+
+    loadProjectTasks();
+  }, [selectedProjectId, useBackend]);
 
   const usersById = useMemo(() => {
     const map = {};
@@ -260,12 +320,40 @@ export default function KanbanPage() {
 
     const task = tasks.find((t) => t.id === draggingId);
     if (task && task.status !== colStatus) {
-      updateTaskStatus(draggingId, colStatus);
-      setTasks((prev) => prev.map((t) => t.id === draggingId ? { ...t, status: colStatus } : t));
-      setToast({
-        id: Date.now(),
-        message: `"${task.title}" moved to ${colStatus}`,
-      });
+      // Update backend if user is authenticated
+      if (useBackend && task.backendId) {
+        updateIssueStatusApi(task.backendId, colStatus)
+          .then(() => {
+            setTasks((prev) =>
+              prev.map((t) =>
+                t.id === draggingId ? { ...t, status: colStatus } : t,
+              ),
+            );
+            setToast({
+              id: Date.now(),
+              message: `"${task.title}" moved to ${colStatus}`,
+            });
+          })
+          .catch((err) => {
+            console.error("Failed to update task status:", err.message);
+            setToast({
+              id: Date.now(),
+              message: `Failed to move task: ${err.message}`,
+            });
+          });
+      } else {
+        // Local update for non-backend users
+        updateTaskStatus(draggingId, colStatus);
+        setTasks((prev) =>
+          prev.map((t) =>
+            t.id === draggingId ? { ...t, status: colStatus } : t,
+          ),
+        );
+        setToast({
+          id: Date.now(),
+          message: `"${task.title}" moved to ${colStatus}`,
+        });
+      }
       // Simulate team notification (PM_12 step 5)
       console.log(
         `[IssueHub] PM moved task "${task.title}" (${task.id}) → ${colStatus}. Team members notified.`,
@@ -293,56 +381,71 @@ export default function KanbanPage() {
       />
 
       <main className="preview-main">
-        {/* ── Page header ─────────────────────────────────────────────────── */}
-        <section className="preview-hero card">
-          <p className="eyebrow">Project Management</p>
-          <h1 style={{ marginTop: 10, marginBottom: 12 }}>Kanban Board</h1>
-          <p className="lead">
-            Drag task cards between columns to update their status. Changes are
-            saved instantly and team members are notified.
-          </p>
-
+        {loading ? (
           <div
-            className="preview-actions kanban-toolbar"
-            style={{ marginTop: 16 }}
+            style={{
+              color: "#94a3b8",
+              fontSize: 14,
+              padding: "40px",
+              textAlign: "center",
+            }}
           >
-            <select
-              className="pm-select"
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
-            >
-              <option value="">All Projects</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-            <span className="kanban-task-count">
-              {taskCount} task{taskCount !== 1 ? "s" : ""} · {projectLabel}
-            </span>
+            Loading kanban board...
           </div>
-        </section>
+        ) : (
+          <>
+            {/* ── Page header ─────────────────────────────────────────────────── */}
+            <section className="preview-hero card">
+              <p className="eyebrow">Project Management</p>
+              <h1 style={{ marginTop: 10, marginBottom: 12 }}>Kanban Board</h1>
+              <p className="lead">
+                Drag task cards between columns to update their status. Changes
+                are saved instantly and team members are notified.
+              </p>
 
-        {/* ── Kanban board ────────────────────────────────────────────────── */}
-        <div className="kanban-wrapper">
-          <div className="kanban-board">
-            {COLUMNS.map((col) => (
-              <KanbanColumn
-                key={col.status}
-                column={col}
-                tasks={filteredTasks.filter((t) => t.status === col.status)}
-                isDragOver={dragOverCol === col.status}
-                draggingId={draggingId}
-                usersById={usersById}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-              />
-            ))}
-          </div>
-        </div>
+              <div
+                className="preview-actions kanban-toolbar"
+                style={{ marginTop: 16 }}
+              >
+                <select
+                  className="pm-select"
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                >
+                  <option value="">All Projects</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="kanban-task-count">
+                  {taskCount} task{taskCount !== 1 ? "s" : ""} · {projectLabel}
+                </span>
+              </div>
+            </section>
+
+            {/* ── Kanban board ────────────────────────────────────────────────── */}
+            <div className="kanban-wrapper">
+              <div className="kanban-board">
+                {COLUMNS.map((col) => (
+                  <KanbanColumn
+                    key={col.status}
+                    column={col}
+                    tasks={filteredTasks.filter((t) => t.status === col.status)}
+                    isDragOver={dragOverCol === col.status}
+                    draggingId={draggingId}
+                    usersById={usersById}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </main>
 
       {toast && (

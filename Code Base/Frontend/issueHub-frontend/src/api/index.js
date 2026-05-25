@@ -1,4 +1,7 @@
-const BASE = "http://localhost:5164";
+import { API_BASE_URL } from "../config.js";
+
+// Get dynamic BASE URL from config
+const getBase = () => API_BASE_URL;
 
 // ── Role / status mappers ────────────────────────────────────────
 const ROLE_FROM_BE = {
@@ -33,7 +36,7 @@ const ISSUE_STATUS_TO_BE = {
 function getToken() {
   try {
     const raw = localStorage.getItem("issuehub_session");
-    return raw ? JSON.parse(raw)?.token ?? null : null;
+    return raw ? (JSON.parse(raw)?.token ?? null) : null;
   } catch {
     return null;
   }
@@ -50,7 +53,26 @@ function makeHeaders(hasBody = false) {
 async function req(method, path, body) {
   const opts = { method, headers: makeHeaders(body !== undefined) };
   if (body !== undefined) opts.body = JSON.stringify(body);
-  const res = await fetch(`${BASE}${path}`, opts);
+  const res = await fetch(`${getBase()}${path}`, opts);
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try {
+      const j = await res.json();
+      msg = j?.message || j?.title || msg;
+    } catch {}
+    throw new Error(msg);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+// FormData request helper (for file uploads)
+async function reqFormData(method, path) {
+  const opts = { method, headers: {} };
+  const token = getToken();
+  if (token) opts.headers["Authorization"] = `Bearer ${token}`;
+  // Don't set Content-Type for FormData - browser will set it
+  const res = await fetch(`${getBase()}${path}`, opts);
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
     try {
@@ -98,7 +120,9 @@ function mapProject(p) {
     budget: Number(p.budgetUsed ?? 0),
     spent: Number(p.budgetUsed ?? 0),
     createdAt: p.createdAt ?? new Date().toISOString(),
-    deadline: p.deadline ? new Date(p.deadline).toISOString() : (p.endDate ?? ""),
+    deadline: p.deadline
+      ? new Date(p.deadline).toISOString()
+      : (p.endDate ?? ""),
     tags: [],
     startDate: p.startDate ?? "",
     endDate: p.endDate ?? p.deadline ?? "",
@@ -149,9 +173,7 @@ function mapIssueDetail(issue) {
     author: c.authorName,
     avatar: initials(c.authorName),
     text: c.body,
-    date: c.createdAt
-      ? new Date(c.createdAt).toLocaleDateString("en-GB")
-      : "",
+    date: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-GB") : "",
     mine: false,
     authorId: c.authorId,
   }));
@@ -160,9 +182,7 @@ function mapIssueDetail(issue) {
     name: a.fileName ?? "attachment",
     size: a.fileSize ? `${Math.round(a.fileSize / 1024)} KB` : "—",
     type: (a.mimeType ?? "").includes("image") ? "img" : "fig",
-    date: a.createdAt
-      ? new Date(a.createdAt).toLocaleDateString("en-GB")
-      : "",
+    date: a.createdAt ? new Date(a.createdAt).toLocaleDateString("en-GB") : "",
   }));
   return {
     id: `BE-${issue.id}`,
@@ -204,7 +224,11 @@ export async function loginApi(email, password) {
 export async function getUsersApi() {
   const data = await req("GET", "/api/user/search?q=");
   return data.map((u) =>
-    mapUser({ ...u, department: u.department ?? null, createdAt: u.createdAt ?? new Date().toISOString() })
+    mapUser({
+      ...u,
+      department: u.department ?? null,
+      createdAt: u.createdAt ?? new Date().toISOString(),
+    }),
   );
 }
 
@@ -283,7 +307,7 @@ export async function archiveProjectApi(id) {
 export async function updateProjectStatusApi(id, status) {
   return req(
     "PATCH",
-    `/api/project/${id}/status?status=${encodeURIComponent(status)}`
+    `/api/project/${id}/status?status=${encodeURIComponent(status)}`,
   );
 }
 
@@ -315,4 +339,322 @@ export async function updateIssueStatusApi(issueId, newStatus) {
 // ── Utility ──────────────────────────────────────────────────────
 export function isBackendUser(session) {
   return session != null && typeof session.backendId === "number";
+}
+
+// ── Comments ─────────────────────────────────────────────────────
+export async function createCommentApi(issueId, commentBody) {
+  const data = await req("POST", "/api/comment", {
+    issueId: parseInt(issueId, 10),
+    body: commentBody,
+  });
+  return {
+    id: String(data.id),
+    issueId: String(data.issueId),
+    authorId: data.authorId,
+    authorName: data.authorName,
+    body: data.body,
+    createdAt: data.createdAt,
+  };
+}
+
+export async function getIssueCommentsApi(issueId) {
+  const data = await req("GET", `/api/comment/${issueId}`);
+  return Array.isArray(data)
+    ? data.map((c) => ({
+        id: String(c.id),
+        issueId: String(c.issueId),
+        authorId: c.authorId,
+        author: c.authorName,
+        avatar: initials(c.authorName),
+        text: c.body,
+        date: c.createdAt
+          ? new Date(c.createdAt).toLocaleDateString("en-GB")
+          : "",
+        mine: false,
+        authorName: c.authorName,
+        createdAt: c.createdAt,
+      }))
+    : [];
+}
+
+export async function updateCommentApi(commentId, commentBody) {
+  const data = await req("PUT", `/api/comment/${commentId}`, {
+    body: commentBody,
+  });
+  return {
+    id: String(data.id),
+    issueId: String(data.issueId),
+    authorId: data.authorId,
+    authorName: data.authorName,
+    body: data.body,
+    createdAt: data.createdAt,
+  };
+}
+
+export async function deleteCommentApi(commentId) {
+  return req("DELETE", `/api/comment/${commentId}`);
+}
+
+// ── Attachments ──────────────────────────────────────────────────
+export async function uploadAttachmentApi(issueId, file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const opts = { method: "POST", headers: {} };
+  const token = getToken();
+  if (token) opts.headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${getBase()}/api/attachment/issue/${issueId}`, {
+    ...opts,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try {
+      const j = await res.json();
+      msg = j?.message || j?.title || msg;
+    } catch {}
+    throw new Error(msg);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+export async function getIssueAttachmentsApi(issueId) {
+  const data = await req("GET", `/api/attachment/issue/${issueId}`);
+  return Array.isArray(data)
+    ? data.map((a) => ({
+        id: String(a.id),
+        name: a.fileName ?? "attachment",
+        size: a.fileSize ? `${Math.round(a.fileSize / 1024)} KB` : "—",
+        type: (a.mimeType ?? "").includes("image") ? "img" : "fig",
+        date: a.createdAt
+          ? new Date(a.createdAt).toLocaleDateString("en-GB")
+          : "",
+        fileName: a.fileName,
+        mimeType: a.mimeType,
+        fileSize: a.fileSize,
+        createdAt: a.createdAt,
+      }))
+    : [];
+}
+
+export async function deleteAttachmentApi(attachmentId) {
+  return req("DELETE", `/api/attachment/${attachmentId}`);
+}
+
+// ── Notifications ────────────────────────────────────────────────
+export async function getMyNotificationsApi() {
+  const data = await req("GET", "/api/notification/me");
+  return Array.isArray(data)
+    ? data.map((n) => ({
+        id: String(n.id),
+        userId: String(n.userId),
+        message: n.message ?? n.title ?? "Notification",
+        type: n.type ?? "Info",
+        isRead: n.isRead ?? false,
+        createdAt: n.createdAt,
+        relatedIssueId: n.relatedIssueId,
+        relatedProjectId: n.relatedProjectId,
+      }))
+    : [];
+}
+
+export async function markNotificationAsReadApi(notificationId) {
+  return req("PATCH", `/api/notification/${notificationId}/read`);
+}
+
+export async function markAllNotificationsAsReadApi() {
+  return req("PATCH", "/api/notification/read-all");
+}
+
+export async function deleteNotificationApi(notificationId) {
+  return req("DELETE", `/api/notification/${notificationId}`);
+}
+
+// ── Time Logs ────────────────────────────────────────────────────
+export async function createTimeLogApi(timeLogData) {
+  const data = await req("POST", "/api/timelog", {
+    issueId: parseInt(timeLogData.issueId, 10),
+    description: timeLogData.description ?? "",
+    hoursSpent: parseFloat(timeLogData.hoursSpent),
+    logDate: timeLogData.logDate ?? new Date().toISOString().split("T")[0],
+  });
+  return {
+    id: String(data.id),
+    issueId: String(data.issueId),
+    description: data.description,
+    hoursSpent: data.hoursSpent,
+    logDate: data.logDate,
+    createdAt: data.createdAt,
+  };
+}
+
+export async function getIssueTimeLogsApi(issueId) {
+  const data = await req("GET", `/api/timelog/issue/${issueId}`);
+  return Array.isArray(data)
+    ? data.map((t) => ({
+        id: String(t.id),
+        issueId: String(t.issueId),
+        description: t.description,
+        hoursSpent: t.hoursSpent,
+        logDate: t.logDate,
+        createdAt: t.createdAt,
+      }))
+    : [];
+}
+
+export async function getUserTimeLogsApi(userId, startDate, endDate) {
+  const params = new URLSearchParams();
+  if (startDate) params.append("startDate", startDate);
+  if (endDate) params.append("endDate", endDate);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const data = await req("GET", `/api/timelog/user/${userId}${query}`);
+  return Array.isArray(data)
+    ? data.map((t) => ({
+        id: String(t.id),
+        issueId: String(t.issueId),
+        description: t.description,
+        hoursSpent: t.hoursSpent,
+        logDate: t.logDate,
+        createdAt: t.createdAt,
+      }))
+    : [];
+}
+
+export async function updateTimeLogApi(timeLogId, timeLogData) {
+  const data = await req("PUT", `/api/timelog/${timeLogId}`, {
+    description: timeLogData.description ?? "",
+    hoursSpent: parseFloat(timeLogData.hoursSpent),
+    logDate: timeLogData.logDate,
+  });
+  return {
+    id: String(data.id),
+    issueId: String(data.issueId),
+    description: data.description,
+    hoursSpent: data.hoursSpent,
+    logDate: data.logDate,
+    createdAt: data.createdAt,
+  };
+}
+
+export async function deleteTimeLogApi(timeLogId) {
+  return req("DELETE", `/api/timelog/${timeLogId}`);
+}
+
+// ── Audit Logs ───────────────────────────────────────────────────
+export async function getAuditLogsApi(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.entityType) params.append("entityType", filters.entityType);
+  if (filters.userId) params.append("userId", filters.userId);
+  if (filters.action) params.append("action", filters.action);
+  if (filters.startDate) params.append("startDate", filters.startDate);
+  if (filters.endDate) params.append("endDate", filters.endDate);
+  if (filters.take) params.append("take", filters.take);
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const data = await req("GET", `/api/auditlog${query}`);
+
+  return Array.isArray(data)
+    ? data.map((log) => ({
+        id: String(log.id),
+        entityType: log.entityType,
+        entityId: log.entityId,
+        action: log.action,
+        userId: String(log.userId),
+        userName: log.userName,
+        changes: log.changes,
+        timestamp: log.timestamp,
+        createdAt: log.createdAt,
+      }))
+    : [];
+}
+
+// ── Issues/Tasks Advanced Queries ────────────────────────────────
+export async function getProjectIssuesApi(projectId, filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.append("status", filters.status);
+  if (filters.priority) params.append("priority", filters.priority);
+  if (filters.assigneeId) params.append("assigneeId", filters.assigneeId);
+  if (filters.type) params.append("type", filters.type);
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const data = await req("GET", `/api/issue/project/${projectId}${query}`);
+
+  return Array.isArray(data) ? data.map(mapTaskDto) : [];
+}
+
+export async function getProjectAnalyticsApi(projectId) {
+  const data = await req("GET", `/api/project/${projectId}/analytics`);
+  return {
+    projectId: String(data.projectId),
+    totalIssues: data.totalIssues ?? 0,
+    completedIssues: data.completedIssues ?? 0,
+    openIssues: data.openIssues ?? 0,
+    inProgressIssues: data.inProgressIssues ?? 0,
+    overdueIssues: data.overdueIssues ?? 0,
+    atRiskIssues: data.atRiskIssues ?? 0,
+    totalHoursLogged: data.totalHoursLogged ?? 0,
+    budgetUsed: data.budgetUsed ?? 0,
+    teamMembers: data.teamMembers ?? 0,
+    completionPercentage: data.completionPercentage ?? 0,
+  };
+}
+
+export async function getUserWorkloadApi(projectId, userId) {
+  const data = await req(
+    "GET",
+    `/api/issue/user/${userId}/workload?projectId=${projectId}`,
+  );
+  return {
+    userId: String(data.userId),
+    projectId: String(data.projectId),
+    assignedCount: data.assignedCount ?? 0,
+    openCount: data.openCount ?? 0,
+    completedCount: data.completedCount ?? 0,
+    overdueCount: data.overdueCount ?? 0,
+  };
+}
+
+// ── Issue History / Status ───────────────────────────────────────
+export async function getIssueHistoryApi(issueId) {
+  const data = await req("GET", `/api/issuehistory/issue/${issueId}`);
+  return Array.isArray(data)
+    ? data.map((h) => ({
+        id: String(h.id),
+        issueId: String(h.issueId),
+        changedField: h.changedField,
+        oldValue: h.oldValue,
+        newValue: h.newValue,
+        changedBy: h.changedByName,
+        changedAt: h.changedAt,
+      }))
+    : [];
+}
+
+// ── Issue Dependencies ───────────────────────────────────────────
+export async function getIssueDependenciesApi(issueId) {
+  const data = await req("GET", `/api/issue/${issueId}/dependencies`);
+  return Array.isArray(data)
+    ? data.map((dep) => ({
+        id: String(dep.id),
+        fromIssueId: String(dep.fromIssueId),
+        toIssueId: String(dep.toIssueId),
+        type: dep.dependencyType,
+      }))
+    : [];
+}
+
+export async function createIssueDependencyApi(fromIssueId, toIssueId, type) {
+  const data = await req("POST", `/api/issue/${fromIssueId}/dependencies`, {
+    toIssueId: parseInt(toIssueId, 10),
+    dependencyType: type,
+  });
+  return {
+    id: String(data.id),
+    fromIssueId: String(data.fromIssueId),
+    toIssueId: String(data.toIssueId),
+    type: data.dependencyType,
+  };
 }

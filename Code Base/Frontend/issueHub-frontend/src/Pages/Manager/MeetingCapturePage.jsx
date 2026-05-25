@@ -9,6 +9,8 @@ import {
   INITIAL_PROJECTS,
 } from "./managerConstants.js";
 import { getTasks, saveTasks } from "../../data/tasks.js";
+import { getSession } from "../../data/users.js";
+import { getProjectIssuesApi, isBackendUser } from "../../api/index.js";
 import "../../App.css";
 
 const MEETING_RECORDS_KEY = "issuehub_meeting_records";
@@ -127,7 +129,13 @@ function generateSummary(selected, projectName) {
 }
 
 export default function MeetingCapturePage() {
+  const session = getSession();
+  const useBackend = isBackendUser(session);
+
   const [activeKey, setActiveKey] = useState("meetings");
+  const [loading, setLoading] = useState(useBackend);
+  const [tasks, setTasks] = useState(getTasks);
+
   const [projects] = useState(() => {
     try {
       const stored = localStorage.getItem(PROJECTS_KEY);
@@ -136,6 +144,30 @@ export default function MeetingCapturePage() {
       return INITIAL_PROJECTS;
     }
   });
+
+  // Load tasks from backend if authenticated
+  useEffect(() => {
+    if (!useBackend) {
+      setLoading(false);
+      return;
+    }
+
+    const loadData = async () => {
+      try {
+        if (projects.length > 0) {
+          const tasksData = await getProjectIssuesApi(projects[0].id || "p1");
+          setTasks(tasksData);
+        }
+      } catch (e) {
+        console.error("Failed to load meeting tasks:", e.message);
+        setTasks(getTasks());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [useBackend, projects]);
 
   // shared
   const [projectId, setProjectId] = useState("");
@@ -341,389 +373,431 @@ export default function MeetingCapturePage() {
       />
 
       <main className="preview-main">
-        {/* HEADER */}
-        <section className="preview-hero card">
-          <p className="eyebrow">Meeting Capture</p>
-          <h1>Generate Tasks from Meeting</h1>
-          <p className="lead">
-            Upload audio or paste a transcript and let IssueHub extract action
-            items into real tasks.
-          </p>
-          <div className="preview-actions">
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleGenerateSuggestions}
-            >
-              <Sparkles size={16} style={{ marginRight: 8 }} />
-              Generate Suggestions
-            </Button>
-          </div>
-          <div className="preview-status">
-            <span className="status-dot" /> Active item: {activeLabel}
-          </div>
-        </section>
-
-        {/* INPUT SECTION */}
-        <section className="card" style={{ marginBottom: 24 }}>
-          <div style={{ display: "grid", gap: 16 }}>
-            {/* TAB SWITCHER */}
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button
-                style={tabStyle("audio")}
-                onClick={() => setInputMode("audio")}
-              >
-                🎙 Audio Upload
-              </button>
-              <button
-                style={tabStyle("transcript")}
-                onClick={() => setInputMode("transcript")}
-              >
-                📄 Transcript
-              </button>
-            </div>
-
-            {/* PROJECT SELECTOR */}
-            <div style={{ flex: 1, minWidth: 240 }}>
-              <label className="form-label">Project</label>
-              <select
-                className="form-select-base"
-                value={projectId}
-                onChange={(e) => setProjectId(e.target.value)}
-              >
-                <option value="">Select a project</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* AUDIO MODE — PM_09 */}
-            {inputMode === "audio" && (
-              <div>
-                <label className="form-label">
-                  Upload Audio (MP3, WAV, M4A)
-                </label>
-                <input
-                  type="file"
-                  accept="audio/*"
-                  className="form-input-base"
-                  onChange={handleFileUpload}
-                />
-                {fileName && (
-                  <p style={{ color: "#cbd5e1", fontSize: 13, marginTop: 6 }}>
-                    Loaded: {fileName}
-                  </p>
-                )}
-                {transcript && (
-                  <div style={{ marginTop: 12 }}>
-                    <label className="form-label">Transcript Preview</label>
-                    <textarea
-                      className="form-input-base"
-                      value={transcript}
-                      readOnly
-                      rows={6}
-                      style={{ resize: "vertical" }}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TRANSCRIPT MODE — PM_10 */}
-            {inputMode === "transcript" && (
-              <div style={{ display: "grid", gap: 12 }}>
-                <div>
-                  <label className="form-label">
-                    Upload Transcript{" "}
-                    <span className="form-label-optional">
-                      — .txt files supported
-                    </span>
-                  </label>
-                  <input
-                    type="file"
-                    accept=".txt"
-                    className="form-input-base"
-                    onChange={handleTranscriptFileUpload}
-                  />
-                  {transcriptFile && (
-                    <p style={{ color: "#cbd5e1", fontSize: 13, marginTop: 6 }}>
-                      Loaded: {transcriptFile}
-                    </p>
-                  )}
-                </div>
-
-                <div
-                  style={{
-                    textAlign: "center",
-                    color: "#64748b",
-                    fontSize: 13,
-                  }}
-                >
-                  — or —
-                </div>
-
-                <div>
-                  <label className="form-label">Paste Transcript Text</label>
-                  <textarea
-                    className="form-input-base"
-                    rows={8}
-                    placeholder="Paste your meeting transcript here..."
-                    value={pastedText}
-                    onChange={(e) => {
-                      setPastedText(e.target.value);
-                      setTranscript(e.target.value);
-                    }}
-                    style={{ resize: "vertical" }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* MESSAGE */}
-            {message && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "12px 14px",
-                  borderRadius: 10,
-                  background: "rgba(56,189,248,0.08)",
-                  border: "1px solid rgba(56,189,248,0.18)",
-                  color: "#cffafe",
-                }}
-              >
-                <FileText size={18} />
-                <span>{message}</span>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* SUGGESTIONS PANEL */}
-        {suggestions.length > 0 && (
-          <section className="card" style={{ marginBottom: 24 }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-                flexWrap: "wrap",
-              }}
-            >
-              <div>
-                <p className="eyebrow">Suggested Tasks</p>
-                <h2>Review extracted action items</h2>
-              </div>
-              <Button variant="primary" size="md" onClick={handleCreateTasks}>
-                <CheckCircle2 size={16} style={{ marginRight: 8 }} />
-                Confirm & Create Tasks
-              </Button>
-            </div>
-            <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
-              {suggestions.map((suggestion) => (
-                <div
-                  key={suggestion.id}
-                  style={{
-                    padding: 16,
-                    borderRadius: 14,
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.06)",
-                  }}
-                >
-                  <label
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={suggestion.selected}
-                      onChange={() => toggleSuggestion(suggestion.id)}
-                    />
-                    <span style={{ fontWeight: 600, color: "#f8fafc" }}>
-                      {suggestion.title}
-                    </span>
-                  </label>
-                  <p style={{ color: "#94a3b8", margin: "8px 0 0 24px" }}>
-                    {suggestion.description}
-                  </p>
-                  <span
-                    style={{ fontSize: 12, color: "#cbd5e1", marginLeft: 24 }}
-                  >
-                    Priority: {suggestion.priority}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* PM_11 — SUMMARY PANEL */}
-        {summary && (
-          <section className="card" style={{ marginBottom: 24 }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 12,
-                flexWrap: "wrap",
-                marginBottom: 20,
-              }}
-            >
-              <div>
-                <p className="eyebrow">Meeting Summary</p>
-                <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <ClipboardList size={20} />
-                  Auto-Generated Summary
-                </h2>
-                <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>
-                  Review and edit each section, then save to the meeting log.
-                </p>
-              </div>
-              <Button
-                variant={summarySaved ? "secondary" : "primary"}
-                size="md"
-                onClick={handleSaveSummary}
-                disabled={summarySaved}
-              >
-                <CheckCircle2 size={16} style={{ marginRight: 8 }} />
-                {summarySaved ? "Summary Saved ✓" : "Save & Share"}
-              </Button>
-            </div>
-
-            <div style={{ display: "grid", gap: 16 }}>
-              {[
-                { key: "decisionsMatch", label: "✅ Decisions Made" },
-                { key: "risksIdentified", label: "⚠️ Risks Identified" },
-                { key: "tasksCreated", label: "📋 Tasks Created" },
-                { key: "nextMeetingPoints", label: "📅 Next Meeting Points" },
-              ].map(({ key, label }) => (
-                <div key={key}>
-                  <label className="form-label">{label}</label>
-                  <textarea
-                    className="form-input-base"
-                    rows={key === "tasksCreated" ? 4 : 3}
-                    value={summaryEdits[key] || ""}
-                    onChange={(e) =>
-                      setSummaryEdits((prev) => ({
-                        ...prev,
-                        [key]: e.target.value,
-                      }))
-                    }
-                    style={{ resize: "vertical" }}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* MEETING LOG */}
-        <section className="card">
+        {loading ? (
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 12,
-              flexWrap: "wrap",
+              color: "#94a3b8",
+              fontSize: 14,
+              padding: "40px",
+              textAlign: "center",
             }}
           >
-            <div>
-              <p className="eyebrow">Meeting Log</p>
-              <h2>Stored Records</h2>
-            </div>
+            Loading meeting data...
           </div>
-
-          {meetingRecords.length === 0 ? (
-            <div className="empty-state" style={{ marginTop: 16 }}>
-              <div className="empty-state-content">
-                <h2>No meeting records yet</h2>
-                <p>Process a meeting to create the first record.</p>
-              </div>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gap: 14, marginTop: 16 }}>
-              {meetingRecords.slice(0, 5).map((record) => (
-                <div
-                  key={record.id}
-                  style={{
-                    padding: 16,
-                    borderRadius: 14,
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.06)",
-                  }}
+        ) : (
+          <>
+            {/* HEADER */}
+            <section className="preview-hero card">
+              <p className="eyebrow">Meeting Capture</p>
+              <h1>Generate Tasks from Meeting</h1>
+              <p className="lead">
+                Upload audio or paste a transcript and let IssueHub extract
+                action items into real tasks.
+              </p>
+              <div className="preview-actions">
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={handleGenerateSuggestions}
                 >
+                  <Sparkles size={16} style={{ marginRight: 8 }} />
+                  Generate Suggestions
+                </Button>
+              </div>
+              <div className="preview-status">
+                <span className="status-dot" /> Active item: {activeLabel}
+              </div>
+            </section>
+
+            {/* INPUT SECTION */}
+            <section className="card" style={{ marginBottom: 24 }}>
+              <div style={{ display: "grid", gap: 16 }}>
+                {/* TAB SWITCHER */}
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    style={tabStyle("audio")}
+                    onClick={() => setInputMode("audio")}
+                  >
+                    🎙 Audio Upload
+                  </button>
+                  <button
+                    style={tabStyle("transcript")}
+                    onClick={() => setInputMode("transcript")}
+                  >
+                    📄 Transcript
+                  </button>
+                </div>
+
+                {/* PROJECT SELECTOR */}
+                <div style={{ flex: 1, minWidth: 240 }}>
+                  <label className="form-label">Project</label>
+                  <select
+                    className="form-select-base"
+                    value={projectId}
+                    onChange={(e) => setProjectId(e.target.value)}
+                  >
+                    <option value="">Select a project</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* AUDIO MODE — PM_09 */}
+                {inputMode === "audio" && (
+                  <div>
+                    <label className="form-label">
+                      Upload Audio (MP3, WAV, M4A)
+                    </label>
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      className="form-input-base"
+                      onChange={handleFileUpload}
+                    />
+                    {fileName && (
+                      <p
+                        style={{ color: "#cbd5e1", fontSize: 13, marginTop: 6 }}
+                      >
+                        Loaded: {fileName}
+                      </p>
+                    )}
+                    {transcript && (
+                      <div style={{ marginTop: 12 }}>
+                        <label className="form-label">Transcript Preview</label>
+                        <textarea
+                          className="form-input-base"
+                          value={transcript}
+                          readOnly
+                          rows={6}
+                          style={{ resize: "vertical" }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* TRANSCRIPT MODE — PM_10 */}
+                {inputMode === "transcript" && (
+                  <div style={{ display: "grid", gap: 12 }}>
+                    <div>
+                      <label className="form-label">
+                        Upload Transcript{" "}
+                        <span className="form-label-optional">
+                          — .txt files supported
+                        </span>
+                      </label>
+                      <input
+                        type="file"
+                        accept=".txt"
+                        className="form-input-base"
+                        onChange={handleTranscriptFileUpload}
+                      />
+                      {transcriptFile && (
+                        <p
+                          style={{
+                            color: "#cbd5e1",
+                            fontSize: 13,
+                            marginTop: 6,
+                          }}
+                        >
+                          Loaded: {transcriptFile}
+                        </p>
+                      )}
+                    </div>
+
+                    <div
+                      style={{
+                        textAlign: "center",
+                        color: "#64748b",
+                        fontSize: 13,
+                      }}
+                    >
+                      — or —
+                    </div>
+
+                    <div>
+                      <label className="form-label">
+                        Paste Transcript Text
+                      </label>
+                      <textarea
+                        className="form-input-base"
+                        rows={8}
+                        placeholder="Paste your meeting transcript here..."
+                        value={pastedText}
+                        onChange={(e) => {
+                          setPastedText(e.target.value);
+                          setTranscript(e.target.value);
+                        }}
+                        style={{ resize: "vertical" }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* MESSAGE */}
+                {message && (
                   <div
                     style={{
                       display: "flex",
-                      justifyContent: "space-between",
-                      gap: 12,
-                      flexWrap: "wrap",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "12px 14px",
+                      borderRadius: 10,
+                      background: "rgba(56,189,248,0.08)",
+                      border: "1px solid rgba(56,189,248,0.18)",
+                      color: "#cffafe",
                     }}
                   >
-                    <div>
-                      <strong style={{ color: "#f8fafc" }}>
-                        {record.fileName}
-                      </strong>
-                      <div style={{ color: "#94a3b8", fontSize: 13 }}>
-                        {projects.find((p) => p.id === record.projectId)
-                          ?.name || record.projectId}
-                      </div>
-                    </div>
-                    <div style={{ color: "#cbd5e1", fontSize: 12 }}>
-                      {formatDate(record.createdAt)}
-                    </div>
+                    <FileText size={18} />
+                    <span>{message}</span>
                   </div>
+                )}
+              </div>
+            </section>
 
-                  {record.summary && (
-                    <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-                      {[
-                        { key: "decisionsMatch", label: "✅ Decisions" },
-                        { key: "risksIdentified", label: "⚠️ Risks" },
-                        { key: "nextMeetingPoints", label: "📅 Next Steps" },
-                      ].map(({ key, label }) =>
-                        record.summary[key] ? (
-                          <div key={key}>
-                            <span
-                              style={{
-                                color: "#64748b",
-                                fontSize: 11,
-                                fontWeight: 700,
-                                textTransform: "uppercase",
-                                letterSpacing: "0.06em",
-                              }}
-                            >
-                              {label}
-                            </span>
-                            <p
-                              style={{
-                                color: "#cbd5e1",
-                                fontSize: 13,
-                                margin: "4px 0 0",
-                                whiteSpace: "pre-line",
-                              }}
-                            >
-                              {record.summary[key]}
-                            </p>
+            {/* SUGGESTIONS PANEL */}
+            {suggestions.length > 0 && (
+              <section className="card" style={{ marginBottom: 24 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div>
+                    <p className="eyebrow">Suggested Tasks</p>
+                    <h2>Review extracted action items</h2>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={handleCreateTasks}
+                  >
+                    <CheckCircle2 size={16} style={{ marginRight: 8 }} />
+                    Confirm & Create Tasks
+                  </Button>
+                </div>
+                <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
+                  {suggestions.map((suggestion) => (
+                    <div
+                      key={suggestion.id}
+                      style={{
+                        padding: 16,
+                        borderRadius: 14,
+                        background: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                      }}
+                    >
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={suggestion.selected}
+                          onChange={() => toggleSuggestion(suggestion.id)}
+                        />
+                        <span style={{ fontWeight: 600, color: "#f8fafc" }}>
+                          {suggestion.title}
+                        </span>
+                      </label>
+                      <p style={{ color: "#94a3b8", margin: "8px 0 0 24px" }}>
+                        {suggestion.description}
+                      </p>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          color: "#cbd5e1",
+                          marginLeft: 24,
+                        }}
+                      >
+                        Priority: {suggestion.priority}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* PM_11 — SUMMARY PANEL */}
+            {summary && (
+              <section className="card" style={{ marginBottom: 24 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                    flexWrap: "wrap",
+                    marginBottom: 20,
+                  }}
+                >
+                  <div>
+                    <p className="eyebrow">Meeting Summary</p>
+                    <h2
+                      style={{ display: "flex", alignItems: "center", gap: 8 }}
+                    >
+                      <ClipboardList size={20} />
+                      Auto-Generated Summary
+                    </h2>
+                    <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>
+                      Review and edit each section, then save to the meeting
+                      log.
+                    </p>
+                  </div>
+                  <Button
+                    variant={summarySaved ? "secondary" : "primary"}
+                    size="md"
+                    onClick={handleSaveSummary}
+                    disabled={summarySaved}
+                  >
+                    <CheckCircle2 size={16} style={{ marginRight: 8 }} />
+                    {summarySaved ? "Summary Saved ✓" : "Save & Share"}
+                  </Button>
+                </div>
+
+                <div style={{ display: "grid", gap: 16 }}>
+                  {[
+                    { key: "decisionsMatch", label: "✅ Decisions Made" },
+                    { key: "risksIdentified", label: "⚠️ Risks Identified" },
+                    { key: "tasksCreated", label: "📋 Tasks Created" },
+                    {
+                      key: "nextMeetingPoints",
+                      label: "📅 Next Meeting Points",
+                    },
+                  ].map(({ key, label }) => (
+                    <div key={key}>
+                      <label className="form-label">{label}</label>
+                      <textarea
+                        className="form-input-base"
+                        rows={key === "tasksCreated" ? 4 : 3}
+                        value={summaryEdits[key] || ""}
+                        onChange={(e) =>
+                          setSummaryEdits((prev) => ({
+                            ...prev,
+                            [key]: e.target.value,
+                          }))
+                        }
+                        style={{ resize: "vertical" }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* MEETING LOG */}
+            <section className="card">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <p className="eyebrow">Meeting Log</p>
+                  <h2>Stored Records</h2>
+                </div>
+              </div>
+
+              {meetingRecords.length === 0 ? (
+                <div className="empty-state" style={{ marginTop: 16 }}>
+                  <div className="empty-state-content">
+                    <h2>No meeting records yet</h2>
+                    <p>Process a meeting to create the first record.</p>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 14, marginTop: 16 }}>
+                  {meetingRecords.slice(0, 5).map((record) => (
+                    <div
+                      key={record.id}
+                      style={{
+                        padding: 16,
+                        borderRadius: 14,
+                        background: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 12,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div>
+                          <strong style={{ color: "#f8fafc" }}>
+                            {record.fileName}
+                          </strong>
+                          <div style={{ color: "#94a3b8", fontSize: 13 }}>
+                            {projects.find((p) => p.id === record.projectId)
+                              ?.name || record.projectId}
                           </div>
-                        ) : null,
+                        </div>
+                        <div style={{ color: "#cbd5e1", fontSize: 12 }}>
+                          {formatDate(record.createdAt)}
+                        </div>
+                      </div>
+
+                      {record.summary && (
+                        <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                          {[
+                            { key: "decisionsMatch", label: "✅ Decisions" },
+                            { key: "risksIdentified", label: "⚠️ Risks" },
+                            {
+                              key: "nextMeetingPoints",
+                              label: "📅 Next Steps",
+                            },
+                          ].map(({ key, label }) =>
+                            record.summary[key] ? (
+                              <div key={key}>
+                                <span
+                                  style={{
+                                    color: "#64748b",
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.06em",
+                                  }}
+                                >
+                                  {label}
+                                </span>
+                                <p
+                                  style={{
+                                    color: "#cbd5e1",
+                                    fontSize: 13,
+                                    margin: "4px 0 0",
+                                    whiteSpace: "pre-line",
+                                  }}
+                                >
+                                  {record.summary[key]}
+                                </p>
+                              </div>
+                            ) : null,
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
+              )}
+            </section>
+          </>
+        )}
       </main>
     </div>
   );
