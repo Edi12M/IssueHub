@@ -131,14 +131,17 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.ConfigObject.AdditionalItems["persistAuthorization"] = true;
+    });
 }
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 
-app.UseHttpsRedirection();
-
 app.UseCors(CorsPolicyName);
+
+app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
