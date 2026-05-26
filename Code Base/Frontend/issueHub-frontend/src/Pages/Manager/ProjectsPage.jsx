@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 
 import Button from "../../Components/Button/button.jsx";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
-import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
+import { MANAGER_NAV_ITEMS, PROJECTS_KEY } from "./managerConstants.js";
 import {
   getProjectsApi,
   createProjectApi,
@@ -12,6 +12,7 @@ import {
   isBackendUser,
 } from "../../api/index.js";
 import { getSession } from "../../data/users.js";
+import { getProjects, createProject } from "../../data/projects.js";
 
 import CreateProjectModal from "../../Components/Modals/CreateProjectModal.jsx";
 import AddMemberModal from "../../Components/Modals/AddMemberModal.jsx";
@@ -20,13 +21,25 @@ import NotificationModal from "../../Components/Modals/NotificationModal.jsx";
 import ProjectCard from "../../Components/ProjectCard.jsx";
 import "../../App.css";
 
+function loadLocalProjects() {
+  try {
+    const stored = localStorage.getItem(PROJECTS_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {
+    /* use seed */
+  }
+  return getProjects();
+}
+
 export default function ProjectsPage() {
   const session = getSession();
   const backendUser = isBackendUser(session);
 
   const [activeKey, setActiveKey] = useState("projects");
   const [apiError, setApiError] = useState(false);
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState(() =>
+    backendUser ? [] : loadLocalProjects(),
+  );
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -41,8 +54,14 @@ export default function ProjectsPage() {
   useEffect(() => {
     if (!backendUser) return;
     getProjectsApi()
-      .then((fetched) => { setProjects(fetched); setApiError(false); })
-      .catch(() => setApiError(true));
+      .then((fetched) => {
+        setProjects(fetched);
+        setApiError(false);
+      })
+      .catch(() => {
+        setApiError(true);
+        setProjects(loadLocalProjects());
+      });
   }, [backendUser]);
 
   useEffect(() => {
@@ -51,6 +70,12 @@ export default function ProjectsPage() {
       .then((users) => setAvailableUsers(users))
       .catch(() => {});
   }, [backendUser]);
+
+  useEffect(() => {
+    if (!backendUser) {
+      localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+    }
+  }, [projects, backendUser]);
 
   const activeLabel = useMemo(
     () =>
@@ -67,34 +92,67 @@ export default function ProjectsPage() {
   );
 
   const handleCreateProject = async (newProject) => {
-    try {
-      const created = await createProjectApi(newProject, session.backendId);
-      setProjects((prev) => [created, ...prev]);
-      setNotification({ isOpen: true, type: "success", title: "Project Created", message: `Project "${created.name}" has been created successfully.` });
-    } catch (e) {
-      setNotification({ isOpen: true, type: "error", title: "Failed to Create", message: e.message || "Failed to create project." });
+    if (backendUser && session?.backendId) {
+      try {
+        const created = await createProjectApi(newProject, session.backendId);
+        setProjects((prev) => [created, ...prev]);
+        setNotification({
+          isOpen: true,
+          type: "success",
+          title: "Project Created",
+          message: `Project "${created.name}" has been created successfully.`,
+        });
+        return;
+      } catch {
+        const created = createProject(newProject);
+        setProjects((prev) => [created, ...prev]);
+        setNotification({
+          isOpen: true,
+          type: "success",
+          title: "Project Created",
+          message: `Project "${created.name}" has been created successfully.`,
+        });
+        return;
+      }
     }
+
+    const created = createProject(newProject);
+    setProjects((prev) => [created, ...prev]);
+    setNotification({
+      isOpen: true,
+      type: "success",
+      title: "Project Created",
+      message: `Project "${created.name}" has been created successfully.`,
+    });
   };
 
   const handleAddMembers = async (projectId, newMembers) => {
-    for (const member of newMembers) {
-      const userId = member.backendId ?? parseInt(member.id, 10);
-      if (!isNaN(userId) && selectedProject?.backendId) {
-        try {
-          await assignUserToProjectApi(selectedProject.backendId, userId);
-        } catch (e) {
-          console.warn("Failed to assign member to project:", e.message);
+    if (backendUser && selectedProject?.backendId) {
+      for (const member of newMembers) {
+        const userId = member.backendId ?? parseInt(member.id, 10);
+        if (!isNaN(userId)) {
+          try {
+            await assignUserToProjectApi(selectedProject.backendId, userId);
+          } catch (e) {
+            console.warn("Failed to assign member to project:", e.message);
+          }
         }
       }
     }
+
     setProjects((prev) =>
       prev.map((project) =>
         project.id === projectId
           ? { ...project, members: [...(project.members ?? []), ...newMembers] }
-          : project
-      )
+          : project,
+      ),
     );
-    setNotification({ isOpen: true, type: "success", title: "Members Added", message: `${newMembers.length} member(s) added successfully.` });
+    setNotification({
+      isOpen: true,
+      type: "success",
+      title: "Members Added",
+      message: `${newMembers.length} member(s) added successfully.`,
+    });
   };
 
   const handleManageMembers = (project) => {
@@ -124,8 +182,18 @@ export default function ProjectsPage() {
           </p>
 
           {apiError && (
-            <div style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 8, padding: "8px 14px", fontSize: 13, color: "#fbbf24", marginBottom: 12 }}>
-              Could not reach the server.
+            <div
+              style={{
+                background: "rgba(245,158,11,0.12)",
+                border: "1px solid rgba(245,158,11,0.3)",
+                borderRadius: 8,
+                padding: "8px 14px",
+                fontSize: 13,
+                color: "#fbbf24",
+                marginBottom: 12,
+              }}
+            >
+              Could not reach the server. Showing cached projects.
             </div>
           )}
 
