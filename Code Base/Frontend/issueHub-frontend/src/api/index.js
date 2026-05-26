@@ -167,6 +167,23 @@ function mapTaskDto(t) {
   };
 }
 
+function mapAttachment(a) {
+  const sizeBytes = a.fileSizeBytes ?? a.fileSize ?? 0;
+  const mime = a.fileType ?? a.mimeType ?? "";
+  const dated = a.uploadedAt ?? a.createdAt ?? "";
+  return {
+    id: String(a.id),
+    name: a.fileName ?? "attachment",
+    size: sizeBytes ? `${Math.round(sizeBytes / 1024)} KB` : "—",
+    type: mime.includes("image") ? "img" : "fig",
+    date: dated ? new Date(dated).toLocaleDateString("en-GB") : "",
+    fileName: a.fileName,
+    mimeType: mime,
+    fileSize: sizeBytes,
+    createdAt: dated,
+  };
+}
+
 function mapIssueDetail(issue) {
   const comments = (issue.comments ?? []).map((c) => ({
     id: String(c.id),
@@ -177,13 +194,7 @@ function mapIssueDetail(issue) {
     mine: false,
     authorId: c.authorId,
   }));
-  const attachments = (issue.attachments ?? []).map((a) => ({
-    id: String(a.id),
-    name: a.fileName ?? "attachment",
-    size: a.fileSize ? `${Math.round(a.fileSize / 1024)} KB` : "—",
-    type: (a.mimeType ?? "").includes("image") ? "img" : "fig",
-    date: a.createdAt ? new Date(a.createdAt).toLocaleDateString("en-GB") : "",
-  }));
+  const attachments = (issue.attachments ?? []).map(mapAttachment);
   return {
     id: `BE-${issue.id}`,
     backendId: issue.id,
@@ -393,7 +404,7 @@ export async function createCommentApi(issueId, commentBody) {
 }
 
 export async function getIssueCommentsApi(issueId) {
-  const data = await req("GET", `/api/comment/${issueId}`);
+  const data = await req("GET", `/api/comment/issue/${issueId}`);
   return Array.isArray(data)
     ? data.map((c) => ({
         id: String(c.id),
@@ -458,21 +469,7 @@ export async function uploadAttachmentApi(issueId, file) {
 
 export async function getIssueAttachmentsApi(issueId) {
   const data = await req("GET", `/api/attachment/issue/${issueId}`);
-  return Array.isArray(data)
-    ? data.map((a) => ({
-        id: String(a.id),
-        name: a.fileName ?? "attachment",
-        size: a.fileSize ? `${Math.round(a.fileSize / 1024)} KB` : "—",
-        type: (a.mimeType ?? "").includes("image") ? "img" : "fig",
-        date: a.createdAt
-          ? new Date(a.createdAt).toLocaleDateString("en-GB")
-          : "",
-        fileName: a.fileName,
-        mimeType: a.mimeType,
-        fileSize: a.fileSize,
-        createdAt: a.createdAt,
-      }))
-    : [];
+  return Array.isArray(data) ? data.map(mapAttachment) : [];
 }
 
 export async function deleteAttachmentApi(attachmentId) {
@@ -483,16 +480,25 @@ export async function deleteAttachmentApi(attachmentId) {
 export async function getMyNotificationsApi() {
   const data = await req("GET", "/api/notification/me");
   return Array.isArray(data)
-    ? data.map((n) => ({
-        id: String(n.id),
-        userId: String(n.userId),
-        message: n.message ?? n.title ?? "Notification",
-        type: n.type ?? "Info",
-        isRead: n.isRead ?? false,
-        createdAt: n.createdAt,
-        relatedIssueId: n.relatedIssueId,
-        relatedProjectId: n.relatedProjectId,
-      }))
+    ? data.map((n) => {
+        const ref = n.entityCode ? ` [${n.entityCode}]` : "";
+        const message = n.type
+          ? `${n.type.replace(/([A-Z])/g, " $1").trim()}${ref}`
+          : "Notification";
+        return {
+          id: String(n.id),
+          userId: String(n.userId),
+          message,
+          type: n.type ?? "Info",
+          entityType: n.entityType,
+          entityId: n.entityId,
+          entityCode: n.entityCode,
+          isRead: n.isRead ?? false,
+          createdAt: n.createdAt,
+          relatedIssueId: n.entityType === "Issue" ? n.entityId : undefined,
+          relatedProjectId: n.entityType === "Project" ? n.entityId : undefined,
+        };
+      })
     : [];
 }
 
@@ -512,15 +518,16 @@ export async function deleteNotificationApi(notificationId) {
 export async function createTimeLogApi(timeLogData) {
   const data = await req("POST", "/api/timelog", {
     issueId: parseInt(timeLogData.issueId, 10),
-    description: timeLogData.description ?? "",
-    hoursSpent: parseFloat(timeLogData.hoursSpent),
+    hours: parseFloat(timeLogData.hoursSpent ?? timeLogData.hours ?? 0),
+    isBillable: timeLogData.isBillable ?? timeLogData.billable ?? false,
     logDate: timeLogData.logDate ?? new Date().toISOString().split("T")[0],
+    note: timeLogData.description ?? timeLogData.note ?? "",
   });
   return {
     id: String(data.id),
     issueId: String(data.issueId),
-    description: data.description,
-    hoursSpent: data.hoursSpent,
+    description: data.note,
+    hoursSpent: data.hours,
     logDate: data.logDate,
     createdAt: data.createdAt,
   };
@@ -532,8 +539,8 @@ export async function getIssueTimeLogsApi(issueId) {
     ? data.map((t) => ({
         id: String(t.id),
         issueId: String(t.issueId),
-        description: t.description,
-        hoursSpent: t.hoursSpent,
+        description: t.note,
+        hoursSpent: t.hours,
         logDate: t.logDate,
         createdAt: t.createdAt,
       }))
@@ -550,8 +557,8 @@ export async function getUserTimeLogsApi(userId, startDate, endDate) {
     ? data.map((t) => ({
         id: String(t.id),
         issueId: String(t.issueId),
-        description: t.description,
-        hoursSpent: t.hoursSpent,
+        description: t.note,
+        hoursSpent: t.hours,
         logDate: t.logDate,
         createdAt: t.createdAt,
       }))
@@ -560,15 +567,15 @@ export async function getUserTimeLogsApi(userId, startDate, endDate) {
 
 export async function updateTimeLogApi(timeLogId, timeLogData) {
   const data = await req("PUT", `/api/timelog/${timeLogId}`, {
-    description: timeLogData.description ?? "",
-    hoursSpent: parseFloat(timeLogData.hoursSpent),
+    note: timeLogData.description ?? timeLogData.note ?? "",
+    hours: parseFloat(timeLogData.hoursSpent ?? timeLogData.hours ?? 0),
     logDate: timeLogData.logDate,
   });
   return {
     id: String(data.id),
     issueId: String(data.issueId),
-    description: data.description,
-    hoursSpent: data.hoursSpent,
+    description: data.note,
+    hoursSpent: data.hours,
     logDate: data.logDate,
     createdAt: data.createdAt,
   };
@@ -659,11 +666,11 @@ export async function getIssueHistoryApi(issueId) {
     ? data.map((h) => ({
         id: String(h.id),
         issueId: String(h.issueId),
-        changedField: h.changedField,
+        changedField: h.fieldName,
         oldValue: h.oldValue,
         newValue: h.newValue,
-        changedBy: h.changedByName,
-        changedAt: h.changedAt,
+        changedBy: h.actorName,
+        changedAt: h.createdAt,
       }))
     : [];
 }
