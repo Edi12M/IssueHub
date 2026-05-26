@@ -105,7 +105,32 @@ function mapUser(u) {
   };
 }
 
+const VISIBILITY_TO_BE = {
+  Private: "Private",
+  Team: "Internal",
+  Internal: "Internal",
+  Organisation: "Public",
+  Organization: "Public",
+  Public: "Public",
+};
+
+const VISIBILITY_FROM_BE = {
+  Private: "Private",
+  Internal: "Team",
+  Public: "Organisation",
+};
+
+const TYPE_TO_BE = {
+  Internal: "Software",
+  Software: "Software",
+  Marketing: "Marketing",
+  Design: "Design",
+  Research: "Research",
+  Other: "Other",
+};
+
 function mapProject(p) {
+  const visibilityRaw = p.visibility ?? "Private";
   return {
     id: String(p.id),
     backendId: p.id,
@@ -117,20 +142,34 @@ function mapProject(p) {
     membersCount: p.teamSize ?? 0,
     openIssues: p.openIssueCount ?? 0,
     completedIssues: p.completedIssueCount ?? 0,
-    budget: Number(p.budgetUsed ?? 0),
+    budget: Number(p.budgetUsed ?? p.budgetHours ?? 0),
     spent: Number(p.budgetUsed ?? 0),
     createdAt: p.createdAt ?? new Date().toISOString(),
     deadline: p.deadline
       ? new Date(p.deadline).toISOString()
       : (p.endDate ?? ""),
     tags: [],
-    startDate: p.startDate ?? "",
-    endDate: p.endDate ?? p.deadline ?? "",
-    visibility: p.visibility ?? "Team",
+    startDate: p.startDate
+      ? String(p.startDate).slice(0, 10)
+      : "",
+    endDate: p.endDate
+      ? String(p.endDate).slice(0, 10)
+      : (p.deadline ? String(p.deadline).slice(0, 10) : ""),
+    visibility: VISIBILITY_FROM_BE[visibilityRaw] ?? visibilityRaw,
     methodology: p.methodology ?? "Scrum",
-    type: p.type ?? "Internal",
+    type: p.type ?? "Software",
     members: [],
   };
+}
+
+function mapProjectResponse(p) {
+  return mapProject({
+    ...p,
+    teamSize: 0,
+    openIssueCount: 0,
+    completedIssueCount: 0,
+    budgetUsed: p.budgetHours ?? 0,
+  });
 }
 
 function initials(name) {
@@ -290,25 +329,36 @@ export async function getProjectsApi() {
 }
 
 export async function createProjectApi(payload, ownerId) {
+  const owner = Number(ownerId);
+  if (!owner || owner <= 0) {
+    throw new Error(
+      "Missing user id for project owner. Log out and sign in again while the backend is running.",
+    );
+  }
+
   const start = payload.startDate
     ? new Date(payload.startDate).toISOString()
     : new Date().toISOString();
   const end = payload.endDate
     ? new Date(payload.endDate).toISOString()
     : new Date(Date.now() + 90 * 24 * 3600 * 1000).toISOString();
+
+  const visibility =
+    VISIBILITY_TO_BE[payload.visibility] ?? VISIBILITY_TO_BE.Private;
+
   const data = await req("POST", "/api/project", {
     name: payload.name,
-    description: payload.description || " ",
+    description: payload.description?.trim() || "No description provided.",
     goals: payload.goals ?? "",
     startDate: start,
     endDate: end,
-    ownerId,
+    ownerId: owner,
     methodology: payload.methodology ?? "Scrum",
-    visibility: payload.visibility ?? "Team",
-    type: payload.type ?? "Internal",
+    visibility,
+    type: TYPE_TO_BE[payload.type] ?? TYPE_TO_BE.Internal,
     budgetHours: 0,
   });
-  return mapProject(data);
+  return mapProjectResponse(data);
 }
 
 export async function archiveProjectApi(id) {

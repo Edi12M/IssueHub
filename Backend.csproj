@@ -7,6 +7,16 @@
     <UserSecretsId>95aa4b30-ef57-4574-b161-b58d3a977eb2</UserSecretsId>
   </PropertyGroup>
 
+  <!-- Repo also contains Code Base/Backend — exclude it to avoid duplicate type errors (CS0111). -->
+  <ItemGroup>
+    <Compile Remove="Code Base/**" />
+    <Content Remove="Code Base/**" />
+    <EmbeddedResource Remove="Code Base/**" />
+    <None Remove="Code Base/**" />
+    <Compile Remove="Weekly Reports/**" />
+    <Compile Remove="Class Work/**" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.8" />
