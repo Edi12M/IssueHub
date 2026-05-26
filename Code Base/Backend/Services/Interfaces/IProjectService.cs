@@ -18,5 +18,6 @@ namespace Backend.Services.Interfaces
         Task<int> GetOpenIssueCountAsync(int projectId);
         Task<int> GetClosedIssueCountAsync(int projectId);
         Task<decimal> GetBudgetUsedAsync(int projectId);
+        Task<ProjectAnalyticsDto> GetProjectAnalyticsAsync(int projectId);
     }
 }

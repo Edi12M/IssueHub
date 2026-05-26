@@ -336,6 +336,105 @@ namespace Backend.Services
             };
         }
 
+        public async Task<List<TaskDto>> GetIssuesByProjectAsync(int projectId, string? status, string? priority, string? assigneeId, string? type)
+        {
+            var queryable = _context.Issues
+                .Include(i => i.Project)
+                .Where(i => i.ProjectId == projectId && !i.IsArchived);
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                if (System.Enum.TryParse<IssueStatus>(status, true, out var parsedStatus))
+                    queryable = queryable.Where(i => i.Status == parsedStatus);
+            }
+            if (!string.IsNullOrWhiteSpace(priority))
+            {
+                if (System.Enum.TryParse<IssuePriority>(priority, true, out var parsedPriority))
+                    queryable = queryable.Where(i => i.Priority == parsedPriority);
+            }
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                if (System.Enum.TryParse<IssueType>(type, true, out var parsedType))
+                    queryable = queryable.Where(i => i.Type == parsedType);
+            }
+            if (!string.IsNullOrWhiteSpace(assigneeId) && int.TryParse(assigneeId, out var uid))
+            {
+                var assignedIssueIds = await _context.IssueAssignments
+                    .Where(a => a.UserId == uid)
+                    .Select(a => a.IssueId)
+                    .ToListAsync();
+                queryable = queryable.Where(i => assignedIssueIds.Contains(i.Id));
+            }
+
+            var issues = await queryable.ToListAsync();
+            return issues.Select(MapToTaskDto).ToList();
+        }
+
+        public async Task<UserWorkloadDto> GetUserWorkloadAsync(int userId, int projectId)
+        {
+            var assigned = await _context.IssueAssignments
+                .Include(a => a.Issue)
+                .Where(a => a.UserId == userId && a.Issue.ProjectId == projectId)
+                .Select(a => a.Issue)
+                .ToListAsync();
+
+            var now = DateTime.UtcNow;
+            return new UserWorkloadDto
+            {
+                UserId = userId,
+                ProjectId = projectId,
+                AssignedCount = assigned.Count,
+                OpenCount = assigned.Count(i => i.Status != IssueStatus.Resolved && i.Status != IssueStatus.Closed),
+                CompletedCount = assigned.Count(i => i.Status == IssueStatus.Resolved || i.Status == IssueStatus.Closed),
+                OverdueCount = assigned.Count(i => i.DueDate < now && i.Status != IssueStatus.Resolved && i.Status != IssueStatus.Closed)
+            };
+        }
+
+        public async Task<List<IssueDependencyDto>> GetIssueDependenciesAsync(int issueId)
+        {
+            var deps = await _context.IssueDependencies
+                .Where(d => d.IssueId == issueId)
+                .ToListAsync();
+
+            return deps.Select(d => new IssueDependencyDto
+            {
+                Id = d.Id,
+                FromIssueId = d.IssueId,
+                ToIssueId = d.DependOnId,
+                DependencyType = d.Type.ToString()
+            }).ToList();
+        }
+
+        public async Task<IssueDependencyDto> AddIssueDependencyAsync(int fromIssueId, int toIssueId, string dependencyType)
+        {
+            var issueExists = await _context.Issues.AnyAsync(i => i.Id == fromIssueId);
+            if (!issueExists) throw new NotFoundException(nameof(Issue), fromIssueId);
+
+            var depExists = await _context.Issues.AnyAsync(i => i.Id == toIssueId);
+            if (!depExists) throw new NotFoundException(nameof(Issue), toIssueId);
+
+            if (!System.Enum.TryParse<IssueDependencyType>(dependencyType, true, out var depType))
+                throw new BadRequestException($"Invalid dependency type '{dependencyType}'.");
+
+            var dep = new IssueDependency
+            {
+                IssueId = fromIssueId,
+                DependOnId = toIssueId,
+                Type = depType,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.IssueDependencies.Add(dep);
+            await _context.SaveChangesAsync();
+
+            return new IssueDependencyDto
+            {
+                Id = dep.Id,
+                FromIssueId = dep.IssueId,
+                ToIssueId = dep.DependOnId,
+                DependencyType = dep.Type.ToString()
+            };
+        }
+
         public async Task<List<TaskDto>> GetTasksFilteredAsync(int userId, string? status, string? priority)
         {
             var projectIds = await _context.ProjectMembers

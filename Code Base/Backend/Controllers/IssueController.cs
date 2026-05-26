@@ -60,5 +60,30 @@ namespace Backend.Controllers
             [FromQuery] string? status,
             [FromQuery] string? priority)
             => Ok(await _service.GetTasksFilteredAsync(userId, status, priority));
+
+        [HttpGet("project/{projectId:int}")]
+        public async Task<ActionResult<List<TaskDto>>> ByProject(
+            int projectId,
+            [FromQuery] string? status,
+            [FromQuery] string? priority,
+            [FromQuery] string? assigneeId,
+            [FromQuery] string? type)
+            => Ok(await _service.GetIssuesByProjectAsync(projectId, status, priority, assigneeId, type));
+
+        [HttpGet("user/{userId:int}/workload")]
+        public async Task<ActionResult<UserWorkloadDto>> Workload(
+            int userId,
+            [FromQuery] int projectId)
+            => Ok(await _service.GetUserWorkloadAsync(userId, projectId));
+
+        [HttpGet("{issueId:int}/dependencies")]
+        public async Task<ActionResult<List<IssueDependencyDto>>> GetDependencies(int issueId)
+            => Ok(await _service.GetIssueDependenciesAsync(issueId));
+
+        [HttpPost("{issueId:int}/dependencies")]
+        public async Task<ActionResult<IssueDependencyDto>> AddDependency(
+            int issueId,
+            [FromBody] AddIssueDependencyDto dto)
+            => Ok(await _service.AddIssueDependencyAsync(issueId, dto.ToIssueId, dto.DependencyType));
     }
 }

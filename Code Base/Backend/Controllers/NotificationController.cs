@@ -29,5 +29,19 @@ namespace Backend.Controllers
         [HttpPatch("{notificationId:int}/read")]
         public async Task<ActionResult<NotificationResponseDto>> MarkRead(int notificationId)
             => Ok(await _service.MarkAsReadAsync(notificationId, CurrentUserId()));
+
+        [HttpPatch("read-all")]
+        public async Task<IActionResult> MarkAllRead()
+        {
+            await _service.MarkAllAsReadAsync(CurrentUserId());
+            return NoContent();
+        }
+
+        [HttpDelete("{notificationId:int}")]
+        public async Task<IActionResult> Delete(int notificationId)
+        {
+            await _service.DeleteNotificationAsync(notificationId, CurrentUserId());
+            return NoContent();
+        }
     }
 }

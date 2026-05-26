@@ -9,6 +9,8 @@ import {
   getUsersApi,
   getProjectsApi,
   getProjectIssuesApi,
+  createIssueApi,
+  updateIssueApi,
   isBackendUser,
 } from "../../api/index.js";
 import { getUsers, getSession } from "../../data/users.js";
@@ -82,9 +84,12 @@ export default function TasksPage() {
           setProjects(projectsData);
 
           if (projectsData.length > 0) {
-            const firstId = String(projectsData[0].backendId || projectsData[0].id);
-            const tasksData = await getProjectIssuesApi(firstId);
-            setTasks(tasksData);
+            const allTaskArrays = await Promise.all(
+              projectsData.map((p) =>
+                getProjectIssuesApi(String(p.backendId || p.id)).catch(() => [])
+              )
+            );
+            setTasks(allTaskArrays.flat());
           }
         } else {
           const usersData = await getUsersApi();
@@ -107,8 +112,8 @@ export default function TasksPage() {
   const [selectedProjectId, setSelectedProjectId] = useState("");
 
   useEffect(() => {
-    saveTasks(tasks);
-  }, [tasks]);
+    if (!useBackend) saveTasks(tasks);
+  }, [tasks, useBackend]);
 
   useEffect(() => {
     localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
@@ -124,10 +129,37 @@ export default function TasksPage() {
     setEditingTask(null);
   }
 
-  function handleCreateTask(task) {
+  async function handleCreateTask(task) {
     if (editingTask) {
+      if (useBackend && editingTask.backendId) {
+        try {
+          await updateIssueApi(editingTask.backendId, task);
+        } catch (e) {
+          console.warn("Failed to update issue:", e.message);
+        }
+      } else {
+        saveTasks(tasks.map((t) => (t.id === task.id ? task : t)));
+      }
       setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
     } else {
+      if (useBackend) {
+        if (!task.projectId) {
+          alert("Please select a project before creating a task.");
+          return;
+        }
+        try {
+          const created = await createIssueApi(task, session.backendId);
+          setTasks((prev) => [created, ...prev]);
+          setShowModal(false);
+          setEditingTask(null);
+          return;
+        } catch (e) {
+          console.warn("Failed to create issue via API:", e.message);
+          alert(`Failed to save task: ${e.message}`);
+          return;
+        }
+      }
+      saveTasks([task, ...tasks]);
       setTasks((prev) => [task, ...prev]);
     }
     setShowModal(false);

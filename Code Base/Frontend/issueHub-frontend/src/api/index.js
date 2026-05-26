@@ -336,6 +336,41 @@ export async function updateIssueStatusApi(issueId, newStatus) {
   });
 }
 
+const VALID_ISSUE_TYPES = new Set(["Bug", "Feature", "Task", "Improvement", "Security"]);
+function normalizeIssueType(t) {
+  if (!t) return "Task";
+  const cap = t.charAt(0).toUpperCase() + t.slice(1);
+  return VALID_ISSUE_TYPES.has(cap) ? cap : "Task";
+}
+
+export async function createIssueApi(task, reporterId) {
+  const data = await req("POST", "/api/issue", {
+    title: task.title,
+    description: task.description || " ",
+    acceptanceCriteria: task.acceptanceCriteria || "",
+    type: normalizeIssueType(task.type),
+    priority: task.priority ?? "Medium",
+    startDate: task.startDate ? new Date(task.startDate).toISOString() : new Date().toISOString(),
+    dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : new Date(Date.now() + 7 * 86400000).toISOString(),
+    projectId: parseInt(task.projectId, 10),
+    reporterId,
+  });
+  return mapTaskDto(data);
+}
+
+export async function updateIssueApi(issueId, task) {
+  const dto = {};
+  if (task.title !== undefined) dto.title = task.title;
+  if (task.description !== undefined) dto.description = task.description;
+  if (task.acceptanceCriteria !== undefined) dto.acceptanceCriteria = task.acceptanceCriteria;
+  if (task.type !== undefined) dto.type = task.type;
+  if (task.priority !== undefined) dto.priority = task.priority;
+  if (task.status !== undefined) dto.status = ISSUE_STATUS_TO_BE[task.status] ?? "Open";
+  if (task.startDate) dto.startDate = new Date(task.startDate).toISOString();
+  if (task.dueDate) dto.dueDate = new Date(task.dueDate).toISOString();
+  return req("PUT", `/api/issue/${issueId}`, dto);
+}
+
 // ── Utility ──────────────────────────────────────────────────────
 export function isBackendUser(session) {
   return session != null && typeof session.backendId === "number";

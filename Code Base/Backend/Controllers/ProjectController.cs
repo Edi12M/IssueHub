@@ -76,5 +76,9 @@ namespace Backend.Controllers
         [HttpGet("{projectId:int}/budget-used")]
         public async Task<ActionResult<decimal>> BudgetUsed(int projectId)
             => Ok(await _service.GetBudgetUsedAsync(projectId));
+
+        [HttpGet("{projectId:int}/analytics")]
+        public async Task<ActionResult<ProjectAnalyticsDto>> Analytics(int projectId)
+            => Ok(await _service.GetProjectAnalyticsAsync(projectId));
     }
 }

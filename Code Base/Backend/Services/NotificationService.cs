@@ -134,6 +134,28 @@ namespace Backend.Services
             return MapToResponseDto(notification, entityCode);
         }
 
+        public async Task MarkAllAsReadAsync(int userId)
+        {
+            var unread = await _context.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead)
+                .ToListAsync();
+
+            foreach (var n in unread) n.IsRead = true;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteNotificationAsync(int notificationId, int userId)
+        {
+            var notification = await _context.Notifications.FindAsync(notificationId)
+                ?? throw new NotFoundException(nameof(Notification), notificationId);
+
+            if (notification.UserId != userId)
+                throw new ForbiddenException("You cannot delete another user's notification.");
+
+            _context.Notifications.Remove(notification);
+            await _context.SaveChangesAsync();
+        }
+
         // ── Internals ──────────────────────────────────────────────────
 
         private async Task FanOutAsync(

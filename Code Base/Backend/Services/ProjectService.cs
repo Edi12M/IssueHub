@@ -245,6 +245,45 @@ namespace Backend.Services
 
         public Task<decimal> GetBudgetUsedAsync(int projectId) => CalculateBudgetUsedAsync(projectId);
 
+        public async Task<ProjectAnalyticsDto> GetProjectAnalyticsAsync(int projectId)
+        {
+            var issues = await _context.Issues
+                .Where(i => i.ProjectId == projectId && !i.IsArchived)
+                .ToListAsync();
+
+            var now = DateTime.UtcNow;
+            var sevenDaysOut = now.AddDays(7);
+            var total = issues.Count;
+            var completed = issues.Count(i => i.Status == IssueStatus.Resolved || i.Status == IssueStatus.Closed);
+            var open = issues.Count(i => i.Status == IssueStatus.Open);
+            var inProgress = issues.Count(i => i.Status == IssueStatus.InProgress || i.Status == IssueStatus.InReview);
+            var overdue = issues.Count(i => i.DueDate < now && i.Status != IssueStatus.Resolved && i.Status != IssueStatus.Closed);
+            var atRisk = issues.Count(i => i.DueDate >= now && i.DueDate <= sevenDaysOut && i.Status != IssueStatus.Resolved && i.Status != IssueStatus.Closed);
+
+            var hoursLogged = await (from t in _context.TimeLogs
+                                     join i in _context.Issues on t.IssueId equals i.Id
+                                     where i.ProjectId == projectId
+                                     select (double)t.Hours).SumAsync();
+
+            var budget = await CalculateBudgetUsedAsync(projectId);
+            var memberCount = await _context.ProjectMembers.CountAsync(pm => pm.ProjectId == projectId);
+
+            return new ProjectAnalyticsDto
+            {
+                ProjectId = projectId,
+                TotalIssues = total,
+                CompletedIssues = completed,
+                OpenIssues = open,
+                InProgressIssues = inProgress,
+                OverdueIssues = overdue,
+                AtRiskIssues = atRisk,
+                TotalHoursLogged = hoursLogged,
+                BudgetUsed = budget,
+                TeamMembers = memberCount,
+                CompletionPercentage = total == 0 ? 0 : (int)Math.Round((double)completed / total * 100)
+            };
+        }
+
         private async Task<decimal> CalculateBudgetUsedAsync(int projectId)
         {
             var rows = await (from t in _context.TimeLogs

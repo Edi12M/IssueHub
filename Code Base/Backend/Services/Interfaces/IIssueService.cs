@@ -13,5 +13,9 @@ namespace Backend.Services.Interfaces
         Task<List<IssueByAdminDto>> GetIssuesByAdminFilteredByTypeAsync(int adminId, string type);
         Task<LastSecurityIssueDto?> GetLastCreatedSecurityIssueAsync();
         Task<List<TaskDto>> GetTasksFilteredAsync(int userId, string? status, string? priority);
+        Task<List<TaskDto>> GetIssuesByProjectAsync(int projectId, string? status, string? priority, string? assigneeId, string? type);
+        Task<UserWorkloadDto> GetUserWorkloadAsync(int userId, int projectId);
+        Task<List<IssueDependencyDto>> GetIssueDependenciesAsync(int issueId);
+        Task<IssueDependencyDto> AddIssueDependencyAsync(int fromIssueId, int toIssueId, string dependencyType);
     }
 }
