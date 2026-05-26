@@ -18,6 +18,7 @@ import {
   createTimeLogApi,
   deleteTimeLogApi,
   getProjectsApi,
+  getProjectIssuesApi,
   isBackendUser,
 } from "../../api/index.js";
 import "../../App.css";
@@ -44,7 +45,7 @@ export default function TimeTrackingPage() {
 
   const [logs, setLogs] = useState(() => getTimeLogs());
   const [loadingLogs, setLoadingLogs] = useState(useBackend);
-  const tasks = useMemo(() => getTasks(), [logs]);
+  const [tasks, setTasks] = useState(() => getTasks());
   const users = useMemo(() => getUsers(), []);
   const [projectFilter, setProjectFilter] = useState("all");
 
@@ -66,19 +67,27 @@ export default function TimeTrackingPage() {
 
     const loadTimeLogs = async () => {
       try {
-        const projectsData = await getProjectsApi();
+        const [projectsData, backendLogs] = await Promise.all([
+          getProjectsApi(),
+          getUserTimeLogsApi(session.backendId),
+        ]);
         setProjects(projectsData);
 
-        const backendLogs = await getUserTimeLogsApi(session.backendId);
+        // Load tasks for the first available project
+        if (projectsData.length > 0) {
+          const firstId = String(projectsData[0].backendId || projectsData[0].id);
+          getProjectIssuesApi(firstId).then(setTasks).catch(() => {});
+        }
+
         // Convert backend format to local format for compatibility
         const convertedLogs = backendLogs.map((log) => ({
           id: String(log.id),
           backendId: log.id,
           taskId: String(log.issueId),
-          projectId: String(log.issueId), // Note: backend doesn't directly provide projectId
+          projectId: String(log.issueId),
           userId: session.backendId,
           hours: log.hoursSpent,
-          billable: true, // Backend doesn't track billable flag, default to true
+          billable: true,
           note: log.description || "",
           date: log.logDate
             ? log.logDate.split("T")[0]
@@ -87,7 +96,6 @@ export default function TimeTrackingPage() {
         setLogs(convertedLogs);
       } catch (e) {
         console.warn("Failed to load time logs from backend:", e.message);
-        // Fall back to local time logs
       } finally {
         setLoadingLogs(false);
       }
@@ -110,7 +118,7 @@ export default function TimeTrackingPage() {
   const totals = useMemo(() => aggregateHours(filteredLogs), [filteredLogs]);
 
   function refresh() {
-    if (isBackendUser && session?.backendId) {
+    if (useBackend && session?.backendId) {
       // Backend will auto-refresh on next load
     } else {
       setLogs(getTimeLogs());
@@ -124,10 +132,10 @@ export default function TimeTrackingPage() {
     const h = Number(hours) + Number(minutes) / 60;
     if (h <= 0) return;
 
-    if (isBackendUser && session?.backendId) {
+    if (useBackend && session?.backendId) {
       try {
         const newLog = await createTimeLogApi({
-          issueId: taskId.replace("BE-", ""), // Remove BE- prefix if present
+          issueId: taskId.replace("BE-", ""),
           hoursSpent: Math.round(h * 100) / 100,
           description: note,
           logDate: new Date().toISOString().split("T")[0],
@@ -177,7 +185,7 @@ export default function TimeTrackingPage() {
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
 
-    if (isBackendUser && session?.backendId) {
+    if (useBackend && session?.backendId) {
       try {
         const newLog = await createTimeLogApi({
           issueId: taskId.replace("BE-", ""),
@@ -230,7 +238,7 @@ export default function TimeTrackingPage() {
   }
 
   async function handleDeleteLog(logId, backendId) {
-    if (backendId && isBackendUser) {
+    if (backendId && useBackend) {
       try {
         await deleteTimeLogApi(backendId);
         setLogs((prev) => prev.filter((l) => l.id !== logId));
@@ -416,7 +424,9 @@ export default function TimeTrackingPage() {
             </thead>
             <tbody>
               {filteredLogs.map((l) => {
-                const task = tasks.find((t) => t.id === l.taskId);
+                const task = tasks.find(
+                  (t) => t.id === l.taskId || String(t.backendId) === String(l.taskId),
+                );
                 const user = users.find((u) => u.id === l.userId);
                 return (
                   <tr key={l.id}>

@@ -155,11 +155,7 @@ export default function AnalyticsPage() {
       (t) => String(t.projectId) === String(projectId),
     );
     const projectText =
-      projectId === "p1"
-        ? "Website Redesign"
-        : projectId === "p2"
-          ? "Mobile App"
-          : projectId;
+      projects.find((p) => String(p.backendId || p.id) === String(projectId))?.name ?? projectId;
     const done = projectTasks.filter((t) => t.status === "Done").length;
     const total = projectTasks.length;
     const hours = aggregateHours(logs, { projectId });
@@ -192,11 +188,7 @@ export default function AnalyticsPage() {
       (t) => String(t.projectId) === String(projectId),
     );
     const projectText =
-      projectId === "p1"
-        ? "Website Redesign"
-        : projectId === "p2"
-          ? "Mobile App"
-          : projectId;
+      projects.find((p) => String(p.backendId || p.id) === String(projectId))?.name ?? projectId;
     const done = projectTasks.filter((t) => t.status === "Done").length;
     const total = projectTasks.length;
     const hours = aggregateHours(logs, { projectId });

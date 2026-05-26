@@ -7,6 +7,7 @@ import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
 import { getTasks, saveTasks } from "../../data/tasks.js";
 import {
   getUsersApi,
+  getProjectsApi,
   getProjectIssuesApi,
   isBackendUser,
 } from "../../api/index.js";
@@ -59,7 +60,7 @@ export default function TasksPage() {
   const [availableUsers, setAvailableUsers] = useState([]);
   const [loading, setLoading] = useState(useBackend);
 
-  const [projects] = useState(() => {
+  const [projects, setProjects] = useState(() => {
     try {
       const stored = localStorage.getItem(PROJECTS_KEY);
       return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
@@ -75,13 +76,19 @@ export default function TasksPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const usersData = await getUsersApi();
-        setAvailableUsers(usersData);
-
         if (useBackend) {
-          // Load tasks from all projects or a default project
-          const tasksData = await getProjectIssuesApi(projects[0]?.id || "p1");
-          setTasks(tasksData);
+          const [usersData, projectsData] = await Promise.all([getUsersApi(), getProjectsApi()]);
+          setAvailableUsers(usersData);
+          setProjects(projectsData);
+
+          if (projectsData.length > 0) {
+            const firstId = String(projectsData[0].backendId || projectsData[0].id);
+            const tasksData = await getProjectIssuesApi(firstId);
+            setTasks(tasksData);
+          }
+        } else {
+          const usersData = await getUsersApi();
+          setAvailableUsers(usersData);
         }
       } catch (e) {
         console.error("Failed to load tasks data:", e.message);
@@ -93,7 +100,7 @@ export default function TasksPage() {
     };
 
     loadData();
-  }, [useBackend, projects]);
+  }, [useBackend]);
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterPriority, setFilterPriority] = useState("All");
   const [activeKey, setActiveKey] = useState("tasks");

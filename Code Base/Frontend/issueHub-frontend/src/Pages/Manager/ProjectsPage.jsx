@@ -4,7 +4,13 @@ import { Plus } from "lucide-react";
 import Button from "../../Components/Button/button.jsx";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
-import { getProjectsApi, createProjectApi, isBackendUser } from "../../api/index.js";
+import {
+  getProjectsApi,
+  createProjectApi,
+  getUsersApi,
+  assignUserToProjectApi,
+  isBackendUser,
+} from "../../api/index.js";
 import { getSession } from "../../data/users.js";
 
 import CreateProjectModal from "../../Components/Modals/CreateProjectModal.jsx";
@@ -78,9 +84,17 @@ export default function ProjectsPage() {
     }
   }, [projects, backendUser]);
 
+  // Load backend users for member assignment
+  useEffect(() => {
+    if (!backendUser) return;
+    getUsersApi()
+      .then((users) => setAvailableUsers(users))
+      .catch(() => {});
+  }, [backendUser]);
+
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [availableUsers] = useState(getUsers());
+  const [availableUsers, setAvailableUsers] = useState(() => getUsers());
   const [notification, setNotification] = useState({
     isOpen: false,
     type: "success",
@@ -117,7 +131,19 @@ export default function ProjectsPage() {
     setNotification({ isOpen: true, type: "success", title: "Project Created", message: `Project "${newProject.name}" has been created successfully.` });
   };
 
-  const handleAddMembers = (projectId, newMembers) => {
+  const handleAddMembers = async (projectId, newMembers) => {
+    if (backendUser && !apiError && selectedProject?.backendId) {
+      for (const member of newMembers) {
+        const userId = member.backendId ?? parseInt(member.id, 10);
+        if (!isNaN(userId)) {
+          try {
+            await assignUserToProjectApi(selectedProject.backendId, userId);
+          } catch (e) {
+            console.warn("Failed to assign member to project:", e.message);
+          }
+        }
+      }
+    }
     setProjects((prev) =>
       prev.map((project) =>
         project.id === projectId

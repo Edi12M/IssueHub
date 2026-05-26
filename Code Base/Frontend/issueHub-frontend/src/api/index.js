@@ -658,3 +658,20 @@ export async function createIssueDependencyApi(fromIssueId, toIssueId, type) {
     type: data.dependencyType,
   };
 }
+
+// ── Issue field update (dates, title, etc.) ──────────────────────────────
+export async function updateIssueDatesApi(issueId, startDate, dueDate) {
+  const dto = {};
+  if (startDate) dto.startDate = new Date(startDate + "T00:00:00").toISOString();
+  if (dueDate) dto.dueDate = new Date(dueDate + "T00:00:00").toISOString();
+  return req("PUT", `/api/issue/${issueId}`, dto);
+}
+
+// ── Assignments ──────────────────────────────────────────────────────────
+export async function assignUserToProjectApi(projectId, userId) {
+  return req("POST", `/api/assignment/project/${projectId}/user/${userId}`);
+}
+
+export async function assignUserToIssueApi(issueId, userId) {
+  return req("POST", `/api/assignment/issue/${issueId}/user/${userId}`);
+}

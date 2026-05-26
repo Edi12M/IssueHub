@@ -9,6 +9,7 @@ import {
   getProjectsApi,
   getProjectIssuesApi,
   getUsersApi,
+  updateIssueDatesApi,
   isBackendUser,
 } from "../../api/index.js";
 import "../../App.css";
@@ -125,8 +126,18 @@ export default function TimelinePage() {
     if (!t) return;
     const start = field === "startDate" ? value : t.startDate;
     const due = field === "dueDate" ? value : t.dueDate;
-    updateTaskDates(taskId, start, due);
-    setTasks(getTasks());
+
+    if (useBackend && t.backendId) {
+      updateIssueDatesApi(t.backendId, start, due).catch((e) =>
+        console.warn("Failed to update issue dates:", e.message),
+      );
+      setTasks((prev) =>
+        prev.map((x) => (x.id === taskId ? { ...x, startDate: start, dueDate: due } : x)),
+      );
+    } else {
+      updateTaskDates(taskId, start, due);
+      setTasks(getTasks());
+    }
   }
 
   const monthLabels = useMemo(() => {

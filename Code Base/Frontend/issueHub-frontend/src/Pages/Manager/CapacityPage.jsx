@@ -7,6 +7,7 @@ import { getSprints } from "../../data/sprints.js";
 import WorkloadCard from "../../Components/WorkloadCard.jsx";
 import {
   getUsersApi,
+  getProjectsApi,
   getProjectIssuesApi,
   getUserWorkloadApi,
   isBackendUser,
@@ -51,11 +52,14 @@ export default function CapacityPage() {
 
     const loadData = async () => {
       try {
-        const usersData = await getUsersApi();
+        const [usersData, projectsData] = await Promise.all([getUsersApi(), getProjectsApi()]);
         setUsers(usersData.filter((u) => u.role !== "System Administrator"));
 
-        const tasksData = await getProjectIssuesApi("p1");
-        setTasks(tasksData);
+        if (projectsData.length > 0) {
+          const firstId = String(projectsData[0].backendId || projectsData[0].id);
+          const tasksData = await getProjectIssuesApi(firstId);
+          setTasks(tasksData);
+        }
       } catch (e) {
         console.error("Failed to load capacity data:", e.message);
         setTasks(getTasks());
