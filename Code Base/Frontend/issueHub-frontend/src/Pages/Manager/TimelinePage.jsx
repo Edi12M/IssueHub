@@ -41,29 +41,33 @@ export default function TimelinePage() {
       return INITIAL_PROJECTS;
     }
   });
-  const [projectId, setProjectId] = useState("p1");
-  const [tasks, setTasks] = useState(() => getTasks());
+  const [projectId, setProjectId] = useState("");
+  const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState(() => getUsers());
   const [loading, setLoading] = useState(useBackend);
 
   useEffect(() => {
     if (!useBackend) {
+      setTasks(getTasks());
       setLoading(false);
       return;
     }
 
     const loadData = async () => {
       try {
-        const projectsData = await getProjectsApi();
+        const [projectsData, usersData] = await Promise.all([getProjectsApi(), getUsersApi()]);
         setProjects(projectsData);
-
-        const usersData = await getUsersApi();
         setUsers(usersData);
-        const tasksData = await getProjectIssuesApi(projectId);
+
+        const activeId = projectId ||
+          (projectsData.length > 0 ? String(projectsData[0].backendId || projectsData[0].id) : "");
+        if (!activeId) { setLoading(false); return; }
+        if (!projectId) setProjectId(activeId);
+
+        const tasksData = await getProjectIssuesApi(activeId);
         setTasks(tasksData);
       } catch (e) {
         console.error("Failed to load timeline data:", e.message);
-        setTasks(getTasks());
       } finally {
         setLoading(false);
       }

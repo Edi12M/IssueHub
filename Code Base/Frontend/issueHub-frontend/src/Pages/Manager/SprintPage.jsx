@@ -61,7 +61,7 @@ export default function SprintPage() {
       return INITIAL_PROJECTS;
     }
   });
-  const [projectId, setProjectId] = useState("p1");
+  const [projectId, setProjectId] = useState("");
   const [sprints, setSprints] = useState(() => getSprints());
   const [tasks, setTasks] = useState(() => getTasks());
   const [loading, setLoading] = useState(useBackend);
@@ -93,7 +93,6 @@ export default function SprintPage() {
         }
       } catch (e) {
         console.error("Failed to load sprint data:", e.message);
-        setTasks(getTasks());
       } finally {
         setLoading(false);
       }

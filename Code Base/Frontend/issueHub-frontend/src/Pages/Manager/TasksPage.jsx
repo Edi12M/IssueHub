@@ -116,8 +116,8 @@ export default function TasksPage() {
   }, [tasks, useBackend]);
 
   useEffect(() => {
-    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
-  }, [projects]);
+    if (!useBackend) localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+  }, [projects, useBackend]);
 
   function handleEditTask(task) {
     setEditingTask(task);

@@ -46,7 +46,7 @@ export default function AnalyticsPage() {
       return INITIAL_PROJECTS;
     }
   });
-  const [projectId, setProjectId] = useState("p1");
+  const [projectId, setProjectId] = useState("");
   const [reportRange, setReportRange] = useState("weekly");
   const [reportPreview, setReportPreview] = useState(null);
 
@@ -60,7 +60,6 @@ export default function AnalyticsPage() {
   // Load data from backend if user is authenticated
   useEffect(() => {
     if (!useBackend) {
-      // Use mock data
       setTasks(getTasks());
       setLogs(getTimeLogs());
       setUsers(getUsers().filter((u) => u.role !== "System Administrator"));
@@ -70,31 +69,28 @@ export default function AnalyticsPage() {
 
     const loadBackendData = async () => {
       try {
-        // Fetch projects from API
         const projectsData = await getProjectsApi();
         setProjects(projectsData);
 
-        // Load analytics for this project
-        const analyticsData = await getProjectAnalyticsApi(projectId);
+        // Use current projectId or fall back to the first real project
+        const activeId = projectId ||
+          (projectsData.length > 0 ? String(projectsData[0].backendId || projectsData[0].id) : "");
+        if (!activeId) { setLoading(false); return; }
+        if (!projectId) setProjectId(activeId);
+
+        const [analyticsData, issuesData, usersData] = await Promise.all([
+          getProjectAnalyticsApi(activeId),
+          getProjectIssuesApi(activeId),
+          getUsersApi(),
+        ]);
         setAnalytics(analyticsData);
-
-        // Load project issues
-        const issuesData = await getProjectIssuesApi(projectId);
         setTasks(issuesData);
-
-        // Load users
-        const usersData = await getUsersApi();
         setUsers(usersData.filter((u) => u.role !== "System Administrator"));
 
-        // Load time logs for this project
-        const timeLogsData = await getUserTimeLogsApi(session.backendId);
-        setLogs(timeLogsData);
+        // Time logs endpoint may not exist yet — fail silently
+        getUserTimeLogsApi(session.backendId).then(setLogs).catch(() => setLogs([]));
       } catch (e) {
         console.error("Failed to load analytics data:", e.message);
-        // Fallback to mock data
-        setTasks(getTasks());
-        setLogs(getTimeLogs());
-        setUsers(getUsers().filter((u) => u.role !== "System Administrator"));
       } finally {
         setLoading(false);
       }
