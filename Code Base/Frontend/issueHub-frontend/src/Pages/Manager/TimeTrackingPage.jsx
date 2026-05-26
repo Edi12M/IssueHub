@@ -4,16 +4,13 @@ import { Plus, Download, Play, Square, Timer } from "lucide-react";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import Button from "../../Components/Button/button.jsx";
 import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
-import { getTasks } from "../../data/tasks.js";
-import { getUsers, getSession } from "../../data/users.js";
+import { getSession } from "../../data/users.js";
 import {
-  getTimeLogs,
-  addTimeLog,
-  deleteTimeLog,
   aggregateHours,
   exportTimeLogsCsv,
 } from "../../data/timeLogs.js";
 import {
+  getUsersApi,
   getUserTimeLogsApi,
   createTimeLogApi,
   deleteTimeLogApi,
@@ -24,29 +21,16 @@ import {
 import "../../App.css";
 import "./manager.css";
 
-const PROJECTS_KEY = "issuehub_projects";
-const INITIAL_PROJECTS = [
-  { id: "p1", name: "Website Redesign" },
-  { id: "p2", name: "Mobile App" },
-];
 
 export default function TimeTrackingPage() {
   const session = getSession();
   const useBackend = isBackendUser(session);
 
-  const [projects, setProjects] = useState(() => {
-    try {
-      const stored = localStorage.getItem(PROJECTS_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
-    } catch {
-      return INITIAL_PROJECTS;
-    }
-  });
-
-  const [logs, setLogs] = useState(() => getTimeLogs());
+  const [projects, setProjects] = useState([]);
+  const [logs, setLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(useBackend);
-  const [tasks, setTasks] = useState(() => getTasks());
-  const users = useMemo(() => getUsers(), []);
+  const [tasks, setTasks] = useState([]);
+  const [users, setUsers] = useState([]);
   const [projectFilter, setProjectFilter] = useState("all");
 
   const [taskId, setTaskId] = useState("");
@@ -67,19 +51,19 @@ export default function TimeTrackingPage() {
 
     const loadTimeLogs = async () => {
       try {
-        const [projectsData, backendLogs] = await Promise.all([
+        const [projectsData, usersData, backendLogs] = await Promise.all([
           getProjectsApi(),
+          getUsersApi(),
           getUserTimeLogsApi(session.backendId),
         ]);
         setProjects(projectsData);
+        setUsers(usersData);
 
-        // Load tasks for the first available project
         if (projectsData.length > 0) {
           const firstId = String(projectsData[0].backendId || projectsData[0].id);
           getProjectIssuesApi(firstId).then(setTasks).catch(() => {});
         }
 
-        // Convert backend format to local format for compatibility
         const convertedLogs = backendLogs.map((log) => ({
           id: String(log.id),
           backendId: log.id,
@@ -118,11 +102,7 @@ export default function TimeTrackingPage() {
   const totals = useMemo(() => aggregateHours(filteredLogs), [filteredLogs]);
 
   function refresh() {
-    if (useBackend && session?.backendId) {
-      // Backend will auto-refresh on next load
-    } else {
-      setLogs(getTimeLogs());
-    }
+    // no-op; logs state is updated directly after each API call
   }
 
   async function handleLogManual(e) {
@@ -132,44 +112,30 @@ export default function TimeTrackingPage() {
     const h = Number(hours) + Number(minutes) / 60;
     if (h <= 0) return;
 
-    if (useBackend && session?.backendId) {
-      try {
-        const newLog = await createTimeLogApi({
-          issueId: taskId.replace("BE-", ""),
-          hoursSpent: Math.round(h * 100) / 100,
-          description: note,
-          logDate: new Date().toISOString().split("T")[0],
-        });
-        // Add to local state
-        setLogs((prev) => [
-          ...prev,
-          {
-            id: String(newLog.id),
-            backendId: newLog.id,
-            taskId: String(newLog.issueId),
-            projectId: String(newLog.issueId),
-            userId: session.backendId,
-            hours: newLog.hoursSpent,
-            billable: true,
-            note: newLog.description || "",
-            date: newLog.logDate,
-          },
-        ]);
-      } catch (err) {
-        console.error("Failed to log hours:", err.message);
-        alert("Failed to log hours: " + err.message);
-      }
-    } else {
-      addTimeLog({
-        taskId: task.id,
-        projectId: task.projectId,
-        userId: session?.id || "seed-pm",
-        hours: Math.round(h * 100) / 100,
-        billable,
-        note,
-        date: new Date().toISOString().slice(0, 10),
+    try {
+      const newLog = await createTimeLogApi({
+        issueId: taskId.replace("BE-", ""),
+        hoursSpent: Math.round(h * 100) / 100,
+        description: note,
+        logDate: new Date().toISOString().split("T")[0],
       });
-      refresh();
+      setLogs((prev) => [
+        ...prev,
+        {
+          id: String(newLog.id),
+          backendId: newLog.id,
+          taskId: String(newLog.issueId),
+          projectId: String(newLog.issueId),
+          userId: session.backendId,
+          hours: newLog.hoursSpent,
+          billable: true,
+          note: newLog.description || "",
+          date: newLog.logDate,
+        },
+      ]);
+    } catch (err) {
+      console.error("Failed to log hours:", err.message);
+      alert("Failed to log hours: " + err.message);
     }
     setHours("");
     setMinutes("0");
@@ -185,43 +151,30 @@ export default function TimeTrackingPage() {
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
 
-    if (useBackend && session?.backendId) {
-      try {
-        const newLog = await createTimeLogApi({
-          issueId: taskId.replace("BE-", ""),
-          hoursSpent: Math.round((timerSeconds / 3600) * 100) / 100,
-          description: note || "Timer entry",
-          logDate: new Date().toISOString().split("T")[0],
-        });
-        setLogs((prev) => [
-          ...prev,
-          {
-            id: String(newLog.id),
-            backendId: newLog.id,
-            taskId: String(newLog.issueId),
-            projectId: String(newLog.issueId),
-            userId: session.backendId,
-            hours: newLog.hoursSpent,
-            billable: true,
-            note: newLog.description || "",
-            date: newLog.logDate,
-          },
-        ]);
-      } catch (err) {
-        console.error("Failed to save timer entry:", err.message);
-        alert("Failed to save timer entry: " + err.message);
-      }
-    } else {
-      addTimeLog({
-        taskId: task.id,
-        projectId: task.projectId,
-        userId: session?.id || "seed-pm",
-        hours: Math.round((timerSeconds / 3600) * 100) / 100,
-        billable,
-        note: note || "Timer entry",
-        date: new Date().toISOString().slice(0, 10),
+    try {
+      const newLog = await createTimeLogApi({
+        issueId: taskId.replace("BE-", ""),
+        hoursSpent: Math.round((timerSeconds / 3600) * 100) / 100,
+        description: note || "Timer entry",
+        logDate: new Date().toISOString().split("T")[0],
       });
-      refresh();
+      setLogs((prev) => [
+        ...prev,
+        {
+          id: String(newLog.id),
+          backendId: newLog.id,
+          taskId: String(newLog.issueId),
+          projectId: String(newLog.issueId),
+          userId: session.backendId,
+          hours: newLog.hoursSpent,
+          billable: true,
+          note: newLog.description || "",
+          date: newLog.logDate,
+        },
+      ]);
+    } catch (err) {
+      console.error("Failed to save timer entry:", err.message);
+      alert("Failed to save timer entry: " + err.message);
     }
     setTimerSeconds(0);
   }

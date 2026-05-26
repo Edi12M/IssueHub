@@ -4,7 +4,6 @@ import { Plus, TrendingUp } from "lucide-react";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import Button from "../../Components/Button/button.jsx";
 import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
-import { getTasks } from "../../data/tasks.js";
 import {
   getSprints,
   saveSprints,
@@ -20,50 +19,15 @@ import {
 import "../../App.css";
 import "./manager.css";
 
-const PROJECTS_KEY = "issuehub_projects";
-
-const INITIAL_PROJECTS = [
-  {
-    id: "p1",
-    name: "Website Redesign",
-    description: "Redesign the company website UI.",
-    goals: "Improve UX and accessibility.",
-    startDate: "2025-09-01",
-    endDate: "2025-10-15",
-    visibility: "Team",
-    methodology: "Scrum",
-    status: "In Progress",
-    members: [],
-  },
-  {
-    id: "p2",
-    name: "Mobile App",
-    description: "Build a cross-platform mobile app.",
-    goals: "Launch MVP for beta users.",
-    startDate: "2025-10-01",
-    endDate: "2025-12-20",
-    visibility: "Private",
-    methodology: "Kanban",
-    status: "Planning",
-    members: [],
-  },
-];
 
 export default function SprintPage() {
   const session = getSession();
   const useBackend = isBackendUser(session);
 
-  const [projects, setProjects] = useState(() => {
-    try {
-      const stored = localStorage.getItem(PROJECTS_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
-    } catch {
-      return INITIAL_PROJECTS;
-    }
-  });
+  const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState("");
   const [sprints, setSprints] = useState(() => getSprints());
-  const [tasks, setTasks] = useState(() => getTasks());
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(useBackend);
   const [showNew, setShowNew] = useState(false);
   const [newName, setNewName] = useState("");
@@ -93,6 +57,7 @@ export default function SprintPage() {
         }
       } catch (e) {
         console.error("Failed to load sprint data:", e.message);
+        setProjects([]);
       } finally {
         setLoading(false);
       }

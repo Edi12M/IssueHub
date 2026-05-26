@@ -1,19 +1,13 @@
 import { useState, useEffect } from "react";
 import Button from "../Components/Button/button.jsx";
 import Sidebar from "../Components/SideBar/sideBar.jsx";
-import {
-  addUser,
-  getUsers,
-  updateUser,
-  updateUserRole,
-  deactivateUser,
-  removeUser,
-} from "../data/users.js";
+import { getSession } from "../data/users.js";
 import {
   getUsersApi,
   createUserApi,
   updateUserApi,
   deleteUserApi,
+  isBackendUser,
 } from "../api/index.js";
 import UserForm from "./UserForm.jsx";
 import RoleChangeModal from "../Components/Modals/RoleChangeModal.jsx";
@@ -26,6 +20,9 @@ import { ADMIN_NAV_ITEMS } from "./Admin/adminConstants.js";
 import "../App.css";
 
 export default function Users() {
+  const session = getSession();
+  const useBackend = isBackendUser(session);
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(false);
@@ -53,7 +50,7 @@ export default function Users() {
       setApiError(false);
     } catch {
       setApiError(true);
-      setUsers(getUsers());
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -66,18 +63,14 @@ export default function Users() {
       setApiError(false);
     } catch {
       setApiError(true);
-      setUsers(getUsers());
     }
   }
 
   async function handleChangeRoleConfirm() {
     if (!roleModalUser || !selectedRole || selectedRole === roleModalUser.role) return;
+    if (!roleModalUser.backendId) { alert("Cannot update: user has no backend ID."); return; }
     try {
-      if (roleModalUser.backendId) {
-        await updateUserApi(roleModalUser.backendId, { ...roleModalUser, role: selectedRole });
-      } else {
-        updateUserRole(roleModalUser.id, selectedRole);
-      }
+      await updateUserApi(roleModalUser.backendId, { ...roleModalUser, role: selectedRole });
       await refreshUsers();
       setRoleModalUser(null);
       setSelectedRole("");
@@ -93,15 +86,9 @@ export default function Users() {
 
   async function confirmDeactivate() {
     if (!deactivateUserState) return;
+    if (!deactivateUserState.backendId) { alert("Cannot deactivate: user has no backend ID."); return; }
     try {
-      if (deactivateUserState.backendId) {
-        await updateUserApi(deactivateUserState.backendId, {
-          ...deactivateUserState,
-          status: "Deactivated",
-        });
-      } else {
-        deactivateUser(deactivateUserState.id);
-      }
+      await updateUserApi(deactivateUserState.backendId, { ...deactivateUserState, status: "Deactivated" });
       await refreshUsers();
       setDeactivateUserState(null);
     } catch (e) {
@@ -116,12 +103,9 @@ export default function Users() {
 
   async function confirmRemove() {
     if (!removeUserState) return;
+    if (!removeUserState.backendId) { alert("Cannot remove: user has no backend ID."); return; }
     try {
-      if (removeUserState.backendId) {
-        await deleteUserApi(removeUserState.backendId);
-      } else {
-        removeUser(removeUserState.id);
-      }
+      await deleteUserApi(removeUserState.backendId);
       await refreshUsers();
       setRemoveUserState(null);
     } catch (e) {
@@ -134,14 +118,10 @@ export default function Users() {
   }
 
   async function handleSaveSettings(payload) {
+    if (!settingsUser?.backendId) { alert("Cannot update: user has no backend ID."); return; }
     setIsSavingSettings(true);
     try {
-      const bid = settingsUser?.backendId;
-      if (bid) {
-        await updateUserApi(bid, payload);
-      } else {
-        updateUser(payload);
-      }
+      await updateUserApi(settingsUser.backendId, payload);
       await refreshUsers();
       setSettingsUser(null);
     } catch (e) {
@@ -207,14 +187,10 @@ export default function Users() {
             isOpen={showForm}
             isSending={sending}
             onSubmit={async (payload) => {
+              setSending(true);
               try {
-                setSending(true);
-                try {
-                  await createUserApi(payload);
-                } catch {
-                  addUser({ ...payload, id: `local-${Date.now()}`, createdAt: new Date().toISOString() });
-                }
-                await refreshUsers();
+                const created = await createUserApi(payload);
+                setUsers((prev) => [created, ...prev]);
                 setShowForm(false);
               } catch (e) {
                 alert(e.message || "Failed to add user");
@@ -235,12 +211,9 @@ export default function Users() {
                 initial={selectedUser}
                 submitLabel="Save"
                 onSubmit={async (payload) => {
+                  if (!selectedUser.backendId) { alert("Cannot update: user has no backend ID."); return; }
                   try {
-                    if (selectedUser.backendId) {
-                      await updateUserApi(selectedUser.backendId, payload);
-                    } else {
-                      updateUser(payload);
-                    }
+                    await updateUserApi(selectedUser.backendId, payload);
                     await refreshUsers();
                     setSelectedUser(null);
                   } catch (e) {

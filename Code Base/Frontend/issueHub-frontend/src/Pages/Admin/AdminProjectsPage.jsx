@@ -4,7 +4,6 @@ import { X, Users as UsersIcon, AlertCircle, Calendar } from "lucide-react";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import StatusBadge from "../../Components/StatusBadge/StatusBadge.jsx";
 import { ADMIN_NAV_ITEMS } from "./adminConstants.js";
-import { getProjects, updateProjectStatus } from "../../data/projects.js";
 import { getProjectsApi, archiveProjectApi, updateProjectStatusApi } from "../../api/index.js";
 import { formatDate } from "../../utils/formatTime.js";
 import "../../App.css";
@@ -174,25 +173,21 @@ export default function AdminProjectsPage() {
       setApiError(false);
     } catch {
       setApiError(true);
-      setProjects(getProjects());
+      setProjects([]);
     } finally {
       setLoading(false);
     }
   }
 
   async function handleStatusChange(id, backendId, newStatus) {
+    if (!backendId) { alert("Cannot update: project has no backend ID."); return; }
     try {
-      if (backendId) {
-        if (newStatus === "Archived") {
-          await archiveProjectApi(backendId);
-        } else {
-          await updateProjectStatusApi(backendId, newStatus);
-        }
-        await loadProjects();
+      if (newStatus === "Archived") {
+        await archiveProjectApi(backendId);
       } else {
-        updateProjectStatus(id, newStatus);
-        setProjects(getProjects());
+        await updateProjectStatusApi(backendId, newStatus);
       }
+      await loadProjects();
     } catch (e) {
       alert(e.message || "Failed to update project status");
     }

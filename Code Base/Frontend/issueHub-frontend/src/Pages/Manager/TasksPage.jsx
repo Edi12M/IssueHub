@@ -4,7 +4,6 @@ import Button from "../../Components/Button/button.jsx";
 import CreateTaskModal from "../../Components/Modals/CreateTaskModal.jsx";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
-import { getTasks, saveTasks } from "../../data/tasks.js";
 import {
   getUsersApi,
   getProjectsApi,
@@ -13,9 +12,7 @@ import {
   updateIssueApi,
   isBackendUser,
 } from "../../api/index.js";
-import { getUsers, getSession } from "../../data/users.js";
-
-const PROJECTS_KEY = "issuehub_projects";
+import { getSession } from "../../data/users.js";
 
 const STATUSES = [
   "All",
@@ -27,97 +24,46 @@ const STATUSES = [
 ];
 const PRIORITIES = ["All", "Critical", "High", "Medium", "Low"];
 
-const INITIAL_PROJECTS = [
-  {
-    id: "p1",
-    name: "Website Redesign",
-    description: "Redesign the company website UI.",
-    goals: "Improve UX and accessibility.",
-    startDate: "2025-09-01",
-    endDate: "2025-10-15",
-    visibility: "Team",
-    methodology: "Scrum",
-    status: "In Progress",
-    members: [],
-  },
-  {
-    id: "p2",
-    name: "Mobile App",
-    description: "Build a cross-platform mobile app.",
-    goals: "Launch MVP for beta users.",
-    startDate: "2025-10-01",
-    endDate: "2025-12-20",
-    visibility: "Private",
-    methodology: "Kanban",
-    status: "Planning",
-    members: [],
-  },
-];
-
 export default function TasksPage() {
   const session = getSession();
   const useBackend = isBackendUser(session);
 
-  const [tasks, setTasks] = useState(() => getTasks());
+  const [tasks, setTasks] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
-  const [loading, setLoading] = useState(useBackend);
-
-  const [projects, setProjects] = useState(() => {
-    try {
-      const stored = localStorage.getItem(PROJECTS_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
-    } catch {
-      return INITIAL_PROJECTS;
-    }
-  });
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
-
-  // Load data from backend if user is authenticated
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        if (useBackend) {
-          const [usersData, projectsData] = await Promise.all([getUsersApi(), getProjectsApi()]);
-          setAvailableUsers(usersData);
-          setProjects(projectsData);
-
-          if (projectsData.length > 0) {
-            const allTaskArrays = await Promise.all(
-              projectsData.map((p) =>
-                getProjectIssuesApi(String(p.backendId || p.id)).catch(() => [])
-              )
-            );
-            setTasks(allTaskArrays.flat());
-          }
-        } else {
-          const usersData = await getUsersApi();
-          setAvailableUsers(usersData);
-        }
-      } catch (e) {
-        console.error("Failed to load tasks data:", e.message);
-        setAvailableUsers(getUsers());
-        setTasks(getTasks());
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [useBackend]);
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterPriority, setFilterPriority] = useState("All");
   const [activeKey, setActiveKey] = useState("tasks");
   const [selectedProjectId, setSelectedProjectId] = useState("");
 
   useEffect(() => {
-    if (!useBackend) saveTasks(tasks);
-  }, [tasks, useBackend]);
+    const loadData = async () => {
+      try {
+        const [usersData, projectsData] = await Promise.all([getUsersApi(), getProjectsApi()]);
+        setAvailableUsers(usersData);
+        setProjects(projectsData);
 
-  useEffect(() => {
-    if (!useBackend) localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
-  }, [projects, useBackend]);
+        if (projectsData.length > 0) {
+          const allTaskArrays = await Promise.all(
+            projectsData.map((p) =>
+              getProjectIssuesApi(String(p.backendId || p.id)).catch(() => [])
+            )
+          );
+          setTasks(allTaskArrays.flat());
+        }
+      } catch (e) {
+        console.error("Failed to load tasks data:", e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   function handleEditTask(task) {
     setEditingTask(task);
@@ -131,36 +77,29 @@ export default function TasksPage() {
 
   async function handleCreateTask(task) {
     if (editingTask) {
-      if (useBackend && editingTask.backendId) {
+      if (editingTask.backendId) {
         try {
           await updateIssueApi(editingTask.backendId, task);
+          setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
         } catch (e) {
-          console.warn("Failed to update issue:", e.message);
+          alert(`Failed to update task: ${e.message}`);
+          return;
         }
       } else {
-        saveTasks(tasks.map((t) => (t.id === task.id ? task : t)));
+        setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
       }
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
     } else {
-      if (useBackend) {
-        if (!task.projectId) {
-          alert("Please select a project before creating a task.");
-          return;
-        }
-        try {
-          const created = await createIssueApi(task, session.backendId);
-          setTasks((prev) => [created, ...prev]);
-          setShowModal(false);
-          setEditingTask(null);
-          return;
-        } catch (e) {
-          console.warn("Failed to create issue via API:", e.message);
-          alert(`Failed to save task: ${e.message}`);
-          return;
-        }
+      if (!task.projectId) {
+        alert("Please select a project before creating a task.");
+        return;
       }
-      saveTasks([task, ...tasks]);
-      setTasks((prev) => [task, ...prev]);
+      try {
+        const created = await createIssueApi(task, session.backendId);
+        setTasks((prev) => [created, ...prev]);
+      } catch (e) {
+        alert(`Failed to save task: ${e.message}`);
+        return;
+      }
     }
     setShowModal(false);
     setEditingTask(null);
@@ -168,42 +107,29 @@ export default function TasksPage() {
 
   function getPriorityColor(priority) {
     switch (priority) {
-      case "Critical":
-        return "#ef4444";
-      case "High":
-        return "#f97316";
-      case "Medium":
-        return "#eab308";
-      case "Low":
-        return "#22c55e";
-      default:
-        return "#64748b";
+      case "Critical": return "#ef4444";
+      case "High": return "#f97316";
+      case "Medium": return "#eab308";
+      case "Low": return "#22c55e";
+      default: return "#64748b";
     }
   }
 
   function getStatusColor(status) {
     switch (status) {
-      case "Backlog":
-        return "rgba(148, 163, 184, 0.08)";
-      case "To Do":
-        return "rgba(96, 165, 250, 0.08)";
-      case "In Progress":
-        return "rgba(167, 139, 250, 0.08)";
-      case "In Review":
-        return "rgba(251, 191, 36, 0.08)";
-      case "Done":
-        return "rgba(34, 197, 94, 0.08)";
-      default:
-        return "rgba(255, 255, 255, 0.03)";
+      case "Backlog": return "rgba(148, 163, 184, 0.08)";
+      case "To Do": return "rgba(96, 165, 250, 0.08)";
+      case "In Progress": return "rgba(167, 139, 250, 0.08)";
+      case "In Review": return "rgba(251, 191, 36, 0.08)";
+      case "Done": return "rgba(34, 197, 94, 0.08)";
+      default: return "rgba(255, 255, 255, 0.03)";
     }
   }
 
   const filteredTasks = tasks.filter((t) => {
-    const projectMatch =
-      !selectedProjectId || t.projectId === selectedProjectId;
+    const projectMatch = !selectedProjectId || t.projectId === selectedProjectId;
     const statusMatch = filterStatus === "All" || t.status === filterStatus;
-    const priorityMatch =
-      filterPriority === "All" || t.priority === filterPriority;
+    const priorityMatch = filterPriority === "All" || t.priority === filterPriority;
     return projectMatch && statusMatch && priorityMatch;
   });
 
@@ -219,14 +145,7 @@ export default function TasksPage() {
 
       <main className="preview-main">
         {loading ? (
-          <div
-            style={{
-              color: "#94a3b8",
-              fontSize: 14,
-              padding: "40px",
-              textAlign: "center",
-            }}
-          >
+          <div style={{ color: "#94a3b8", fontSize: 14, padding: "40px", textAlign: "center" }}>
             Loading tasks...
           </div>
         ) : (
@@ -254,19 +173,13 @@ export default function TasksPage() {
 
             {/* PROJECT SELECTOR */}
             <section className="card" style={{ marginBottom: "24px" }}>
-              <div
-                style={{ display: "flex", gap: "12px", alignItems: "center" }}
-              >
+              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                 <label style={{ color: "#94a3b8", fontSize: "14px" }}>
                   Select Project:
                 </label>
                 <select
                   className="form-select-base"
-                  style={{
-                    width: "200px",
-                    fontSize: "14px",
-                    padding: "8px 12px",
-                  }}
+                  style={{ width: "200px", fontSize: "14px", padding: "8px 12px" }}
                   value={selectedProjectId}
                   onChange={(e) => setSelectedProjectId(e.target.value)}
                 >
@@ -282,61 +195,27 @@ export default function TasksPage() {
 
             {/* FILTERS */}
             <section className="card" style={{ marginBottom: "24px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "12px",
-                  flexWrap: "wrap",
-                }}
-              >
+              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                 <div>
-                  <label
-                    style={{
-                      color: "#94a3b8",
-                      fontSize: "12px",
-                      marginRight: "8px",
-                    }}
-                  >
-                    Status
-                  </label>
+                  <label style={{ color: "#94a3b8", fontSize: "12px", marginRight: "8px" }}>Status</label>
                   <select
                     className="form-select-base"
-                    style={{
-                      width: "auto",
-                      fontSize: "13px",
-                      padding: "6px 32px 6px 10px",
-                    }}
+                    style={{ width: "auto", fontSize: "13px", padding: "6px 32px 6px 10px" }}
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
                   >
-                    {STATUSES.map((s) => (
-                      <option key={s}>{s}</option>
-                    ))}
+                    {STATUSES.map((s) => (<option key={s}>{s}</option>))}
                   </select>
                 </div>
                 <div>
-                  <label
-                    style={{
-                      color: "#94a3b8",
-                      fontSize: "12px",
-                      marginRight: "8px",
-                    }}
-                  >
-                    Priority
-                  </label>
+                  <label style={{ color: "#94a3b8", fontSize: "12px", marginRight: "8px" }}>Priority</label>
                   <select
                     className="form-select-base"
-                    style={{
-                      width: "auto",
-                      fontSize: "13px",
-                      padding: "6px 32px 6px 10px",
-                    }}
+                    style={{ width: "auto", fontSize: "13px", padding: "6px 32px 6px 10px" }}
                     value={filterPriority}
                     onChange={(e) => setFilterPriority(e.target.value)}
                   >
-                    {PRIORITIES.map((p) => (
-                      <option key={p}>{p}</option>
-                    ))}
+                    {PRIORITIES.map((p) => (<option key={p}>{p}</option>))}
                   </select>
                 </div>
               </div>
@@ -369,10 +248,7 @@ export default function TasksPage() {
                 </h2>
                 <div
                   className="project-grid"
-                  style={{
-                    gridTemplateColumns:
-                      "repeat(auto-fill, minmax(300px, 1fr))",
-                  }}
+                  style={{ gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))" }}
                 >
                   {filteredTasks.map((task) => (
                     <div
@@ -383,101 +259,37 @@ export default function TasksPage() {
                         backgroundColor: getStatusColor(task.status),
                       }}
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                          marginBottom: "8px",
-                        }}
-                      >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
                         <h3 style={{ margin: 0, flex: 1 }}>{task.title}</h3>
                         <button
                           onClick={() => handleEditTask(task)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "#cbd5e1",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            transition: "background-color 0.2s",
-                          }}
-                          onMouseEnter={(e) =>
-                            (e.target.style.backgroundColor =
-                              "rgba(255,255,255,0.1)")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.target.style.backgroundColor = "transparent")
-                          }
+                          style={{ background: "none", border: "none", color: "#cbd5e1", cursor: "pointer", padding: "4px", borderRadius: "4px", transition: "background-color 0.2s" }}
+                          onMouseEnter={(e) => (e.target.style.backgroundColor = "rgba(255,255,255,0.1)")}
+                          onMouseLeave={(e) => (e.target.style.backgroundColor = "transparent")}
                           title="Edit task"
                         >
                           <Edit size={16} />
                         </button>
                       </div>
-                      <p
-                        style={{
-                          color: "#94a3b8",
-                          fontSize: "14px",
-                          marginBottom: "12px",
-                        }}
-                      >
+                      <p style={{ color: "#94a3b8", fontSize: "14px", marginBottom: "12px" }}>
                         {task.description || "No description"}
                       </p>
-                      {Array.isArray(task.dependencies) &&
-                        task.dependencies.length > 0 && (
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "8px",
-                              flexWrap: "wrap",
-                              marginBottom: "12px",
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontSize: "13px",
-                                color: "#94a3b8",
-                                background: "rgba(255,255,255,0.05)",
-                                padding: "6px 10px",
-                                borderRadius: 8,
-                              }}
-                            >
-                              {task.dependencies.length} dependency
-                              {task.dependencies.length !== 1 ? "ies" : ""}
-                            </span>
-                          </div>
-                        )}
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <span style={{ fontSize: "12px", color: "#cbd5e1" }}>
-                          Type: {task.type}
-                        </span>
-                        <span style={{ fontSize: "12px", color: "#cbd5e1" }}>
-                          Priority: {task.priority}
-                        </span>
+                      {Array.isArray(task.dependencies) && task.dependencies.length > 0 && (
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "12px" }}>
+                          <span style={{ fontSize: "13px", color: "#94a3b8", background: "rgba(255,255,255,0.05)", padding: "6px 10px", borderRadius: 8 }}>
+                            {task.dependencies.length} dependency{task.dependencies.length !== 1 ? "ies" : ""}
+                          </span>
+                        </div>
+                      )}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: "12px", color: "#cbd5e1" }}>Type: {task.type}</span>
+                        <span style={{ fontSize: "12px", color: "#cbd5e1" }}>Priority: {task.priority}</span>
                       </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginTop: "8px",
-                        }}
-                      >
-                        <span style={{ fontSize: "12px", color: "#cbd5e1" }}>
-                          Status: {task.status}
-                        </span>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+                        <span style={{ fontSize: "12px", color: "#cbd5e1" }}>Status: {task.status}</span>
                         <span style={{ fontSize: "12px", color: "#cbd5e1" }}>
                           Due:{" "}
-                          {task.dueDate
-                            ? new Date(task.dueDate).toLocaleDateString()
-                            : "No due date"}
+                          {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No due date"}
                         </span>
                       </div>
                     </div>

@@ -3,8 +3,7 @@ import { CalendarRange } from "lucide-react";
 
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
-import { getTasks, updateTaskDates } from "../../data/tasks.js";
-import { getUsers, getSession } from "../../data/users.js";
+import { getSession } from "../../data/users.js";
 import {
   getProjectsApi,
   getProjectIssuesApi,
@@ -15,11 +14,6 @@ import {
 import "../../App.css";
 import "./manager.css";
 
-const PROJECTS_KEY = "issuehub_projects";
-const INITIAL_PROJECTS = [
-  { id: "p1", name: "Website Redesign" },
-  { id: "p2", name: "Mobile App" },
-];
 
 function parseDate(iso) {
   return iso ? new Date(iso + "T12:00:00") : null;
@@ -33,22 +27,14 @@ export default function TimelinePage() {
   const session = getSession();
   const useBackend = isBackendUser(session);
 
-  const [projects, setProjects] = useState(() => {
-    try {
-      const stored = localStorage.getItem(PROJECTS_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
-    } catch {
-      return INITIAL_PROJECTS;
-    }
-  });
+  const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState("");
   const [tasks, setTasks] = useState([]);
-  const [users, setUsers] = useState(() => getUsers());
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(useBackend);
 
   useEffect(() => {
     if (!useBackend) {
-      setTasks(getTasks());
       setLoading(false);
       return;
     }
@@ -131,17 +117,14 @@ export default function TimelinePage() {
     const start = field === "startDate" ? value : t.startDate;
     const due = field === "dueDate" ? value : t.dueDate;
 
-    if (useBackend && t.backendId) {
+    if (t.backendId) {
       updateIssueDatesApi(t.backendId, start, due).catch((e) =>
         console.warn("Failed to update issue dates:", e.message),
       );
-      setTasks((prev) =>
-        prev.map((x) => (x.id === taskId ? { ...x, startDate: start, dueDate: due } : x)),
-      );
-    } else {
-      updateTaskDates(taskId, start, due);
-      setTasks(getTasks());
     }
+    setTasks((prev) =>
+      prev.map((x) => (x.id === taskId ? { ...x, startDate: start, dueDate: due } : x)),
+    );
   }
 
   const monthLabels = useMemo(() => {

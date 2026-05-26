@@ -1,8 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
-import { getUsers, getSession } from "../../data/users.js";
-import { getTasks, updateTaskAssignees } from "../../data/tasks.js";
+import { getSession } from "../../data/users.js";
 import { getSprints } from "../../data/sprints.js";
 import WorkloadCard from "../../Components/WorkloadCard.jsx";
 import {
@@ -37,10 +36,8 @@ export default function CapacityPage() {
   const [sprintFilter, setSprintFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [tasks, setTasks] = useState(() => getTasks());
-  const [users, setUsers] = useState(() =>
-    getUsers().filter((u) => u.role !== "System Administrator"),
-  );
+  const [tasks, setTasks] = useState([]);
+  const [users, setUsers] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(useBackend);
 
@@ -62,8 +59,8 @@ export default function CapacityPage() {
         }
       } catch (e) {
         console.error("Failed to load capacity data:", e.message);
-        setTasks(getTasks());
-        setUsers(getUsers().filter((u) => u.role !== "System Administrator"));
+        setTasks([]);
+        setUsers([]);
       } finally {
         setLoading(false);
       }
@@ -104,8 +101,9 @@ export default function CapacityPage() {
   const totalAvailable = rows.reduce((s, r) => s + r.available, 0);
 
   function handleReassign(taskId, newUserId) {
-    updateTaskAssignees(taskId, [newUserId]);
-    setTasks(getTasks());
+    setTasks((prev) =>
+      prev.map((t) => t.id === taskId ? { ...t, assignees: [newUserId] } : t)
+    );
     setRefreshKey((k) => k + 1);
   }
 

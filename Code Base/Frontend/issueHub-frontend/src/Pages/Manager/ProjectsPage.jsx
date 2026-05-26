@@ -18,38 +18,7 @@ import AddMemberModal from "../../Components/Modals/AddMemberModal.jsx";
 import NotificationModal from "../../Components/Modals/NotificationModal.jsx";
 
 import ProjectCard from "../../Components/ProjectCard.jsx";
-
-import { getUsers } from "../../data/users.js";
 import "../../App.css";
-
-const PROJECTS_KEY = "issuehub_projects";
-
-const INITIAL_PROJECTS = [
-  {
-    id: "p1",
-    name: "Website Redesign",
-    description: "Redesign the company website UI.",
-    goals: "Improve UX and accessibility.",
-    startDate: "2025-09-01",
-    endDate: "2025-10-15",
-    visibility: "Team",
-    methodology: "Scrum",
-    status: "In Progress",
-    members: [],
-  },
-  {
-    id: "p2",
-    name: "Mobile App",
-    description: "Build a cross-platform mobile app.",
-    goals: "Launch MVP for beta users.",
-    startDate: "2025-10-01",
-    endDate: "2025-12-20",
-    visibility: "Private",
-    methodology: "Kanban",
-    status: "Planning",
-    members: [],
-  },
-];
 
 export default function ProjectsPage() {
   const session = getSession();
@@ -57,19 +26,18 @@ export default function ProjectsPage() {
 
   const [activeKey, setActiveKey] = useState("projects");
   const [apiError, setApiError] = useState(false);
-
-  const [projects, setProjects] = useState(() => {
-    try {
-      const stored = localStorage.getItem(PROJECTS_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
-    } catch {
-      return INITIAL_PROJECTS;
-    }
+  const [projects, setProjects] = useState([]);
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    type: "success",
+    title: "",
+    message: "",
   });
 
-  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
-
-  // Load from API when backend user is logged in
   useEffect(() => {
     if (!backendUser) return;
     getProjectsApi()
@@ -77,30 +45,12 @@ export default function ProjectsPage() {
       .catch(() => setApiError(true));
   }, [backendUser]);
 
-  // Persist to localStorage for non-API users
-  useEffect(() => {
-    if (!backendUser) {
-      localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
-    }
-  }, [projects, backendUser]);
-
-  // Load backend users for member assignment
   useEffect(() => {
     if (!backendUser) return;
     getUsersApi()
       .then((users) => setAvailableUsers(users))
       .catch(() => {});
   }, [backendUser]);
-
-  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [availableUsers, setAvailableUsers] = useState(() => getUsers());
-  const [notification, setNotification] = useState({
-    isOpen: false,
-    type: "success",
-    title: "",
-    message: "",
-  });
 
   const activeLabel = useMemo(
     () =>
@@ -117,30 +67,23 @@ export default function ProjectsPage() {
   );
 
   const handleCreateProject = async (newProject) => {
-    if (backendUser && !apiError) {
-      try {
-        const created = await createProjectApi(newProject, session.backendId);
-        setProjects((prev) => [created, ...prev]);
-        setNotification({ isOpen: true, type: "success", title: "Project Created", message: `Project "${created.name}" has been created successfully.` });
-        return;
-      } catch (e) {
-        console.warn("API create failed, saving locally:", e.message);
-      }
+    try {
+      const created = await createProjectApi(newProject, session.backendId);
+      setProjects((prev) => [created, ...prev]);
+      setNotification({ isOpen: true, type: "success", title: "Project Created", message: `Project "${created.name}" has been created successfully.` });
+    } catch (e) {
+      setNotification({ isOpen: true, type: "error", title: "Failed to Create", message: e.message || "Failed to create project." });
     }
-    setProjects((prev) => [...prev, newProject]);
-    setNotification({ isOpen: true, type: "success", title: "Project Created", message: `Project "${newProject.name}" has been created successfully.` });
   };
 
   const handleAddMembers = async (projectId, newMembers) => {
-    if (backendUser && !apiError && selectedProject?.backendId) {
-      for (const member of newMembers) {
-        const userId = member.backendId ?? parseInt(member.id, 10);
-        if (!isNaN(userId)) {
-          try {
-            await assignUserToProjectApi(selectedProject.backendId, userId);
-          } catch (e) {
-            console.warn("Failed to assign member to project:", e.message);
-          }
+    for (const member of newMembers) {
+      const userId = member.backendId ?? parseInt(member.id, 10);
+      if (!isNaN(userId) && selectedProject?.backendId) {
+        try {
+          await assignUserToProjectApi(selectedProject.backendId, userId);
+        } catch (e) {
+          console.warn("Failed to assign member to project:", e.message);
         }
       }
     }
@@ -182,7 +125,7 @@ export default function ProjectsPage() {
 
           {apiError && (
             <div style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 8, padding: "8px 14px", fontSize: 13, color: "#fbbf24", marginBottom: 12 }}>
-              Could not reach the server — showing cached data.
+              Could not reach the server.
             </div>
           )}
 

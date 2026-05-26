@@ -2,13 +2,8 @@ import { useState, useMemo, useEffect } from "react";
 import { Calendar, Flag, CheckCircle } from "lucide-react";
 
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
-import {
-  MANAGER_NAV_ITEMS,
-  PROJECTS_KEY,
-  INITIAL_PROJECTS,
-} from "./managerConstants.js";
-import { getTasks, updateTaskStatus } from "../../data/tasks.js";
-import { getUsers, getSession } from "../../data/users.js";
+import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
+import { getSession } from "../../data/users.js";
 import {
   getProjectsApi,
   getProjectIssuesApi,
@@ -214,17 +209,10 @@ export default function KanbanPage() {
   const session = getSession();
   const useBackend = isBackendUser(session);
 
-  const [tasks, setTasks] = useState(() => getTasks());
-  const [projects, setProjects] = useState(() => {
-    try {
-      const stored = localStorage.getItem(PROJECTS_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
-    } catch {
-      return INITIAL_PROJECTS;
-    }
-  });
+  const [tasks, setTasks] = useState([]);
+  const [projects, setProjects] = useState([]);
 
-  const [users, setUsers] = useState(() => getUsers());
+  const [users, setUsers] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [draggingId, setDraggingId] = useState(null);
   const [dragOverCol, setDragOverCol] = useState(null);
@@ -320,8 +308,7 @@ export default function KanbanPage() {
 
     const task = tasks.find((t) => t.id === draggingId);
     if (task && task.status !== colStatus) {
-      // Update backend if user is authenticated
-      if (useBackend && task.backendId) {
+      if (task.backendId) {
         updateIssueStatusApi(task.backendId, colStatus)
           .then(() => {
             setTasks((prev) =>
@@ -329,30 +316,12 @@ export default function KanbanPage() {
                 t.id === draggingId ? { ...t, status: colStatus } : t,
               ),
             );
-            setToast({
-              id: Date.now(),
-              message: `"${task.title}" moved to ${colStatus}`,
-            });
+            setToast({ id: Date.now(), message: `"${task.title}" moved to ${colStatus}` });
           })
           .catch((err) => {
             console.error("Failed to update task status:", err.message);
-            setToast({
-              id: Date.now(),
-              message: `Failed to move task: ${err.message}`,
-            });
+            setToast({ id: Date.now(), message: `Failed to move task: ${err.message}` });
           });
-      } else {
-        // Local update for non-backend users
-        updateTaskStatus(draggingId, colStatus);
-        setTasks((prev) =>
-          prev.map((t) =>
-            t.id === draggingId ? { ...t, status: colStatus } : t,
-          ),
-        );
-        setToast({
-          id: Date.now(),
-          message: `"${task.title}" moved to ${colStatus}`,
-        });
       }
       // Simulate team notification (PM_12 step 5)
       console.log(

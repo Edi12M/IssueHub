@@ -13,9 +13,9 @@ import Sidebar from "../../Components/SideBar/sideBar.jsx";
 import Button from "../../Components/Button/button.jsx";
 import StatCard from "../../Components/StatCard/StatCard.jsx";
 import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
-import { getTasks, getOverdueTasks, getAtRiskTasks } from "../../data/tasks.js";
-import { getTimeLogs, aggregateHours } from "../../data/timeLogs.js";
-import { getUsers, getSession } from "../../data/users.js";
+import { getOverdueTasks, getAtRiskTasks } from "../../data/tasks.js";
+import { aggregateHours } from "../../data/timeLogs.js";
+import { getSession } from "../../data/users.js";
 import { getBudgetUsage } from "../../data/pmSettings.js";
 import {
   getProjectsApi,
@@ -28,24 +28,12 @@ import {
 import "../../App.css";
 import "./manager.css";
 
-const PROJECTS_KEY = "issuehub_projects";
-const INITIAL_PROJECTS = [
-  { id: "p1", name: "Website Redesign" },
-  { id: "p2", name: "Mobile App" },
-];
 
 export default function AnalyticsPage() {
   const session = getSession();
   const useBackend = isBackendUser(session);
 
-  const [projects, setProjects] = useState(() => {
-    try {
-      const stored = localStorage.getItem(PROJECTS_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
-    } catch {
-      return INITIAL_PROJECTS;
-    }
-  });
+  const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState("");
   const [reportRange, setReportRange] = useState("weekly");
   const [reportPreview, setReportPreview] = useState(null);
@@ -57,12 +45,8 @@ export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(useBackend);
 
-  // Load data from backend if user is authenticated
   useEffect(() => {
     if (!useBackend) {
-      setTasks(getTasks());
-      setLogs(getTimeLogs());
-      setUsers(getUsers().filter((u) => u.role !== "System Administrator"));
       setLoading(false);
       return;
     }
@@ -91,6 +75,9 @@ export default function AnalyticsPage() {
         getUserTimeLogsApi(session.backendId).then(setLogs).catch(() => setLogs([]));
       } catch (e) {
         console.error("Failed to load analytics data:", e.message);
+        setProjects([]);
+        setTasks([]);
+        setUsers([]);
       } finally {
         setLoading(false);
       }

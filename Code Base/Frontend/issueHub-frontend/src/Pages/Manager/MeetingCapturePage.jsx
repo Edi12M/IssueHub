@@ -3,14 +3,9 @@ import { FileText, CheckCircle2, Sparkles, ClipboardList } from "lucide-react";
 
 import Button from "../../Components/Button/button.jsx";
 import Sidebar from "../../Components/SideBar/sideBar.jsx";
-import {
-  MANAGER_NAV_ITEMS,
-  PROJECTS_KEY,
-  INITIAL_PROJECTS,
-} from "./managerConstants.js";
-import { getTasks, saveTasks } from "../../data/tasks.js";
+import { MANAGER_NAV_ITEMS } from "./managerConstants.js";
 import { getSession } from "../../data/users.js";
-import { getProjectIssuesApi, isBackendUser } from "../../api/index.js";
+import { getProjectsApi, createIssueApi, isBackendUser } from "../../api/index.js";
 import "../../App.css";
 
 const MEETING_RECORDS_KEY = "issuehub_meeting_records";
@@ -134,40 +129,18 @@ export default function MeetingCapturePage() {
 
   const [activeKey, setActiveKey] = useState("meetings");
   const [loading, setLoading] = useState(useBackend);
-  const [tasks, setTasks] = useState(getTasks);
+  const [projects, setProjects] = useState([]);
 
-  const [projects] = useState(() => {
-    try {
-      const stored = localStorage.getItem(PROJECTS_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
-    } catch {
-      return INITIAL_PROJECTS;
-    }
-  });
-
-  // Load tasks from backend if authenticated
   useEffect(() => {
     if (!useBackend) {
       setLoading(false);
       return;
     }
-
-    const loadData = async () => {
-      try {
-        if (projects.length > 0) {
-          const tasksData = await getProjectIssuesApi(projects[0].id || "p1");
-          setTasks(tasksData);
-        }
-      } catch (e) {
-        console.error("Failed to load meeting tasks:", e.message);
-        setTasks(getTasks());
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [useBackend, projects]);
+    getProjectsApi()
+      .then(setProjects)
+      .catch(() => setProjects([]))
+      .finally(() => setLoading(false));
+  }, [useBackend]);
 
   // shared
   const [projectId, setProjectId] = useState("");
@@ -260,32 +233,29 @@ export default function MeetingCapturePage() {
   }
 
   // ── PM_09 + PM_10 confirm, then trigger PM_11 ──
-  function handleCreateTasks() {
+  async function handleCreateTasks() {
     const selected = suggestions.filter((item) => item.selected);
     if (selected.length === 0) {
       setMessage("Select at least one suggested task before creating.");
       return;
     }
 
-    const existingTasks = getTasks();
-    const newTasks = selected.map((item, index) => ({
-      id: `TASK-${Date.now()}-${index}`,
-      title: item.title,
-      description: item.description,
-      type: "Meeting Action",
-      acceptanceCriteria: "",
-      subtasks: [],
-      projectId,
-      assignees: [],
-      dependencies: [],
-      priority: item.priority,
-      startDate: null,
-      dueDate: null,
-      status: "Backlog",
-      createdAt: new Date().toISOString(),
-    }));
-
-    saveTasks([...existingTasks, ...newTasks]);
+    let createdCount = 0;
+    for (const item of selected) {
+      try {
+        await createIssueApi({
+          title: item.title,
+          description: item.description,
+          type: "Task",
+          priority: item.priority,
+          projectId: String(projectId),
+          status: "Backlog",
+        }, session.backendId);
+        createdCount++;
+      } catch (e) {
+        console.warn("Failed to create task from meeting:", e.message);
+      }
+    }
 
     const projectName =
       projects.find((p) => p.id === projectId)?.name || "Project";
@@ -317,7 +287,7 @@ export default function MeetingCapturePage() {
     setPastedText("");
     setTranscriptFile("");
     setMessage(
-      `Created ${selected.length} task(s). Review and save the summary below.`,
+      `Created ${createdCount} of ${selected.length} task(s) in the database. Review and save the summary below.`,
     );
   }
 
