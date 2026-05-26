@@ -5,9 +5,9 @@ namespace Backend.Models
     public class Project
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string ProjectCode { get; set; }
-        public string Description { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string ProjectCode { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public string? Goals { get; set; }
         public string Methodology { get; set; } = "Scrum";
         public ProjectType Type { get; set; }
@@ -20,11 +20,11 @@ namespace Backend.Models
         public DateTime CreatedAt { get; set; }
 
         //Navigation
-        public User Owner { get; set; }
-        public ICollection<ProjectMembers> ProjectMembers { get; set; }
-        public ICollection<Issue> Issues { get; set; }
-        public ICollection<Announcement> Announcements { get; set; }
-        public ICollection<Meeting> Meetings { get; set; }
+        public User Owner { get; set; } = null!;
+        public ICollection<ProjectMembers> ProjectMembers { get; set; } = new List<ProjectMembers>();
+        public ICollection<Issue> Issues { get; set; } = new List<Issue>();
+        public ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
+        public ICollection<Meeting> Meetings { get; set; } = new List<Meeting>();
 
     }
 }

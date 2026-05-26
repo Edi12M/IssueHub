@@ -1,4 +1,4 @@
-﻿using Backend.Enum;
+using Backend.Enum;
 
 namespace Backend.Models
 {
@@ -8,17 +8,17 @@ namespace Backend.Models
         public int ProjectId { get; set; }
         //UserId
         public int CreatedById { get; set; }
-        public string Title { get; set; }
-        public string AudioPath { get; set; }
-        public string Transcript { get; set; }
-        public string Summary { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string AudioPath { get; set; } = string.Empty;
+        public string Transcript { get; set; } = string.Empty;
+        public string Summary { get; set; } = string.Empty;
         public MeetingStatus Status { get; set; }
         public DateTime RecordedAt { get; set; }
         public DateTime CreatedAt { get; set; }
 
         //Navigation
-        public Project Project { get; set; }
-        public User CreatedBy { get; set; }
+        public Project Project { get; set; } = null!;
+        public User CreatedBy { get; set; } = null!;
 
     }
 }

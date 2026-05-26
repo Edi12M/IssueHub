@@ -173,7 +173,7 @@ namespace Backend.Services
                             blockers);
                 }
 
-                changes.Add(("Status", oldStatus.ToString(), requestedStatus.Value.ToString()));
+                changes.Add(("Status", oldStatus.ToString(), requestedStatus!.Value.ToString()));
                 issue.Status = requestedStatus.Value;
             }
 

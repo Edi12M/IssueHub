@@ -1,4 +1,4 @@
-﻿using Backend.Enum;
+using Backend.Enum;
 
 namespace Backend.Models
 {
@@ -12,7 +12,7 @@ namespace Backend.Models
         public DateTime CreatedAt { get; set; }
 
         //Navigation
-        public Issue Issue { get; set; }
-        public Issue DependsOn { get; set; }
+        public Issue Issue { get; set; } = null!;
+        public Issue DependsOn { get; set; } = null!;
     }
 }

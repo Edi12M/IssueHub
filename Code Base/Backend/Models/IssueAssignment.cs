@@ -1,4 +1,4 @@
-﻿namespace Backend.Models
+namespace Backend.Models
 {
     public class IssueAssignment
     {
@@ -8,8 +8,8 @@
         public DateTime AssignedAt { get; set; }
 
         //Navigation
-        public Issue Issue { get; set; }
-        public User User { get; set; }
+        public Issue Issue { get; set; } = null!;
+        public User User { get; set; } = null!;
 
     }
 }

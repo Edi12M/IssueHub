@@ -5,9 +5,9 @@ namespace Backend.Models
     public class User
     {
         public int Id { get; set; }
-        public string FullName { get; set; }
-        public string Email { get; set; }
-        public string PasswordHash { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
         public string? Department { get; set; }
         public string? Icon { get; set; }
         public UserRole Role { get; set; }
@@ -18,14 +18,14 @@ namespace Backend.Models
         public DateTime CreatedAt { get; set; }
 
         //Navigation
-        public ICollection<ProjectMembers> ProjectMembers { get; set; }
-        public ICollection<Project> OwnedProjects { get; set; }
-        public ICollection<Announcement> Announcements { get; set; }
-        public ICollection<Comment> Comments { get; set; }
-        public ICollection<Meeting> Meetings { get; set; }
-        public ICollection<Notification> Notifications { get; set; }
-        public ICollection<Attachment> Attachments { get; set; }
-        public ICollection<TimeLog> TimeLogs { get; set; }
-        public ICollection<IssueAssignment> IssueAssignments { get; set; }
+        public ICollection<ProjectMembers> ProjectMembers { get; set; } = new List<ProjectMembers>();
+        public ICollection<Project> OwnedProjects { get; set; } = new List<Project>();
+        public ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
+        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+        public ICollection<Meeting> Meetings { get; set; } = new List<Meeting>();
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+        public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
+        public ICollection<TimeLog> TimeLogs { get; set; } = new List<TimeLog>();
+        public ICollection<IssueAssignment> IssueAssignments { get; set; } = new List<IssueAssignment>();
     }
 }

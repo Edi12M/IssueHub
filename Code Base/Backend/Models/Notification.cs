@@ -1,4 +1,4 @@
-﻿using Backend.Enum;
+using Backend.Enum;
 
 namespace Backend.Models
 {
@@ -7,13 +7,13 @@ namespace Backend.Models
         public int Id { get; set; }
         public int UserId { get; set; }
         public NotificationType Type { get; set; }
-        public string EntityType { get; set; }
+        public string EntityType { get; set; } = string.Empty;
         //FK for the project, meeting, user, workflow etc
         public int EntityId { get; set; }
         public bool IsRead { get; set; }
         public DateTime CreatedAt { get; set; }
 
         //Navigation
-        public User User { get; set; }
+        public User User { get; set; } = null!;
     }
 }
