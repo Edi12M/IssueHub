@@ -1,7 +1,45 @@
 import { API_BASE_URL } from "../config.js";
+import { clearSession } from "../data/users.js";
 
 // Get dynamic BASE URL from config
 const getBase = () => API_BASE_URL;
+
+// Central handler for an expired/invalid token: wipe the session and bounce
+// the user back to the login page. Guarded against redirect loops.
+function handleUnauthorized() {
+  clearSession();
+  if (typeof window !== "undefined" && window.location.pathname !== "/") {
+    window.location.assign("/");
+  }
+}
+
+// Build an Error carrying enough context for callers to react.
+// - status: HTTP status code (undefined for transport failures)
+// - isNetworkError: true when the server could not be reached at all
+function makeError(message, { status, isNetworkError = false } = {}) {
+  const err = new Error(message);
+  if (status !== undefined) err.status = status;
+  err.isNetworkError = isNetworkError;
+  return err;
+}
+
+// Read a backend error message, then throw a normalized Error.
+async function throwFromResponse(res) {
+  if (res.status === 401) {
+    handleUnauthorized();
+    throw makeError("Your session has expired. Please sign in again.", {
+      status: 401,
+    });
+  }
+  let msg = `HTTP ${res.status}`;
+  try {
+    const j = await res.json();
+    msg = j?.message || j?.title || msg;
+  } catch {
+    // non-JSON body — keep the status message
+  }
+  throw makeError(msg, { status: res.status });
+}
 
 // ── Role / status mappers ────────────────────────────────────────
 const ROLE_FROM_BE = {
@@ -53,15 +91,15 @@ function makeHeaders(hasBody = false) {
 async function req(method, path, body) {
   const opts = { method, headers: makeHeaders(body !== undefined) };
   if (body !== undefined) opts.body = JSON.stringify(body);
-  const res = await fetch(`${getBase()}${path}`, opts);
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try {
-      const j = await res.json();
-      msg = j?.message || j?.title || msg;
-    } catch {}
-    throw new Error(msg);
+  let res;
+  try {
+    res = await fetch(`${getBase()}${path}`, opts);
+  } catch {
+    throw makeError("Unable to reach the server. Check your connection.", {
+      isNetworkError: true,
+    });
   }
+  if (!res.ok) await throwFromResponse(res);
   if (res.status === 204) return null;
   return res.json();
 }
@@ -72,15 +110,15 @@ async function reqFormData(method, path) {
   const token = getToken();
   if (token) opts.headers["Authorization"] = `Bearer ${token}`;
   // Don't set Content-Type for FormData - browser will set it
-  const res = await fetch(`${getBase()}${path}`, opts);
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try {
-      const j = await res.json();
-      msg = j?.message || j?.title || msg;
-    } catch {}
-    throw new Error(msg);
+  let res;
+  try {
+    res = await fetch(`${getBase()}${path}`, opts);
+  } catch {
+    throw makeError("Unable to reach the server. Check your connection.", {
+      isNetworkError: true,
+    });
   }
+  if (!res.ok) await throwFromResponse(res);
   if (res.status === 204) return null;
   return res.json();
 }
@@ -450,19 +488,19 @@ export async function uploadAttachmentApi(issueId, file) {
   const token = getToken();
   if (token) opts.headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${getBase()}/api/attachment/issue/${issueId}`, {
-    ...opts,
-    body: formData,
-  });
-
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try {
-      const j = await res.json();
-      msg = j?.message || j?.title || msg;
-    } catch {}
-    throw new Error(msg);
+  let res;
+  try {
+    res = await fetch(`${getBase()}/api/attachment/issue/${issueId}`, {
+      ...opts,
+      body: formData,
+    });
+  } catch {
+    throw makeError("Unable to reach the server. Check your connection.", {
+      isNetworkError: true,
+    });
   }
+
+  if (!res.ok) await throwFromResponse(res);
   if (res.status === 204) return null;
   return res.json();
 }

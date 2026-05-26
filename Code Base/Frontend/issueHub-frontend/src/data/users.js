@@ -74,7 +74,16 @@ export function getSession() {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    // Backend sessions carry an expiry; drop them once the JWT is stale so we
+    // don't keep sending a token the server will reject. Seed (offline)
+    // sessions have no expiresAt and never expire client-side.
+    if (session?.expiresAt && new Date(session.expiresAt).getTime() <= Date.now()) {
+      window.localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return session;
   } catch {
     return null;
   }

@@ -35,18 +35,27 @@ function LoginForm() {
     setError("");
     setLoading(true);
     try {
-      // Try backend first — will throw on 400/401 or network error
+      // Try backend first — throws on bad credentials (4xx) or a network error.
       const user = await loginApi(email.trim(), password);
       setSession(user);
       navigate(ROLE_ROUTES[user.role] ?? "/dev/assigned-issues");
-    } catch {
-      // Fall back to localStorage seed accounts
-      const user = validateUserCredentials(email.trim(), password);
-      if (user && user.role) {
-        setSession(user);
-        navigate(ROLE_ROUTES[user.role] ?? "/dev/assigned-issues");
+    } catch (err) {
+      if (err.isNetworkError) {
+        // Backend unreachable → fall back to offline seed accounts so the app
+        // is still usable for demos. A reachable backend that rejects the
+        // login must NOT fall back — that would hide a real auth failure.
+        const user = validateUserCredentials(email.trim(), password);
+        if (user && user.role) {
+          setSession(user);
+          navigate(ROLE_ROUTES[user.role] ?? "/dev/assigned-issues");
+        } else {
+          setError(
+            "Cannot reach the server, and no matching offline account was found.",
+          );
+        }
       } else {
-        setError("Invalid email or password.");
+        // Backend responded with an error — show what it actually said.
+        setError(err.message || "Invalid email or password.");
       }
     } finally {
       setLoading(false);
