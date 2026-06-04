@@ -1,5 +1,6 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import ProtectedRoute from "./Components/ProtectedRoute.jsx";
+import { getSession } from "./data/users.js";
 import Users from "./Pages/Users.jsx";
 import Login from "./Pages/Login.jsx";
 
@@ -25,6 +26,29 @@ import AssignedIssuesPage from "./Pages/dev/AssignedIssues.jsx";
 import FilteredIssuesPage from "./Pages/dev/FilteredIssues.jsx";
 import IssueDetailPage from "./Pages/dev/IssueDetail.jsx";
 import DevTasksPage from "./Pages/dev/Tasks.jsx";
+import DevKanbanPage from "./Pages/dev/DevKanbanPage.jsx";
+import { DevIssuesProvider } from "./context/DevIssuesContext.jsx";
+
+function DevLayout() {
+  return (
+    <DevIssuesProvider>
+      <Outlet />
+    </DevIssuesProvider>
+  );
+}
+
+const ROLE_HOME = {
+  "System Administrator": "/admin",
+  "Project Manager": "/manager",
+  Developer: "/dev/assigned-issues",
+  Viewer: "/dev/assigned-issues",
+};
+
+function CatchAll() {
+  const session = getSession();
+  const home = session?.role ? (ROLE_HOME[session.role] ?? "/") : "/";
+  return <Navigate to={home} replace />;
+}
 
 export default function App() {
   return (
@@ -57,20 +81,17 @@ export default function App() {
 
       {/* Developer Routes */}
       <Route element={<ProtectedRoute allowedRoles={["Developer", "Viewer"]} />}>
-        <Route
-          path="/dev"
-          element={<Navigate to="/dev/assigned-issues" replace />}
-        />
-        <Route path="/dev/assigned-issues" element={<AssignedIssuesPage />} />
-        <Route
-          path="/dev/assigned-issues/:status"
-          element={<FilteredIssuesPage />}
-        />
-        <Route path="/dev/issues/:id" element={<IssueDetailPage />} />
-        <Route path="/dev/tasks" element={<DevTasksPage />} />
+        <Route element={<DevLayout />}>
+          <Route path="/dev" element={<Navigate to="/dev/assigned-issues" replace />} />
+          <Route path="/dev/assigned-issues" element={<AssignedIssuesPage />} />
+          <Route path="/dev/assigned-issues/:status" element={<FilteredIssuesPage />} />
+          <Route path="/dev/issues/:id" element={<IssueDetailPage />} />
+          <Route path="/dev/tasks" element={<DevTasksPage />} />
+          <Route path="/dev/kanban" element={<DevKanbanPage />} />
+        </Route>
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<CatchAll />} />
     </Routes>
   );
 }

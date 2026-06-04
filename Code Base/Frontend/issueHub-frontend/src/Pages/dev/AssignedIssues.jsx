@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getDevIssues, STATUS_TO_SLUG, isOverdue } from "../../data/mockIssues";
-import { getSession } from "../../data/users.js";
-import { getDevTasksApi, isBackendUser } from "../../api/index.js";
+import { STATUS_TO_SLUG, isOverdue } from "../../data/mockIssues";
+import { useDevIssues } from "../../context/DevIssuesContext.jsx";
 import {
   DevShell,
   PageHeader,
@@ -52,36 +51,9 @@ function applySearchAndFilters(issues, searchQuery, filters) {
 }
 
 export default function AssignedIssuesPage() {
-  const session = getSession();
-  const backendUser = isBackendUser(session);
-
-  const [issues, setIssues] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { issues, loading } = useDevIssues();
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ labels: [], dateRange: {} });
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      try {
-        if (backendUser) {
-          const data = await getDevTasksApi(session.backendId);
-          if (!cancelled) setIssues(data);
-        } else {
-          if (!cancelled) setIssues(getDevIssues(session?.id));
-        }
-      } catch {
-        if (!cancelled) setIssues(getDevIssues(session?.id));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [backendUser, session?.id, session?.backendId]);
 
   const filteredIssues = applySearchAndFilters(issues, searchQuery, filters);
 

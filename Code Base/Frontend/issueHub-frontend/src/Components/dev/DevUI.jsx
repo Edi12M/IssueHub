@@ -3,7 +3,7 @@ import { PRIORITY_META, STATUS_META } from "../../data/mockIssues";
 import { getSession } from "../../data/users.js";
 import Sidebar from "../SideBar/sideBar";
 import Button from "../Button/button";
-import { CheckSquare, ListTodo } from "lucide-react";
+import { CheckSquare, ListTodo, Kanban } from "lucide-react";
 
 /* ── Dev nav items ──────────────────────────── */
 const DEV_NAV_ITEMS = [
@@ -14,6 +14,7 @@ const DEV_NAV_ITEMS = [
     to: "/dev/assigned-issues",
   },
   { key: "tasks", label: "My Tasks", icon: ListTodo, to: "/dev/tasks" },
+  { key: "kanban", label: "Kanban Board", icon: Kanban, to: "/dev/kanban" },
 ];
 
 /* ── Design tokens ──────────────────────────── */

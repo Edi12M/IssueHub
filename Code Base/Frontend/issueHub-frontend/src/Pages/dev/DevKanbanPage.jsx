@@ -1,26 +1,22 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Flag, CheckCircle } from "lucide-react";
 import { DevShell, PageHeader } from "../../Components/dev/DevUI.jsx";
-import { getSession } from "../../data/users.js";
-import {
-  getDevTasksApi,
-  updateIssueStatusApi,
-  isBackendUser,
-} from "../../api/index.js";
+import { useDevIssues } from "../../context/DevIssuesContext.jsx";
+import "../Manager/manager.css";
 
 const COLUMNS = [
-  { status: "Backlog", label: "Backlog", color: "#64748b", overBg: "rgba(100,116,139,0.08)" },
-  { status: "To Do", label: "To Do", color: "#3b82f6", overBg: "rgba(59,130,246,0.08)" },
-  { status: "In Progress", label: "In Progress", color: "#8b5cf6", overBg: "rgba(139,92,246,0.08)" },
-  { status: "In Review", label: "In Review", color: "#f59e0b", overBg: "rgba(245,158,11,0.08)" },
-  { status: "Done", label: "Done", color: "#22c55e", overBg: "rgba(34,197,94,0.08)" },
+  { status: "Backlog",     label: "Backlog",      color: "#64748b", overBg: "rgba(100,116,139,0.08)" },
+  { status: "To Do",       label: "To Do",        color: "#3b82f6", overBg: "rgba(59,130,246,0.08)"  },
+  { status: "In Progress", label: "In Progress",  color: "#8b5cf6", overBg: "rgba(139,92,246,0.08)"  },
+  { status: "In Review",   label: "In Review",    color: "#f59e0b", overBg: "rgba(245,158,11,0.08)"  },
+  { status: "Done",        label: "Done",         color: "#22c55e", overBg: "rgba(34,197,94,0.08)"   },
 ];
 
 const PRIORITY = {
-  Critical: { color: "#ef4444", bg: "rgba(239,68,68,0.14)" },
-  High: { color: "#f97316", bg: "rgba(249,115,22,0.14)" },
-  Medium: { color: "#eab308", bg: "rgba(234,179,8,0.14)" },
-  Low: { color: "#22c55e", bg: "rgba(34,197,94,0.14)" },
+  Critical: { color: "#ef4444", bg: "rgba(239,68,68,0.14)"   },
+  High:     { color: "#f97316", bg: "rgba(249,115,22,0.14)"  },
+  Medium:   { color: "#eab308", bg: "rgba(234,179,8,0.14)"   },
+  Low:      { color: "#22c55e", bg: "rgba(34,197,94,0.14)"   },
 };
 
 function shortDate(iso) {
@@ -56,7 +52,7 @@ function KanbanCard({ task, isDragging, onDragStart, onDragEnd }) {
       onDragEnd={onDragEnd}
     >
       <div className="kcard-header">
-        <span className="kcard-id">{task.id}</span>
+        <span className="kcard-id">{task.issueCode ?? task.id}</span>
         <span className="kcard-priority" style={{ color: pConf.color, background: pConf.bg }}>
           <Flag size={9} strokeWidth={2.5} />
           {task.priority}
@@ -109,25 +105,10 @@ function KanbanColumn({ column, tasks, isDragOver, draggingId, onDragStart, onDr
 }
 
 export default function DevKanbanPage() {
-  const session = getSession();
-  const useBackend = isBackendUser(session);
-
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { issues, loading, updateIssueStatus } = useDevIssues();
   const [draggingId, setDraggingId] = useState(null);
   const [dragOverCol, setDragOverCol] = useState(null);
   const [toast, setToast] = useState(null);
-
-  useEffect(() => {
-    if (!useBackend || !session?.backendId) {
-      setLoading(false);
-      return;
-    }
-    getDevTasksApi(session.backendId)
-      .then(setTasks)
-      .catch((e) => console.error("Failed to load kanban tasks:", e.message))
-      .finally(() => setLoading(false));
-  }, [useBackend, session?.backendId]);
 
   function handleDragStart(e, task) {
     e.dataTransfer.effectAllowed = "move";
@@ -145,42 +126,33 @@ export default function DevKanbanPage() {
     setDragOverCol((prev) => (prev !== colStatus ? colStatus : prev));
   }
 
-  function handleDrop(e, colStatus) {
+  async function handleDrop(e, colStatus) {
     e.preventDefault();
     if (!draggingId) return;
-    const task = tasks.find((t) => t.id === draggingId);
-    if (task && task.status !== colStatus) {
-      if (useBackend && task.backendId) {
-        updateIssueStatusApi(task.backendId, colStatus)
-          .then(() => {
-            setTasks((prev) =>
-              prev.map((t) => (t.id === draggingId ? { ...t, status: colStatus } : t)),
-            );
-            setToast({ id: Date.now(), message: `"${task.title}" moved to ${colStatus}` });
-          })
-          .catch((err) => {
-            setToast({ id: Date.now(), message: `Failed to move task: ${err.message}` });
-          });
-      }
-    }
+    const task = issues.find((t) => t.id === draggingId);
     setDraggingId(null);
     setDragOverCol(null);
+    if (!task || task.status === colStatus) return;
+    try {
+      await updateIssueStatus(task.id, task.backendId, colStatus, task.status);
+      setToast({ id: Date.now(), message: `"${task.title}" moved to ${colStatus}` });
+    } catch (err) {
+      setToast({ id: Date.now(), message: `Failed to move task: ${err.message}` });
+    }
   }
-
-  const taskCount = tasks.length;
 
   return (
     <DevShell>
-      <PageHeader title="My Kanban Board" subtitle="Drag tasks between columns to update their status." />
+      <PageHeader title="My Kanban Board" subtitle="Drag tasks between columns to update their status globally." />
 
       {loading ? (
         <div style={{ color: "#94a3b8", fontSize: 14, padding: "40px", textAlign: "center" }}>
-          Loading kanban board...
+          Loading kanban board…
         </div>
       ) : (
         <>
           <div style={{ marginBottom: 12, color: "#64748b", fontSize: 13 }}>
-            {taskCount} task{taskCount !== 1 ? "s" : ""} assigned to you
+            {issues.length} task{issues.length !== 1 ? "s" : ""} assigned to you
           </div>
           <div className="kanban-wrapper">
             <div className="kanban-board">
@@ -188,7 +160,7 @@ export default function DevKanbanPage() {
                 <KanbanColumn
                   key={col.status}
                   column={col}
-                  tasks={tasks.filter((t) => t.status === col.status)}
+                  tasks={issues.filter((t) => t.status === col.status)}
                   isDragOver={dragOverCol === col.status}
                   draggingId={draggingId}
                   onDragStart={handleDragStart}

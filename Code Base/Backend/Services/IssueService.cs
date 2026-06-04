@@ -95,6 +95,7 @@ namespace Backend.Services
         {
             var issue = await _context.Issues
                 .Include(i => i.Project)
+                .Include(i => i.Assignments)
                 .FirstOrDefaultAsync(i => i.Id == issueId)
                 ?? throw new NotFoundException(nameof(Issue), issueId);
 
@@ -160,8 +161,10 @@ namespace Backend.Services
 
             if (isStatusChange)
             {
-                if (issue.Project == null || issue.Project.OwnerId != actorId)
-                    throw new ForbiddenException("Only the project owner can change the issue status.");
+                var isOwner = issue.Project != null && issue.Project.OwnerId == actorId;
+                var isAssignee = issue.Assignments != null && issue.Assignments.Any(a => a.UserId == actorId);
+                if (!isOwner && !isAssignee)
+                    throw new ForbiddenException("Only the project owner or an assignee can change the issue status.");
 
                 // ── Dependency-block rule: applies when moving OUT of Open. ──
                 if (oldStatus == IssueStatus.Open)

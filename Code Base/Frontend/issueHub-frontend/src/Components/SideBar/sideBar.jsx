@@ -9,7 +9,9 @@ import {
   Settings,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
+import { clearSession } from "../../data/users.js";
 
 const DEFAULT_NAV_ITEMS = [
   {
@@ -51,6 +53,11 @@ export default function Sidebar({
   function handleItemClick(key, to) {
     onSelect?.(key);
     if (to) navigate(to);
+  }
+
+  function handleSignOut() {
+    clearSession();
+    navigate("/");
   }
 
   return (
@@ -105,6 +112,29 @@ export default function Sidebar({
               </button>
             ))}
           </nav>
+
+          <div style={{ flex: 1 }} />
+
+          <hr className={styles["sidebar-divider"]} />
+
+          <button
+            type="button"
+            className={styles["sidebar-link"]}
+            onClick={handleSignOut}
+            style={{ color: "#f87171" }}
+          >
+            <span
+              className={styles["sidebar-icon"]}
+              aria-hidden="true"
+              style={{
+                background: "rgba(248,113,113,0.12)",
+                borderColor: "rgba(248,113,113,0.2)",
+              }}
+            >
+              <LogOut size={16} />
+            </span>
+            Sign Out
+          </button>
         </aside>
       )}
     </>

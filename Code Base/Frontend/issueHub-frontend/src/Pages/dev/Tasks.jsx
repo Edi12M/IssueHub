@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getDevIssues, isOverdue } from "../../data/mockIssues";
-import { getSession } from "../../data/users.js";
-import { getDevTasksApi, isBackendUser } from "../../api/index.js";
+import { isOverdue } from "../../data/mockIssues";
+import { useDevIssues } from "../../context/DevIssuesContext.jsx";
 import {
   DevShell,
   PageHeader,
@@ -19,36 +18,10 @@ import Button from "../../Components/Button/button";
 
 export default function DevTasksPage() {
   const navigate = useNavigate();
-  const session = getSession();
-  const backendUser = isBackendUser(session);
+  const { issues, loading } = useDevIssues();
   const [sort, setSort] = useState("deadline");
-  const [issues, setIssues] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ labels: [], dateRange: {} });
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      try {
-        if (backendUser) {
-          const data = await getDevTasksApi(session.backendId);
-          if (!cancelled) setIssues(data);
-        } else {
-          if (!cancelled) setIssues(getDevIssues(session?.id));
-        }
-      } catch {
-        if (!cancelled) setIssues(getDevIssues(session?.id));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [backendUser, session]);
 
   const sorted = [...issues].sort((a, b) => {
     if (sort === "deadline") {

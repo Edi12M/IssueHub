@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Container, Form, InputGroup } from "react-bootstrap";
 import Button from "./Button/button.jsx";
 import logo from "../assets/appLogo-removebg.png";
 import { Eye, EyeSlash } from "react-bootstrap-icons";
-import { validateUserCredentials, setSession } from "../data/users.js";
+import { validateUserCredentials, setSession, getSession } from "../data/users.js";
 import { loginApi } from "../api/index.js";
 
 const ROLE_ROUTES = {
@@ -29,6 +29,12 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Already logged in — send straight to the right dashboard
+  const existingSession = getSession();
+  if (existingSession?.role) {
+    return <Navigate to={ROLE_ROUTES[existingSession.role] ?? "/"} replace />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
